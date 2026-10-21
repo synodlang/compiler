@@ -136,7 +136,8 @@ platform. Try `--seed 7` and compare.
 
 Now break something. In a copy of the checkout, misspell `net.Send` as
 `net.Sned` on line 27 of `tcp/tcp.synod`, and check it. On a terminal you
-get the rich form; piped output stays the short form. The rich form below was made with `--style rich --color never`.
+get the rich form; piped output stays the short form. The rich form below
+was made with `--style rich --color never`.
 
 ```
 $ synod check --style rich --color never ./tcp
