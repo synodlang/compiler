@@ -1,0 +1,6 @@
+# package demo
+define Tests
+  draw box in #f4a340
+  draw box in #F4A340
+  draw box in #deface
+  draw ({#abcdef})

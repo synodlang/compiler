@@ -1,0 +1,21 @@
+# package demo
+define Tests
+  set a to (not (x is y))
+  set b to (not (x is not y))
+  set c to (not (x is in xs))
+  set d to (not (x is not in xs))
+  set e to (not (x less than 3))
+  set f to (not (x at least 3))
+  set g to (not (x more than 3))
+  set h to (not (x at most 3))
+  set i to (not (not (x is y)))
+  set j to (not (not (x less than 3)))
+  set k to (not (a and b))
+  set l to (not (a is b and c is d))
+  set m to (not (n.Role is "leader"))
+  set o to (not (x plus 1 more than y minus 2))
+  set p to (not (not (not (x is y))))
+  if not (x is y)
+    stop
+  if (not (x is y))
+    stop

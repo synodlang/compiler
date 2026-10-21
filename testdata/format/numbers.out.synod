@@ -1,0 +1,20 @@
+# package demo
+define Tests
+  set a to 0.5
+  set b to 1
+  set c to 7
+  set d to 0
+  set e to -1
+  set f to 2.5
+  set g to 0.5
+  after 1s
+    after 0s
+      after 1500ms
+        after 1500ms
+          after 2s
+            after 250ms
+              after 60s
+                after -1s
+                  after 0.5ms
+                    after 150ms
+                      after 5s

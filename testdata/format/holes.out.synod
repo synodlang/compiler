@@ -1,0 +1,12 @@
+# package demo
+define [n: Node] Learn [k: node] at [v: number]
+  say 1
+
+define Take [ns: list of Node] and [m: map of text to list of raft.Node]
+  say 2
+
+when [n: Node] (net.Received digest from sender)
+  say 3
+
+when (sim.Added [n: raft.Node])
+  say 4

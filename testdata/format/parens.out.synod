@@ -1,0 +1,15 @@
+# package demo
+define Tests
+  set a to x
+  set b to x
+  set c to n.Known
+  set d to {a, b}
+  set e to {1, 2, 3}
+  set f to (text.Join {a, "b"})
+  set g to (lists.Item 0 of {a})
+  (use) x
+  (else)
+    stop
+  (say) hello
+  say (hello world)
+  say "a"

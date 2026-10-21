@@ -1,0 +1,4 @@
+define Main
+  say hi
+use std/sim
+use std/net

@@ -1,0 +1,27 @@
+# package demo
+# detached one
+#   keeps  spacing   
+
+# detached two
+#
+
+# leading of A
+define A  # trailing of A
+    # before the block
+  say 1   #   trailing  
+      # odd indent, leading of say 2
+  say 2
+  if x # cond
+    say 3
+    # block trailing
+  # trailing of A's block
+  else # other
+    # leading of say 4
+    say 4
+# between decls
+define B
+  say 5
+
+# file trailing
+
+# file trailing two

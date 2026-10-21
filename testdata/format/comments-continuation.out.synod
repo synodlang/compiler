@@ -1,0 +1,14 @@
+# package demo
+define A
+  if x
+    say 1
+  # about else
+  # more
+  else
+    say 2
+
+define B
+  if y
+    say 3
+  else
+    say 4

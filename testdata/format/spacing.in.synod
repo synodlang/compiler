@@ -1,0 +1,13 @@
+# package demo
+define Tests
+  say   hello    world
+  foo(bar)
+  set xs to {a,b ,  c}
+  set ys to { }
+  set zs to {  }
+  emit (message Put with Key  k ,Value  v)   by n
+  each  k ,v in m
+    say k
+  set t to ( x   y )
+  say "a  b"
+  say ( "two   spaces" )

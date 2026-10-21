@@ -1,0 +1,85 @@
+﻿# package twopc  
+use std/lists
+use std/net
+use std/random
+use std/sim  
+
+Begin has
+  set Tx to 0
+
+Prepare has
+  set tx to 0
+
+Vote has  
+  set tx to 0
+  set yes to false
+
+Decision has  
+  set tx to 0
+  set commit to false
+
+Node has  
+  set State to "idle"
+  set Participants to {  }
+  set tx to 0
+  set yesVotes to 0  
+
+define Coordinate [ps: list of Node] from [c: Node]
+  set c.Participants to ps
+
+define [n: Node] Decide [commit: bool]
+  if commit
+    set n.State to "committed"
+  else  
+    set n.State to "aborted"
+  each p in n.Participants
+    net.Send (message Decision with tx n.tx, commit commit) from n to p
+
+# Coordinator, phase 1: ask every participant to prepare
+when [n: Node] (sim.Delivered Begin)
+  set n.tx to Begin.Tx
+  set n.State to "waiting"  
+  set n.yesVotes to 0
+  each p in n.Participants
+    net.Send (message Prepare with tx n.tx) from n to p
+  after 500ms  
+    if (n.State is "waiting")
+      n.Decide false
+
+# Participant: vote, and once prepared, wait for the decision  
+when [n: Node] (net.Received Prepare from coordinator)
+  set yes to (random.Chance 0.9)
+  if yes
+    set n.State to "prepared"  
+  else
+    set n.State to "aborted"
+  net.Send (message Vote with tx Prepare.tx, yes yes) from n to coordinator
+
+# Coordinator, phase 2: commit only if everyone voted yes
+when [n: Node] (net.Received Vote from participant)
+  if (n.State is "waiting")
+    if Vote.yes  
+      set n.yesVotes to (n.yesVotes plus 1)
+      if (n.yesVotes is (lists.Size n.Participants))
+        n.Decide true
+    else  
+      n.Decide false
+
+when [n: Node] (net.Received Decision from coordinator)
+  if Decision.commit  
+    set n.State to "committed"
+  else
+    set n.State to "aborted"
+
+define Atomic
+  set committed to false
+  set aborted to false
+  each n in (sim.NodesRunning twopc)  
+    if (n.State is "committed")
+      set committed to true
+    if (n.State is "aborted")
+      set aborted to true  
+  result ( not ( committed and aborted ) )
+
+# Atomicity: never some nodes committed while others aborted
+always Atomic  

@@ -1,0 +1,5 @@
+define Main
+  say hi
+
+# package sneaky
+use std/net

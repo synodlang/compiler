@@ -1,0 +1,6 @@
+# package demo
+define Tests
+  draw box in #F4A340
+  draw box in #F4A340
+  draw box in #DEFACE
+  draw {#ABCDEF}

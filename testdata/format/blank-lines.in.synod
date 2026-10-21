@@ -1,0 +1,21 @@
+# package demo
+define A
+  say 1
+
+  say 2
+
+
+
+  if x
+    say 3
+
+    say 4
+  else
+
+    say 5
+define B
+  say 6
+
+
+define C
+  say 7

@@ -1,0 +1,8 @@
+# package demo
+
+use std/net
+use std/sim
+
+
+define Main
+  say hi

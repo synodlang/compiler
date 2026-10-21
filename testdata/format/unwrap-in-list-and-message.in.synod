@@ -1,0 +1,5 @@
+# package demo
+define Tests
+  deliver (message Put with Key ("a"), Value ((v))) to db
+  net.Send (message api.Reply with Key (k), Id (api.Get.Id)) to n
+  set x to (item (k) of (n.Entries))

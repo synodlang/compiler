@@ -1,0 +1,8 @@
+﻿# package demo
+define A  
+  say 1   
+
+
+
+define B
+  say 2

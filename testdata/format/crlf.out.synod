@@ -1,0 +1,3 @@
+# package demo
+define A
+  say 1

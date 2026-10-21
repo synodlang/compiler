@@ -1,0 +1,6 @@
+# package demo
+define Main
+  say hi
+
+define Other
+  say ho

@@ -1,0 +1,13 @@
+# package demo
+define Main
+  say hi
+use std/sim
+# about net
+use std/net # trailing
+use github.com/a/b@v1.2.0 as ab
+use github.com/a/b
+# about lesson
+use std/lesson as l
+define Other
+  say ho
+use alpha/zed
