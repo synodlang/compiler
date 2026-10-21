@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/synodlang/compiler/internal/source"
 )
@@ -29,21 +28,25 @@ define main
   set a to (sim.Spawn p)
   set a.p.Ticks to 0`
 
-// TestEveryEtaReduction runs time.Every 1ms until the 10-minute limit: 600,000
-// nested ticks must not build nested closures.
+// TestEveryEtaReduction runs time.Every 1ms: each tick re-arms itself, and
+// that must not nest closures. The deepest call nesting is checked instead of
+// wall-clock time: it must be small and independent of the run length.
 func TestEveryEtaReduction(t *testing.T) {
 	prog := compileSrc(t, everyMain, everyLib)
-	start := time.Now()
-	r := Run(prog, Options{})
-	d := time.Since(start)
-	if r.Failed == nil || r.Failed.Code != source.TimeLimit {
-		t.Fatalf("want time-limit, got %+v (end %s)", r.Failed, r.EndReason)
+	short := runSim(prog, Options{TimeLimit: 1_000_000})
+	long := runSim(prog, Options{})
+	if f := long.result().Failed; f == nil || f.Code != source.TimeLimit {
+		t.Fatalf("want time-limit, got %+v", f)
 	}
-	if d > 5*time.Second {
-		t.Errorf("took %s", d)
+	if long.now != 600_000_000 {
+		t.Errorf("end %d", long.now)
 	}
-	if r.End != 600_000_000 {
-		t.Errorf("end %d", r.End)
+	t.Logf("max depth: 1s run %d, 10min run %d", short.maxDepth, long.maxDepth)
+	if long.maxDepth > 4 {
+		t.Errorf("max nesting depth %d over 10 minutes, want <= 4", long.maxDepth)
+	}
+	if short.maxDepth != long.maxDepth {
+		t.Errorf("nesting depth depends on run length: 1s %d, 10min %d", short.maxDepth, long.maxDepth)
 	}
 }
 

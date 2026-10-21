@@ -152,6 +152,9 @@ func (s *sim) runClosure(e *ex, cl *value.Closure, p ir.Pos) *value.Fault {
 			WithLabel(fmt.Sprintf("nested call over %d", s.o.MaxDepth))
 	}
 	s.depth++
+	if s.depth > s.maxDepth {
+		s.maxDepth = s.depth
+	}
 	ne := &ex{fr: append([]value.Value(nil), cl.Frame...), node: e.node, kind: e.kind}
 	_, _, f := s.execBlock(ne, cl.Body)
 	s.depth--
@@ -286,6 +289,9 @@ func (s *sim) call(e *ex, c *ir.Call) (value.Value, *value.Fault) {
 		fr[v.Slot] = blocks[i]
 	}
 	s.depth++
+	if s.depth > s.maxDepth {
+		s.maxDepth = s.depth
+	}
 	_, v, f := s.execBlock(&ex{fr: fr, node: e.node, kind: e.kind}, p.Body)
 	s.depth--
 	return v, f

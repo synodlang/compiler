@@ -73,6 +73,7 @@ type sim struct {
 	step      int
 	curPos    ir.Pos
 	depth     int
+	maxDepth  int // deepest call/RunBlock nesting reached; read by tests
 	failed    *value.Fault
 	ended     string
 	hostFault *value.Fault
@@ -84,6 +85,11 @@ type sim struct {
 
 // Run executes p.
 func Run(p *ir.Program, o Options) *Result {
+	return runSim(p, o).result()
+}
+
+// runSim runs the program and returns the finished simulator.
+func runSim(p *ir.Program, o Options) *sim {
 	if o.TimeLimit == 0 {
 		o.TimeLimit = 600_000_000
 	}
@@ -108,7 +114,7 @@ func Run(p *ir.Program, o Options) *Result {
 	s.rng = rng.New(s.seed)
 	s.initInvariants()
 	s.run()
-	return s.result()
+	return s
 }
 
 func (s *sim) rec(f trace.Fact) {
