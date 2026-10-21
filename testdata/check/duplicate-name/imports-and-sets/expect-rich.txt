@@ -1,0 +1,16 @@
+p/p.synod:3:5: error[duplicate-name]: qualifier "q" is already used by "example.com/t/q"
+  |
+3 | use example.com/t/r/q
+  |     ^
+  |
+  = help: rename one with "use example.com/t/r/q as <name>"
+
+p/p.synod:5:5: error[duplicate-name]: "std/net" is already imported
+  |
+5 | use std/net
+  |     ^
+
+p/p.synod:16:38: error[duplicate-name]: field "seq" is set twice
+   |
+16 |   net.Send (message Ping with seq 1, seq 2) from n to n
+   |                                      ^

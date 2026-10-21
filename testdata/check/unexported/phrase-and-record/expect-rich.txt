@@ -1,0 +1,27 @@
+p/p.synod:5:13: error[unexported]: "q.secret" is not exported by q
+  |
+5 |   result (q.secret 1)
+  |             ^
+  |
+  = help: only names starting upper-case are visible outside q
+
+p/p.synod:8:21: error[unexported]: "q.hidden" is not exported by q
+  |
+8 |   result (message q.hidden with n 1)
+  |                     ^
+  |
+  = help: only names starting upper-case are visible outside q
+
+p/p.synod:11:12: error[unexported]: "q.zero" is not exported by q
+   |
+11 |   result q.zero
+   |            ^
+   |
+   = help: only names starting upper-case are visible outside q
+
+p/p.synod:13:17: error[unexported]: "q.hidden" is not exported by q
+   |
+13 | define Four [r: q.hidden]
+   |                 ^
+   |
+   = help: only names starting upper-case are visible outside q

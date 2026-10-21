@@ -1,0 +1,13 @@
+p/p.synod:3:16: error[ambiguous-empty]: cannot tell the type of {}
+  |
+3 |   set items to {}
+  |                ^
+  |
+  = help: use it with std/lists or std/maps, or assign it where the type is known
+
+p/p.synod:7:18: error[ambiguous-empty]: cannot tell the type of {}
+  |
+7 |   set scratch to {}
+  |                  ^
+  |
+  = help: use it with std/lists or std/maps, or assign it where the type is known

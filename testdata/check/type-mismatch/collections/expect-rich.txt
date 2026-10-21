@@ -1,0 +1,39 @@
+p/p.synod:12:32: error[type-mismatch]: "1" has type number, expected text
+   |
+12 |   set n.names to (lists.Append 1 to n.names)
+   |                                ^
+
+p/p.synod:13:45: error[type-mismatch]: "n.ages" has type map of text to number, expected list of value
+   |
+13 |   set n.names to (lists.Extend n.names with n.ages)
+   |                                             ^
+
+p/p.synod:14:31: error[type-mismatch]: "1" has type number, expected text
+   |
+14 |   set n.ages to (maps.Without 1 from n.ages)
+   |                               ^
+
+p/p.synod:15:31: error[type-mismatch]: "{m}" has type list of node, expected a list of numbers, times or text
+   |
+15 |   if ((lists.Size (lists.Sort {m})) is 0)
+   |                               ^
+
+p/p.synod:17:13: error[type-mismatch]: "1" has type number, expected text
+   |
+17 |   if ((item 1 of n.ages) is 0)
+   |             ^
+
+p/p.synod:19:13: error[type-mismatch]: ""a"" has type text, expected number
+   |
+19 |   if ((item "a" of n.names) is "a")
+   |             ^
+
+p/p.synod:21:18: error[type-mismatch]: "item" takes a list or a map, not node
+   |
+21 |   if ((item 0 of m) is 0)
+   |                  ^
+
+p/p.synod:23:28: error[type-mismatch]: "item 0 of names" makes "names" a list of number, but it has type list of text
+   |
+23 |   set item 0 of n.names to 1
+   |                            ^

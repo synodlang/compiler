@@ -23,6 +23,9 @@ type Module struct {
 	Std      bool
 	// File is the display path of synod.mod ("" if there is none).
 	File string
+	// Src is the source of synod.mod, nil if there is none. Diagnostics
+	// about the file are rendered from it.
+	Src *source.File
 }
 
 // semver is a parsed "vX.Y.Z".
@@ -96,7 +99,7 @@ func validModulePath(p string) bool {
 // non-canonical diagnostic for require lines that are not sorted.
 func parseMod(display string, src []byte) (*Module, []source.Diagnostic) {
 	f := source.NewFile(display, src)
-	m := &Module{Requires: map[string]string{}, File: display}
+	m := &Module{Requires: map[string]string{}, File: display, Src: f}
 	var ds []source.Diagnostic
 	add := func(line int, code source.Code, msg, hint string) {
 		ds = append(ds, source.New(f, source.Pos{Line: line, Col: 1}, code, msg, hint))

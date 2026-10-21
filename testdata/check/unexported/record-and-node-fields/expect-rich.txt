@@ -1,0 +1,20 @@
+p/p.synod:10:19: error[unexported]: "r.secret" is not exported by q
+   |
+10 |   set n.name to r.secret
+   |                   ^
+   |
+   = help: only names starting upper-case are visible outside q
+
+p/p.synod:11:22: error[unexported]: "m.q.hidden" is not exported by q
+   |
+11 |   set n.count to m.q.hidden
+   |                      ^
+   |
+   = help: only names starting upper-case are visible outside q
+
+p/p.synod:12:11: error[unexported]: "m.q.hidden" is not exported by q
+   |
+12 |   set m.q.hidden to 1
+   |           ^
+   |
+   = help: only names starting upper-case are visible outside q

@@ -1,0 +1,28 @@
+p/p.synod:2:5: error[unknown-import]: no library package at "example.com/t/nothing"
+  |
+2 | use example.com/t/nothing
+  |     ^
+
+p/p.synod:3:5: error[unknown-import]: "example.com/t/prog" holds only a main file
+  |
+3 | use example.com/t/prog
+  |     ^
+
+p/p.synod:4:5: error[unknown-import]: "github.com/synodlang/std/net" cannot be imported by the std module path
+  |
+4 | use github.com/synodlang/std/net
+  |     ^
+  |
+  = help: write "use std/net"
+
+p/p.synod:5:5: error[unknown-import]: no module provides "other.org/x/y"
+  |
+5 | use other.org/x/y
+  |     ^
+  |
+  = help: add "require <module> <version>" to synod.mod
+
+p/p.synod:6:5: error[unknown-import]: no std package "nosuch"
+  |
+6 | use std/nosuch
+  |     ^

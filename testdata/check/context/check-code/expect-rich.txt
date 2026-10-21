@@ -1,0 +1,20 @@
+p/p.synod:11:3: error[context]: "after" is not allowed in check context
+   |
+11 |   after d
+   |   ^
+   |
+   = help: "Loop" runs in check context because p/p.synod:15 calls it
+
+p/p.synod:19:7: error[context]: "set n.count" is not allowed in check context
+   |
+19 |   set n.count to 1
+   |       ^
+   |
+   = help: "Muddle" runs in check context because p/p.synod:30 calls it
+
+p/p.synod:23:3: error[context]: "emit" is not allowed in check context
+   |
+23 |   emit (message Ping with seq 1) by sim.Nobody
+   |   ^
+   |
+   = help: "Noisy" runs in check context because p/p.synod:28 calls it

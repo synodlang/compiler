@@ -1,0 +1,29 @@
+p/p.synod:3:7: error[reserved-word]: "to" is a reserved word and cannot be a field
+  |
+3 |   set to to 0
+  |       ^
+
+p/p.synod:6:1: error[reserved-word]: "list" is a reserved word and cannot be a record type
+  |
+6 | list has
+  | ^
+
+p/p.synod:9:8: error[reserved-word]: "if" is a reserved word and cannot be a phrase head
+  |
+9 | define if [a: number]
+  |        ^
+
+p/p.synod:12:14: error[reserved-word]: "to" is a reserved word and cannot be a hole name
+   |
+12 | define Send [to: node]
+   |              ^
+
+p/p.synod:13:7: error[reserved-word]: "plus" is a reserved word and cannot be a name
+   |
+13 |   set plus to 1
+   |       ^
+
+p/p.synod:14:8: error[reserved-word]: "by" is a reserved word and cannot be a name
+   |
+14 |   each by in {1}
+   |        ^

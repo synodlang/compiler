@@ -1,0 +1,29 @@
+d/d.synod:11:27: error[type-mismatch]: "an" has type a.Node, expected b.Node
+   |
+11 |   set n.total to (b.TakeB an)
+   |                           ^
+
+d/d.synod:12:27: error[type-mismatch]: "cn" has type c.Node, expected a.Node
+   |
+12 |   set n.total to (b.TakeA cn)
+   |                           ^
+
+d/d.synod:15:18: error[type-mismatch]: "an" is a a.Node, which does not run b
+   |
+15 |   set n.total to an.b.B
+   |                  ^
+
+d/d.synod:16:18: error[type-mismatch]: "bn" is a b.Node, which does not run c
+   |
+16 |   set n.total to bn.c.C
+   |                  ^
+
+d/d.synod:17:18: error[type-mismatch]: "cn" is a c.Node, which does not run a
+   |
+17 |   set n.total to cn.a.A
+   |                  ^
+
+d/d.synod:18:20: error[type-mismatch]: "cn" has type c.Node, but the list has item type a.Node
+   |
+18 |   set both to {an, cn}
+   |                    ^

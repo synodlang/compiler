@@ -1,0 +1,28 @@
+p/p.synod:7:7: error[unused-name]: "unused" is never used
+  |
+7 |   set unused to 1
+  |       ^
+
+p/p.synod:8:7: error[unused-name]: "twice" is never used
+  |
+8 |   set twice to 1
+  |       ^
+
+p/p.synod:10:8: error[unused-name]: "i" is never used
+   |
+10 |   each i, e in n.l
+   |        ^
+   |
+   = help: write "each e in …"
+
+p/p.synod:12:11: error[unused-name]: "v" is never used
+   |
+12 |   each k, v in n.m
+   |           ^
+   |
+   = help: write "each k in …"
+
+p/p.synod:14:8: error[unused-name]: "j" is never used
+   |
+14 |   each j in n.l
+   |        ^

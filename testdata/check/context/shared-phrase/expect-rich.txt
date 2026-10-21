@@ -1,0 +1,13 @@
+p/p.synod:11:3: error[context]: "deliver" is not allowed in node context
+   |
+11 |   deliver (message Ping with seq 1) to m
+   |   ^
+   |
+   = help: "Inject" runs in node context because p/p.synod:18 calls it
+
+p/p.synod:14:13: error[context]: "sim.Spawn" is not allowed in node context
+   |
+14 |   set x to (sim.Spawn p)
+   |             ^
+   |
+   = help: "Spawn" runs in node context because p/p.synod:19 calls it

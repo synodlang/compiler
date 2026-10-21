@@ -1,0 +1,13 @@
+p/p.synod:17:18: error[foreign-state]: node code reaches "peer.count" through "peer", not its receiver "n"
+   |
+17 |   set n.count to peer.count
+   |                  ^
+   |
+   = help: other nodes learn through net.Send
+
+p/p.synod:18:7: error[foreign-state]: node code reaches "peer.count" through "peer", not its receiver "n"
+   |
+18 |   set peer.count to 1
+   |       ^
+   |
+   = help: other nodes learn through net.Send

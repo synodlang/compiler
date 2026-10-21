@@ -1,0 +1,13 @@
+p/p.synod:5:21: error[unexported]: "q.secret" is not exported by q
+  |
+5 | when (sim.Changed q.secret of n from old to new)
+  |                     ^
+  |
+  = help: only names starting upper-case are visible outside q
+
+p/p.synod:9:21: error[unexported]: "q.hidden" is not exported by q
+  |
+9 | when (sim.Emitted q.hidden by n)
+  |                     ^
+  |
+  = help: only names starting upper-case are visible outside q

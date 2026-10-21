@@ -1,0 +1,48 @@
+p/p.synod:10:3: error[value-as-statement]: "n.count plus 1" gives a value but stands as a statement
+   |
+10 |   n.count plus 1
+   |   ^
+   |
+   = help: use it, as in "set x to (…)"
+
+p/p.synod:11:3: error[value-as-statement]: "n.count is 3" gives a value but stands as a statement
+   |
+11 |   n.count is 3
+   |   ^
+   |
+   = help: use it, as in "set x to (…)"
+
+p/p.synod:12:3: error[value-as-statement]: "item 0 of n.peers" gives a value but stands as a statement
+   |
+12 |   item 0 of n.peers
+   |   ^
+   |
+   = help: use it, as in "set x to (…)"
+
+p/p.synod:13:3: error[value-as-statement]: "not ((n.count is 3) and (m is m))" gives a value but stands as a statement
+   |
+13 |   not ((n.count is 3) and (m is m))
+   |   ^
+   |
+   = help: use it, as in "set x to (…)"
+
+p/p.synod:14:3: error[value-as-statement]: "message Ping with seq 1" gives a value but stands as a statement
+   |
+14 |   message Ping with seq 1
+   |   ^
+   |
+   = help: use it, as in "set x to (…)"
+
+p/p.synod:15:3: error[value-as-statement]: "{1, 2}" gives a value but stands as a statement
+   |
+15 |   {1, 2}
+   |   ^
+   |
+   = help: use it, as in "set x to (…)"
+
+p/p.synod:16:3: error[value-as-statement]: "m" gives a value but stands as a statement
+   |
+16 |   m
+   |   ^
+   |
+   = help: use it, as in "set x to (…)"

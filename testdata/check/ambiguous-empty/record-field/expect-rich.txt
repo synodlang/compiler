@@ -1,0 +1,6 @@
+p/p.synod:16:30: error[ambiguous-empty]: cannot tell the item type of {}
+   |
+16 |   set n.count to (lists.Size {})
+   |                              ^
+   |
+   = help: use it with std/lists or std/maps, or assign it where the type is known

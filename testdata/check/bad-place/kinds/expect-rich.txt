@@ -1,0 +1,49 @@
+p/p.synod:14:7: error[bad-place]: cannot set "k": it is a hole parameter
+   |
+14 |   set k to 1
+   |       ^
+
+p/p.synod:15:7: error[bad-place]: cannot set "n": it is a receiver
+   |
+15 |   set n to n
+   |       ^
+
+p/p.synod:16:7: error[bad-place]: cannot set "Zero": it is a phrase
+   |
+16 |   set Zero to 1
+   |       ^
+
+p/p.synod:17:7: error[bad-place]: cannot set "net": it is a package
+   |
+17 |   set net to 2
+   |       ^
+
+p/p.synod:18:7: error[bad-place]: cannot set "net.Send": it is a phrase
+   |
+18 |   set net.Send to 3
+   |       ^
+
+p/p.synod:20:9: error[bad-place]: cannot set "i": it is an each name
+   |
+20 |     set i to i
+   |         ^
+
+p/p.synod:25:7: error[bad-place]: cannot set "peer": it is a when binding
+   |
+25 |   set peer to n
+   |       ^
+
+p/p.synod:26:7: error[bad-place]: cannot set "tick": it is a when binding
+   |
+26 |   set tick to 1
+   |       ^
+
+p/p.synod:27:17: error[bad-place]: cannot set "peer": it is a when binding
+   |
+27 |   set item 1 of peer to 2
+   |                 ^
+
+p/p.synod:28:7: error[bad-place]: cannot set "3": it is not a place
+   |
+28 |   set 3 to 4
+   |       ^

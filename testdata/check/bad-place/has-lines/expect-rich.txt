@@ -1,0 +1,14 @@
+p/p.synod:4:7: error[bad-place]: "Ping.x" is not a record field name
+  |
+4 |   set Ping.x to 1
+  |       ^
+
+p/p.synod:5:7: error[bad-place]: "5" is not a record field name
+  |
+5 |   set 5 to 1
+  |       ^
+
+p/p.synod:9:7: error[bad-place]: "n.y" is not a node field name
+  |
+9 |   set n.y to 1
+  |       ^

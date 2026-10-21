@@ -1,0 +1,4 @@
+p/p.synod:4:12: error[syntax]: unterminated text
+  |
+4 |   set a to "unterminated
+  |            ^

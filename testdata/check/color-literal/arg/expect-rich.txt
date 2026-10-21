@@ -1,0 +1,6 @@
+p/p.synod:3:12: error[color-literal]: a color literal stands only as the result of a phrase with no holes
+  |
+3 |   set c to #123456
+  |            ^
+  |
+  = help: name the color, as theme.Accent does

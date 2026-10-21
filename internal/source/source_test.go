@@ -183,3 +183,10 @@ func TestKey(t *testing.T) {
 		t.Errorf("keys equal for different columns")
 	}
 }
+
+func TestHeaderWithoutPosition(t *testing.T) {
+	d := Diagnostic{File: "p", Severity: "error", Code: MissingMain, Message: "no main file in p"}
+	if got, want := d.Header(), "p: error[missing-main]: no main file in p"; got != want {
+		t.Errorf("Header() = %q, want %q", got, want)
+	}
+}

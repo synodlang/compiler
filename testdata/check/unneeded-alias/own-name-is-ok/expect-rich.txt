@@ -1,0 +1,6 @@
+p/p.synod:3:18: error[unneeded-alias]: "as ll" is only for imports that share a last segment
+  |
+3 | use std/lists as ll
+  |                  ^
+  |
+  = help: write "use std/lists"

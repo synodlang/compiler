@@ -1,0 +1,2 @@
+p/p.synod:1:12: error[non-canonical]: line ends with CR LF
+  hint: use LF line endings

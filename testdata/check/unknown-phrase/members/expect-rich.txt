@@ -1,0 +1,25 @@
+p/p.synod:9:20: error[unknown-phrase]: "Node" has no field "rol"
+  |
+9 |   set n.count to n.rol
+  |                    ^
+  |
+  = help: did you mean "role"?
+
+p/p.synod:10:20: error[unknown-phrase]: record "Rec" has no field "Kye"
+   |
+10 |   set n.count to r.Kye
+   |                    ^
+
+p/p.synod:11:22: error[unknown-phrase]: "q.Node" has no field "Rol"
+   |
+11 |   set n.count to m.q.Rol
+   |                      ^
+   |
+   = help: did you mean "Role"?
+
+p/p.synod:12:22: error[unknown-phrase]: "q.Node" has no field "Tem"
+   |
+12 |   set n.count to m.q.Tem
+   |                      ^
+   |
+   = help: did you mean "Term"?

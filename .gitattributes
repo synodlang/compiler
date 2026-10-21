@@ -10,3 +10,4 @@ testdata/lex/crlf.synod -text
 testdata/lex/err-cr-at-eof.synod -text
 testdata/parse/ok/bom-crlf.synod -text
 testdata/format/crlf.in.synod -text
+testdata/check/non-canonical/crlf/p/p.synod -text

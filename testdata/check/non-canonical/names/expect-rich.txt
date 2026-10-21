@@ -1,0 +1,20 @@
+alias/alias.synod:2:24: error[non-canonical]: line is not canonical
+  |
+2 | use example.com/t/q as Aa
+  |                        ^
+  |
+  = help: write "use example.com/t/q as aa"
+
+free/free.synod:2:15: error[non-canonical]: line is not canonical
+  |
+2 | define Count [N: number]
+  |               ^
+  |
+  = help: write "define Count [n: number]"
+
+taken/taken.synod:3:7: error[non-canonical]: "Best" must start lower-case: only exported names start upper-case
+  |
+3 |   set Best to n
+  |       ^
+  |
+  = help: rename it

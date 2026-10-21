@@ -1,0 +1,1 @@
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":16,"col":30,"end":{"line":16,"col":30},"severity":"error","code":"ambiguous-empty","message":"cannot tell the item type of {}","hint":"use it with std/lists or std/maps, or assign it where the type is known"}]}

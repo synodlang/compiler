@@ -1,0 +1,4 @@
+failed at 0s: p/main.synod:8:29: error[missing-key]: key "b" is not in the map
+  |
+8 |   emit (message p.R with v (item "b" of m)) by sim.Nobody
+  |                             ^

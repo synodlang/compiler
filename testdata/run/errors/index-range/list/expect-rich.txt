@@ -1,0 +1,4 @@
+failed at 0s: p/main.synod:7:29: error[index-range]: index 3 is out of range for a list of 3 items
+  |
+7 |   emit (message p.R with v (item 3 of xs)) by sim.Nobody
+  |                             ^

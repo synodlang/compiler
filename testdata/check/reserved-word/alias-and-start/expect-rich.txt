@@ -1,0 +1,4 @@
+p/p.synod:2:24: error[reserved-word]: "set" is a reserved word and cannot be a package name
+  |
+2 | use example.com/t/q as set
+  |                        ^

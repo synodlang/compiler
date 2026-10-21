@@ -1,0 +1,39 @@
+p/p.synod:16:19: error[type-mismatch]: "t" has type text, expected number
+   |
+16 |   set a to (Twice t)
+   |                   ^
+
+p/p.synod:17:19: error[type-mismatch]: ""five"" has type text, expected number
+   |
+17 |   set b to (Twice "five")
+   |                   ^
+
+p/p.synod:18:12: error[type-mismatch]: "1" has type number, expected msg
+   |
+18 |   net.Send 1 from n to m
+   |            ^
+
+p/p.synod:19:48: error[type-mismatch]: "t" has type text, expected node
+   |
+19 |   net.Send (message Ping with seq 1) from n to t
+   |                                                ^
+
+p/p.synod:21:32: error[type-mismatch]: "t" has type text, expected node
+   |
+21 |   set n.peers to (lists.Append t to n.peers)
+   |                                ^
+
+p/p.synod:22:6: error[type-mismatch]: "t" has type text, expected bool
+   |
+22 |   if t
+   |      ^
+
+p/p.synod:24:9: error[type-mismatch]: "5" has type number, expected time
+   |
+24 |   after 5
+   |         ^
+
+p/p.synod:26:13: error[type-mismatch]: "t" has type text, expected a list or a map
+   |
+26 |   each x in t
+   |             ^

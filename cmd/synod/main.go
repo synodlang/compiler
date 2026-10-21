@@ -18,9 +18,9 @@ var formatFn func(f *source.File) ([]byte, *source.Diagnostic)
 const usage = `usage: synod <command> [arguments]
 
 commands:
-  fmt [paths...] [--check]
-  check [paths...] [--json] [--tokens]
-  run <folder> [--seed n] [--trace file] [--summary]
+  fmt [paths...] [--check] [--style rich|short] [--color auto|always|never]
+  check [paths...] [--json] [--tokens] [--style rich|short] [--color auto|always|never]
+  run <folder> [--seed n] [--trace file] [--summary] [--style rich|short] [--color auto|always|never]
   version
 `
 
@@ -66,27 +66,63 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 // Flags may appear anywhere; "--" ends flag parsing. An unknown flag is an
 // error.
 func parseArgs(args []string, known ...string) (paths []string, set map[string]bool, err error) {
+	paths, set, _, err = parseFlags(args, known, nil)
+	return paths, set, err
+}
+
+// parseFlags is parseArgs with value flags too: "--name v" and "--name=v".
+// A boolean flag takes no value; a value flag given twice keeps the last.
+func parseFlags(args []string, bools, vals []string) (paths []string, set map[string]bool, values map[string]string, err error) {
 	set = map[string]bool{}
-	flags := true
-	for _, a := range args {
-		switch {
-		case flags && a == "--":
-			flags = false
-		case flags && strings.HasPrefix(a, "-") && a != "-":
-			name := strings.TrimLeft(a, "-")
-			ok := false
-			for _, k := range known {
-				if k == name {
-					ok = true
-				}
+	values = map[string]string{}
+	has := func(list []string, n string) bool {
+		for _, k := range list {
+			if k == n {
+				return true
 			}
-			if !ok {
-				return nil, nil, fmt.Errorf("unknown flag %q", a)
+		}
+		return false
+	}
+	flags := true
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if !flags || !strings.HasPrefix(a, "-") || a == "-" {
+			paths = append(paths, a)
+			continue
+		}
+		if a == "--" {
+			flags = false
+			continue
+		}
+		name := strings.TrimLeft(a, "-")
+		val, hasVal := "", false
+		if k := strings.IndexByte(name, '='); k >= 0 {
+			name, val, hasVal = name[:k], name[k+1:], true
+		}
+		switch {
+		case has(bools, name):
+			if hasVal {
+				return nil, nil, nil, fmt.Errorf("--%s takes no value", name)
 			}
 			set[name] = true
+		case has(vals, name):
+			if !hasVal {
+				if i+1 >= len(args) {
+					return nil, nil, nil, fmt.Errorf("--%s needs a value", name)
+				}
+				i++
+				val = args[i]
+			}
+			values[name] = val
 		default:
-			paths = append(paths, a)
+			return nil, nil, nil, fmt.Errorf("unknown flag %q", a)
 		}
 	}
-	return paths, set, nil
+	return paths, set, values, nil
+}
+
+// styleOf validates the --style and --color values of a command line.
+func styleOf(values map[string]string) (styleFlags, error) {
+	sf := styleFlags{style: values["style"], color: values["color"]}
+	return sf, sf.check()
 }

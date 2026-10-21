@@ -1,0 +1,1 @@
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":6,"col":27,"end":{"line":6,"col":27},"severity":"error","code":"non-canonical","message":"\"Card\" must start lower-case: only exported names start upper-case","hint":"rename it"}]}

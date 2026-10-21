@@ -1,0 +1,64 @@
+p/p.synod:2:24: error[bad-pattern]: holes "[a: number]" and "[b: text]" are adjacent
+  |
+2 | define Adj [a: number] [b: text]
+  |                        ^
+
+p/p.synod:5:24: error[bad-pattern]: holes "[a: number]" and "[b: number]" are adjacent
+  |
+5 | define Two [a: number] [b: number] Go
+  |                        ^
+
+p/p.synod:5:36: error[bad-pattern]: pattern words after the head start lower-case
+  |
+5 | define Two [a: number] [b: number] Go
+  |                                    ^
+
+p/p.synod:8:15: error[bad-pattern]: a word or hole must stand between the head and the first block hole
+  |
+8 | define Blocks [b: block] after [n: number]
+  |               ^
+
+p/p.synod:8:32: error[bad-pattern]: block holes come last
+  |
+8 | define Blocks [b: block] after [n: number]
+  |                                ^
+
+p/p.synod:11:15: error[bad-pattern]: a word or hole must stand between the head and the first block hole
+   |
+11 | define Lonely [b: block]
+   |               ^
+
+p/p.synod:14:14: error[bad-pattern]: pattern words after the head start lower-case
+   |
+14 | define Pairs Do [a: block] [c: number]
+   |              ^
+
+p/p.synod:14:28: error[bad-pattern]: block holes come last
+   |
+14 | define Pairs Do [a: block] [c: number]
+   |                            ^
+
+p/p.synod:17:16: error[bad-pattern]: "Compare is" reads as a comparison; a head is never directly followed by "is"
+   |
+17 | define Compare is [n: number]
+   |                ^
+
+p/p.synod:20:13: error[bad-pattern]: "Less less than" reads as a comparison; a head is never directly followed by "less than"
+   |
+20 | define Less less than [n: number]
+   |             ^
+
+p/p.synod:23:14: error[bad-pattern]: pattern words after the head start lower-case
+   |
+23 | define Upper Go To [n: number]
+   |              ^
+
+p/p.synod:23:17: error[bad-pattern]: pattern words after the head start lower-case
+   |
+23 | define Upper Go To [n: number]
+   |                 ^
+
+p/p.synod:26:18: error[bad-pattern]: only the receiver stands before the head
+   |
+26 | define [n: Node] [m: Node]
+   |                  ^

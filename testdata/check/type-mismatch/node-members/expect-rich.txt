@@ -1,0 +1,14 @@
+p/p.synod:13:18: error[type-mismatch]: a node has no fields; use a Node or p.Node value
+   |
+13 |   set n.Count to x.Count
+   |                  ^
+
+p/p.synod:14:18: error[type-mismatch]: a msg has no readable fields; use a record type
+   |
+14 |   set n.Count to m.seq
+   |                  ^
+
+p/p.synod:15:18: error[type-mismatch]: "n.name" has type text, but "Count" has type number
+   |
+15 |   set n.Count to n.name
+   |                  ^

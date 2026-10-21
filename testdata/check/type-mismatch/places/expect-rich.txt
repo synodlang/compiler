@@ -1,0 +1,44 @@
+p/p.synod:13:10: error[type-mismatch]: results of "Pick [flag: bool]" have types number and text
+   |
+13 |   result "one"
+   |          ^
+
+p/p.synod:17:12: error[type-mismatch]: ""one"" has type text, but "v" has type number
+   |
+17 |   set v to "one"
+   |            ^
+
+p/p.synod:19:18: error[type-mismatch]: ""many"" has type text, but "count" has type number
+   |
+19 |   set n.count to "many"
+   |                  ^
+
+p/p.synod:20:17: error[type-mismatch]: "x" has type number, but "name" has type text
+   |
+20 |   set n.name to x
+   |                 ^
+
+p/p.synod:21:22: error[type-mismatch]: "x" has type number, but the list has item type node
+   |
+21 |   set n.peers to {m, x}
+   |                      ^
+
+p/p.synod:22:38: error[type-mismatch]: ""one"" has type text, but "Ping.seq" has type number
+   |
+22 |   set ping to (message Ping with seq "one")
+   |                                      ^
+
+p/p.synod:23:30: error[type-mismatch]: "item "k" of peers" makes "peers" a map of text to number, but it has type list of node
+   |
+23 |   set item "k" of n.peers to 1
+   |                              ^
+
+p/p.synod:24:27: error[type-mismatch]: "item m of name" makes "name" a map of node to number, but it has type text
+   |
+24 |   set item m of n.name to 2
+   |                           ^
+
+p/p.synod:26:17: error[type-mismatch]: "ping" has type Ping, but "name" has type text
+   |
+26 |   set n.name to ping
+   |                 ^

@@ -1,0 +1,19 @@
+p/p.synod:14:7: error[bad-place]: cannot set "m.key": it is a record field
+   |
+14 |   set m.key to "b"
+   |       ^
+
+p/p.synod:15:7: error[bad-place]: cannot set "n.mutation.key": it is a record field
+   |
+15 |   set n.mutation.key to "c"
+   |       ^
+
+p/p.synod:16:7: error[bad-place]: cannot set "n.Version": it is a phrase
+   |
+16 |   set n.Version to 3
+   |       ^
+
+p/p.synod:17:17: error[bad-place]: cannot set "n.Version": it is a phrase
+   |
+17 |   set item 0 of n.Version to 1
+   |                 ^

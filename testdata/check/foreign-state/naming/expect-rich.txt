@@ -1,0 +1,19 @@
+p/p.synod:12:43: error[foreign-state]: "from other" must name the receiver "n"
+   |
+12 |   net.Send (message Ping with seq 1) from other to third
+   |                                           ^
+
+p/p.synod:13:26: error[foreign-state]: "on other" must name the receiver "n"
+   |
+13 |   disk.Write 1 at "k" on other
+   |                          ^
+
+p/p.synod:14:36: error[foreign-state]: "on other" must name the receiver "n"
+   |
+14 |   set n.count to (disk.Read "k" on other or 0)
+   |                                    ^
+
+p/p.synod:15:37: error[foreign-state]: "by other" must name the receiver "n"
+   |
+15 |   emit (message Ping with seq 1) by other
+   |                                     ^

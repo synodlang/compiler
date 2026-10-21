@@ -1,0 +1,29 @@
+p/p.synod:13:20: error[action-as-value]: "Poke 1" gives no value
+   |
+13 |   set n.count to ((Poke 1) plus 1)
+   |                    ^
+
+p/p.synod:14:18: error[action-as-value]: "Poke 2" gives no value
+   |
+14 |   set items to {(Poke 2)}
+   |                  ^
+
+p/p.synod:15:25: error[action-as-value]: "Poke 3" gives no value
+   |
+15 |   set n.count to (item (Poke 3) of items)
+   |                         ^
+
+p/p.synod:16:39: error[action-as-value]: "Poke 4" gives no value
+   |
+16 |   set ping to (message Ping with seq (Poke 4))
+   |                                       ^
+
+p/p.synod:17:12: error[action-as-value]: "Poke 5" gives no value
+   |
+17 |   deliver (Poke 5) to m
+   |            ^
+
+p/p.synod:18:17: error[action-as-value]: "Poke 6" gives no value
+   |
+18 |   emit ping by (Poke 6)
+   |                 ^

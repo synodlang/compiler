@@ -1,0 +1,4 @@
+p/p.synod:4:5: error[unused-import]: "example.com/t/quiet" is imported but not used
+  |
+4 | use example.com/t/quiet
+  |     ^

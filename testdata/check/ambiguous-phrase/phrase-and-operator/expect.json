@@ -1,0 +1,1 @@
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":9,"col":15,"end":{"line":9,"col":15},"severity":"error","code":"ambiguous-phrase","message":"\"Foo plus 1\" matches more than one phrase","hint":"\"Foo plus [n: number]\" (p/p.synod:5) and the language form \"[a] plus [b]\""}]}

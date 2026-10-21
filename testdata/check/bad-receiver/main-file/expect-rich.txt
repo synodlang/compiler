@@ -1,0 +1,24 @@
+p/main.synod:5:1: error[bad-receiver]: a main file has no Node has
+  |
+5 | Node has
+  | ^
+
+p/main.synod:8:8: error[bad-receiver]: a main file has no receivers
+  |
+8 | define [n: Node] Foo
+  |        ^
+
+p/main.synod:11:8: error[bad-receiver]: a main file has no start
+   |
+11 | define [n: Node] start
+   |        ^
+
+p/main.synod:14:6: error[bad-receiver]: a main file has no receivers
+   |
+14 | when [n: Node] (net.Received m from a)
+   |      ^
+
+p/main.synod:17:1: error[bad-receiver]: a main file has no node-event when
+   |
+17 | when (net.Received m from a)
+   | ^

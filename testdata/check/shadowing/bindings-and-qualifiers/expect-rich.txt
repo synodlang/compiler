@@ -1,0 +1,34 @@
+p/p.synod:9:7: error[shadowing]: "net" hides the package "net" at p/p.synod:2
+  |
+9 |   set net to 0
+  |       ^
+  |
+  = help: rename it
+
+p/p.synod:12:8: error[shadowing]: "sim" hides the package "sim" at p/p.synod:3
+   |
+12 | define sim [a: number]
+   |        ^
+   |
+   = help: rename it
+
+p/p.synod:16:8: error[shadowing]: "peer" hides the binding "peer" at p/p.synod:15
+   |
+16 |   each peer in {1}
+   |        ^
+   |
+   = help: rename it
+
+p/p.synod:18:10: error[shadowing]: "peer" hides the each name "peer" at p/p.synod:16
+   |
+18 |     each peer in {2}
+   |          ^
+   |
+   = help: rename it
+
+p/p.synod:25:37: error[shadowing]: "tick" hides the record type "tick" at p/p.synod:5
+   |
+25 | when [n: Node] (net.Received m from tick)
+   |                                     ^
+   |
+   = help: rename it

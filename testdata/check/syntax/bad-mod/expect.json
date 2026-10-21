@@ -1,0 +1,1 @@
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"synod.mod","line":3,"col":1,"end":{"line":3,"col":1},"severity":"error","code":"syntax","message":"unknown directive \"requires\"","hint":"directives are \"module\", \"synod\" and \"require\""}]}

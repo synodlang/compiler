@@ -45,6 +45,10 @@ type Result struct {
 	// Tokens holds the token lists per file, by the path shown in
 	// diagnostics; only with Options.Tokens.
 	Tokens map[string][]resolve.Token
+	// Sources holds every source file of the graph, std files and the
+	// synod.mod files included, by the path shown in diagnostics. The rich
+	// renderer reads the snippets from it.
+	Sources map[string]*source.File
 }
 
 // Check loads, resolves and checks the packages of targets (slash paths of
@@ -55,7 +59,19 @@ func Check(opts Options, targets []string) Result {
 		cfg.Std = stdlib.Root()
 	}
 	g, diags := load.Load(cfg, targets)
-	res := Result{Graph: g, ByPath: map[string]*resolve.Package{}, Fixes: map[string][]format.Fix{}}
+	res := Result{Graph: g, ByPath: map[string]*resolve.Package{}, Fixes: map[string][]format.Fix{}, Sources: map[string]*source.File{}}
+	for _, lp := range g.Packages {
+		for _, f := range lp.Files {
+			if f.Src != nil {
+				res.Sources[f.Src.Path] = f.Src
+			}
+		}
+	}
+	for _, m := range g.Modules {
+		if m.Src != nil {
+			res.Sources[m.Src.Path] = m.Src
+		}
+	}
 	if opts.Tokens {
 		res.Tokens = map[string][]resolve.Token{}
 	}

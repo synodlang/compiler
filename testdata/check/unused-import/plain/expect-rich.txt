@@ -1,0 +1,14 @@
+p/p.synod:2:5: error[unused-import]: "example.com/t/q" is imported but not used
+  |
+2 | use example.com/t/q
+  |     ^
+
+p/p.synod:3:5: error[unused-import]: "std/lists" is imported but not used
+  |
+3 | use std/lists
+  |     ^
+
+p/p.synod:4:5: error[unused-import]: "std/net" is imported but not used
+  |
+4 | use std/net
+  |     ^

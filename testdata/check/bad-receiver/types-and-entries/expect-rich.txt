@@ -1,0 +1,29 @@
+p/p.synod:5:8: error[bad-receiver]: a receiver has type Node or p.Node, not number
+  |
+5 | define [n: number] Foo
+  |        ^
+
+p/p.synod:8:8: error[bad-receiver]: the receiver of start is [n: Node]
+  |
+8 | define [n: text] start
+  |        ^
+
+p/p.synod:11:8: error[bad-receiver]: the receiver of start is [n: Node]
+   |
+11 | define start
+   |        ^
+
+p/p.synod:14:6: error[bad-receiver]: the receiver of a when is [n: Node]
+   |
+14 | when [n: number] (net.Received m from a)
+   |      ^
+
+p/p.synod:17:1: error[bad-receiver]: "net.Received" is a node event: write "when [n: Node] (…)"
+   |
+17 | when (net.Received m from a)
+   | ^
+
+p/p.synod:21:6: error[bad-receiver]: "sim.Added" is a trace event: remove the receiver
+   |
+21 | when [n: Node] (sim.Added m)
+   |      ^

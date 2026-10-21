@@ -1,0 +1,13 @@
+p/p.synod:5:1: error[missing-result]: "Sign [v: number]" does not give a result on every path
+  |
+5 | define Sign [v: number]
+  | ^
+  |
+  = help: end every path with "result …"
+
+p/p.synod:18:1: error[missing-result]: "[n: Node] Level" does not give a result on every path
+   |
+18 | define [n: Node] Level
+   | ^
+   |
+   = help: end every path with "result …"

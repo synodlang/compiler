@@ -1,0 +1,13 @@
+p/p.synod:9:10: error[color-literal]: a color literal stands only as the result of a phrase with no holes
+  |
+9 |   result #F4A340
+  |          ^
+  |
+  = help: name the color, as theme.Accent does
+
+p/p.synod:12:15: error[color-literal]: a color literal stands only as the result of a phrase with no holes
+   |
+12 |   set tint to #F4A340
+   |               ^
+   |
+   = help: name the color, as theme.Accent does

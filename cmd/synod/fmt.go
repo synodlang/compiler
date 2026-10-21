@@ -25,7 +25,12 @@ func formatWith(res driver.Result, path string, f *source.File) ([]byte, *source
 }
 
 func runFmt(args []string, stdout, stderr io.Writer) int {
-	paths, flags, err := parseArgs(args, "check")
+	paths, flags, values, err := parseFlags(args, []string{"check"}, []string{"style", "color"})
+	if err != nil {
+		fmt.Fprintf(stderr, "synod fmt: %v\n", err)
+		return exitUsage
+	}
+	sf, err := styleOf(values)
 	if err != nil {
 		fmt.Fprintf(stderr, "synod fmt: %v\n", err)
 		return exitUsage
@@ -50,7 +55,11 @@ func runFmt(args []string, stdout, stderr io.Writer) int {
 		f := source.NewFile(path, src)
 		out, d := formatWith(res, path, f)
 		if d != nil {
-			fmt.Fprintln(stderr, d.String())
+			// Diagnostics go to stderr, so the style is detected there.
+			src := &sources{known: map[string]*source.File{f.Path: f}}
+			if werr := writeDiags(stderr, []source.Diagnostic{*d}, sf, src); werr != nil {
+				fmt.Fprintf(stderr, "synod fmt: %v\n", werr)
+			}
 			diags = true
 			continue
 		}

@@ -1,0 +1,9 @@
+p/p.synod:6:12: error[action-as-value]: "b" gives no value
+  |
+6 |   set y to b
+  |            ^
+
+p/p.synod:11:18: error[action-as-value]: "set n.count to 1" gives no value
+   |
+11 |   set n.count to (set n.count to 1)
+   |                  ^

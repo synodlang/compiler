@@ -1,0 +1,1 @@
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":4,"col":5,"end":{"line":4,"col":5},"severity":"error","code":"unused-import","message":"\"example.com/t/quiet\" is imported but not used"}]}

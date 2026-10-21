@@ -5,6 +5,14 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+### Added
+
+- `--style rich|short` and `--color auto|always|never` on `synod fmt`, `check` and `run` (both `--flag value` and `--flag=value`; a bad value exits 2). Rich output draws the source line with markers, labels, notes and help under the unchanged first line; it is the default when the destination is a terminal. Piped or redirected output stays the one-line form byte for byte. Color needs `NO_COLOR` unset or empty and `TERM` other than `dumb`; the flags beat the environment. `--json` ignores both flags.
+- `synod run` failures render a snippet under the `failed at …` line in rich style.
+- `check.json` diagnostics gain `end`, and `label`, `labels`, `help` (with edits) and `notes` when present; the format stays `synod-check/1`.
+- A diagnostic without a position prints as `path: error[code]: message`.
+- Golden cases of `testdata/check` have `expect-rich.txt` and `expect.json` next to `expect.txt`; `testdata/run/errors` cases have `expect-rich.txt`.
+
 ## v0.2.1 — 2026-10-21
 
 Implements Synod 0.2. `synod run` simulates a program deterministically and writes its trace.

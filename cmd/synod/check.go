@@ -14,7 +14,12 @@ import (
 )
 
 func runCheck(args []string, stdout, stderr io.Writer) int {
-	paths, flags, err := parseArgs(args, "json", "tokens")
+	paths, flags, values, err := parseFlags(args, []string{"json", "tokens"}, []string{"style", "color"})
+	if err != nil {
+		fmt.Fprintf(stderr, "synod check: %v\n", err)
+		return exitUsage
+	}
+	sf, err := styleOf(values)
 	if err != nil {
 		fmt.Fprintf(stderr, "synod check: %v\n", err)
 		return exitUsage
@@ -42,8 +47,9 @@ func runCheck(args []string, stdout, stderr io.Writer) int {
 			return exitUsage
 		}
 	} else {
-		for _, d := range diags {
-			fmt.Fprintln(stdout, d.String())
+		if werr := writeDiags(stdout, diags, sf, &sources{known: res.Sources}); werr != nil {
+			fmt.Fprintf(stderr, "synod check: %v\n", werr)
+			return exitUsage
 		}
 	}
 	if len(diags) > 0 {

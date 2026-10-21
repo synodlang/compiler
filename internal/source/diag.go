@@ -87,13 +87,17 @@ func (d Diagnostic) String() string {
 }
 
 // Header returns the first line of String: "path:L:C: error[code]: message".
+// A diagnostic without a position (Line 0) has no ":L:C": "path: error[code]:
+// message".
 func (d Diagnostic) Header() string {
 	var b strings.Builder
 	b.WriteString(d.File)
-	b.WriteByte(':')
-	b.WriteString(strconv.Itoa(d.Line))
-	b.WriteByte(':')
-	b.WriteString(strconv.Itoa(d.Col))
+	if d.Line > 0 {
+		b.WriteByte(':')
+		b.WriteString(strconv.Itoa(d.Line))
+		b.WriteByte(':')
+		b.WriteString(strconv.Itoa(d.Col))
+	}
 	b.WriteString(": ")
 	b.WriteString(d.Severity)
 	b.WriteByte('[')

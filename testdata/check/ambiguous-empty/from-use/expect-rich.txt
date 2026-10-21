@@ -1,0 +1,6 @@
+p/p.synod:6:16: error[ambiguous-empty]: cannot tell the type of {}
+  |
+6 |   set extra to {}
+  |                ^
+  |
+  = help: use it with std/lists or std/maps, or assign it where the type is known

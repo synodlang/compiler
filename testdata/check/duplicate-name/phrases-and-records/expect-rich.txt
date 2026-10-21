@@ -1,0 +1,29 @@
+p/p.synod:4:7: error[duplicate-name]: "seq" is already defined at p/p.synod:3
+  |
+4 |   set seq to 1
+  |       ^
+
+p/p.synod:6:1: error[duplicate-name]: "Ping" is already defined at p/p.synod:2
+  |
+6 | Ping has
+  | ^
+
+p/p.synod:11:7: error[duplicate-name]: "x" is already defined at p/p.synod:10
+   |
+11 |   set x to 1
+   |       ^
+
+p/p.synod:16:1: error[duplicate-name]: "Total … and" is already defined at p/p.synod:13
+   |
+16 | define Total [c: number] and [d: number]
+   | ^
+
+p/p.synod:19:1: error[duplicate-name]: "Ping" is already defined at p/p.synod:2
+   |
+19 | define Ping
+   | ^
+
+p/p.synod:22:28: error[duplicate-name]: "a" is already defined at p/p.synod:22
+   |
+22 | define Dup [a: number] to [a: number]
+   |                            ^

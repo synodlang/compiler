@@ -1,0 +1,42 @@
+p/p.synod:13:14: error[unknown-phrase]: no phrase matches "ghost"
+   |
+13 |   set n.x to ghost
+   |              ^
+
+p/p.synod:14:15: error[unknown-phrase]: no phrase matches "lists.Sizee n.l"
+   |
+14 |   set n.x to (lists.Sizee n.l)
+   |               ^
+   |
+   = help: did you mean "lists.Size [l: list of value]"?
+
+p/p.synod:15:26: error[unknown-phrase]: no record type "Pong"
+   |
+15 |   set n.last to (message Pong with seq 1)
+   |                          ^
+   |
+   = help: did you mean "Ping"?
+
+p/p.synod:16:36: error[unknown-phrase]: record "Ping" has no field "seqq"
+   |
+16 |   set n.last to (message Ping with seqq 1)
+   |                                    ^
+   |
+   = help: did you mean "seq"?
+
+p/p.synod:17:36: error[unknown-phrase]: no phrase matches "seq n.x plus 1"
+   |
+17 |   set n.last to (message Ping with seq n.x plus 1)
+   |                                    ^
+   |
+   = help: did you mean "seq (n.x plus 1)"?
+
+p/p.synod:18:43: error[duplicate-name]: field "seq" is set twice
+   |
+18 |   set n.last to (message Ping with seq 1, seq 2)
+   |                                           ^
+
+p/p.synod:19:26: error[unknown-phrase]: no record type "lists.Ping"
+   |
+19 |   set n.last to (message lists.Ping with seq 1)
+   |                          ^

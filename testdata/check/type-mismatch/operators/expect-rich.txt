@@ -1,0 +1,54 @@
+p/p.synod:14:31: error[type-mismatch]: "plus" takes number and number, or time and time, not text and number
+   |
+14 |   set n.count to (Num (n.name plus 1))
+   |                               ^
+
+p/p.synod:15:31: error[type-mismatch]: "times" takes number and number, time and number, or number and time, not time and time
+   |
+15 |   set n.wait to (Wait (n.wait times n.wait))
+   |                               ^
+
+p/p.synod:16:32: error[type-mismatch]: "divided by" takes number and number, time and number, or time and time, not number and time
+   |
+16 |   set n.count to (Num (n.count divided by n.wait))
+   |                                ^
+
+p/p.synod:17:31: error[type-mismatch]: "minus" takes number and number, or time and time, not time and number
+   |
+17 |   set n.wait to (Wait (n.wait minus 1))
+   |                               ^
+
+p/p.synod:18:14: error[type-mismatch]: "less than" takes number and number, or time and time, not text and text
+   |
+18 |   if (n.name less than "z")
+   |              ^
+
+p/p.synod:20:7: error[type-mismatch]: cannot compare number with text
+   |
+20 |   if (n.count is "zero")
+   |       ^
+
+p/p.synod:22:15: error[type-mismatch]: "is in" takes a value and a list or a map, not number and text
+   |
+22 |   if (n.count is in n.name)
+   |               ^
+
+p/p.synod:24:7: error[type-mismatch]: "n.count" has type number, expected bool
+   |
+24 |   if (n.count and true)
+   |       ^
+
+p/p.synod:26:11: error[type-mismatch]: "n.count" has type number, expected bool
+   |
+26 |   if (not n.count)
+   |           ^
+
+p/p.synod:28:7: error[type-mismatch]: cannot compare number with the items of list of text
+   |
+28 |   if (n.count is not in {"a"})
+   |       ^
+
+p/p.synod:30:14: error[type-mismatch]: "at least" takes number and number, or time and time, not time and number
+   |
+30 |   if (n.wait at least 1)
+   |              ^

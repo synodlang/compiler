@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/synodlang/compiler/internal/driver"
+	"github.com/synodlang/compiler/internal/render"
 	"github.com/synodlang/compiler/internal/sim"
 	"github.com/synodlang/compiler/internal/source"
 	"github.com/synodlang/compiler/internal/trace"
@@ -31,6 +32,7 @@ type runArgs struct {
 	seed    *uint64
 	trace   string
 	summary bool
+	style   styleFlags
 }
 
 // notYet are the flags of later milestones: recognized and rejected.
@@ -85,6 +87,19 @@ func parseRunArgs(args []string) (runArgs, error) {
 				return ra, fmt.Errorf("--seed needs a whole number from 0 to %d, not %q", uint64(maxSeed), v)
 			}
 			ra.seed = &n
+		case name == "style" || name == "color":
+			v, err := value()
+			if err != nil {
+				return ra, err
+			}
+			if name == "style" {
+				ra.style.style = v
+			} else {
+				ra.style.color = v
+			}
+			if err := ra.style.check(); err != nil {
+				return ra, err
+			}
 		case name == "trace":
 			v, err := value()
 			if err != nil {
@@ -134,8 +149,9 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 	folder := filepath.ToSlash(filepath.Clean(ra.folder))
 	res := driver.Check(driver.Options{}, []string{folder})
 	if diags := userDiags(res); len(diags) > 0 {
-		for _, d := range diags {
-			fmt.Fprintln(stdout, d.String())
+		if err := writeDiags(stdout, diags, ra.style, &sources{known: res.Sources}); err != nil {
+			fmt.Fprintf(stderr, "synod run: %v\n", err)
+			return exitUsage
 		}
 		return exitDiags
 	}
@@ -150,7 +166,10 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 	prog := res.Programs[ipath]
 	if ipath == "" || prog == nil {
 		d := source.Diagnostic{File: folder, Severity: "error", Code: source.MissingMain, Message: "no main file in " + folder}
-		fmt.Fprintf(stdout, "%s: %s[%s]: %s\n", d.File, d.Severity, d.Code, d.Message)
+		if err := writeDiags(stdout, []source.Diagnostic{d}, ra.style, &sources{known: res.Sources}); err != nil {
+			fmt.Fprintf(stderr, "synod run: %v\n", err)
+			return exitUsage
+		}
 		return exitDiags
 	}
 
@@ -196,7 +215,7 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 			return exitUsage
 		}
 	} else {
-		writeStatus(status, ra, r, topts)
+		writeStatus(status, ra, r, topts, res.Sources)
 	}
 	if r.Failed != nil {
 		return exitDiags
@@ -205,9 +224,25 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 }
 
 // writeStatus prints the status line and one line per broken always.
-func writeStatus(w io.Writer, ra runArgs, r *sim.Result, o trace.Options) {
+func writeStatus(w io.Writer, ra runArgs, r *sim.Result, o trace.Options, known map[string]*source.File) {
 	if f := r.Failed; f != nil {
-		fmt.Fprintln(w, trace.FailedLine(f, r.End, o))
+		line := trace.FailedLine(f, r.End, o)
+		rich, color := ra.style.resolve(w)
+		if !rich {
+			fmt.Fprintln(w, line)
+			return
+		}
+		// The renderer looks files up by trace path; known is keyed by
+		// display path.
+		alias := map[string]string{}
+		for display, tp := range o.Paths {
+			alias[tp] = display
+		}
+		src := &sources{known: known, alias: alias}
+		d := trace.FaultDiagnostic(f, o)
+		if err := render.Write(w, d, render.Options{Color: color, Source: src.get, Header: line}); err != nil {
+			fmt.Fprintln(w, line)
+		}
 		return
 	}
 	dest := ra.trace

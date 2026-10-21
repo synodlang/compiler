@@ -1,0 +1,24 @@
+p/p.synod:2:20: error[bad-pattern]: unknown type "Foo"
+  |
+2 | define Unknown [x: Foo]
+  |                    ^
+
+p/p.synod:5:27: error[bad-pattern]: "block" cannot be nested inside list or map
+  |
+5 | define Nested [l: list of block] now
+  |                           ^
+
+p/p.synod:11:21: error[bad-pattern]: "value" is a type for std natives only
+   |
+11 | define Anything [v: value] now
+   |                     ^
+
+p/p.synod:14:22: error[bad-pattern]: unknown type "q.Node"
+   |
+14 | define Qualified [n: q.Node] now
+   |                      ^
+
+p/p.synod:17:1: error[bad-pattern]: a definition needs an indented block or native "<id>"
+   |
+17 | define Missing
+   | ^

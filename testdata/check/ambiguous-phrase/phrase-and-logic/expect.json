@@ -1,0 +1,1 @@
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":9,"col":16,"end":{"line":9,"col":16},"severity":"error","code":"ambiguous-phrase","message":"\"Foo and true\" matches more than one phrase","hint":"\"Foo and [b: bool]\" (p/p.synod:5) and the language form \"[a] and [b]\""}]}

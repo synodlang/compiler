@@ -1,0 +1,4 @@
+p/main.synod:8:7: error[bad-place]: cannot set "copy.Num": it is a record field
+  |
+8 |   set copy.Num to 2
+  |       ^
