@@ -1,5 +1,4 @@
 p/p.synod:9:10: error[color-literal]: a color literal stands only as the result of a phrase with no holes
   hint: name the color, as theme.Accent does
-p/p.synod:12:14: error[color-literal]: a color literal stands only as the result of a phrase with no holes
+p/p.synod:12:15: error[color-literal]: a color literal stands only as the result of a phrase with no holes
   hint: name the color, as theme.Accent does
-p/p.synod:12:14: error[type-mismatch]: "#F4A340" has type color, but "c" has type number

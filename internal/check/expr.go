@@ -89,6 +89,9 @@ func (c *checker) emptyLit(e *resolve.EmptyLit, want types.Type) types.Type {
 	case want != nil && !isCollection(want) && !isEmpty(want) && !hasValue(want):
 		// A type mismatch is reported where the "{}" flows.
 		e.SetType(types.TInvalid)
+	case c.quiet > 0:
+		// A failed sentence hides the uses that would settle this type.
+		e.SetType(types.TInvalid)
 	default:
 		msg := "cannot tell the type of {}"
 		if want != nil && isCollection(want) {

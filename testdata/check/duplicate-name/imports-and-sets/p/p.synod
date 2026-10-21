@@ -13,8 +13,8 @@ Node has
   set y to 0
 
 define [n: Node] Go
-  set n.x to (message Ping with seq 1, seq 2)
-  set n.y to (message Ping with seq 2, big 1)
+  net.Send (message Ping with seq 1, seq 2) from n to n
+  net.Send (message Ping with seq 2, big 1) from n to n
 
 define Third
   result q.One

@@ -3,6 +3,4 @@ p/p.synod:8:8: error[bad-receiver]: the receiver of start is [n: Node]
 p/p.synod:11:8: error[bad-receiver]: the receiver of start is [n: Node]
 p/p.synod:14:6: error[bad-receiver]: the receiver of a when is [n: Node]
 p/p.synod:17:1: error[bad-receiver]: "net.Received" is a node event: write "when [n: Node] (…)"
-p/p.synod:18:3: error[context]: "net.Latency" is not allowed in node context
-p/p.synod:20:6: error[bad-receiver]: "sim.Added" is a trace event: remove the receiver
-p/p.synod:21:3: error[context]: "net.Latency" is not allowed in look context
+p/p.synod:21:6: error[bad-receiver]: "sim.Added" is a trace event: remove the receiver

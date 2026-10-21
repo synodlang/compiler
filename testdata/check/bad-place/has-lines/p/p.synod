@@ -1,7 +1,6 @@
 # package p
 Ping has
   set seq to 0
-  set item 1 of seq to 2
   set Ping.x to 1
   set 5 to 1
 

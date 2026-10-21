@@ -1,3 +1,2 @@
-p/p.synod:3:5: error[unused-import]: "std/lists" is imported but not used
 p/p.synod:3:18: error[unneeded-alias]: "as ll" is only for imports that share a last segment
   hint: write "use std/lists"

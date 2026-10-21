@@ -25,6 +25,3 @@ define Upper Go To [n: number]
 
 define [n: Node] [m: Node]
   result 1
-
-define [a: number] Words
-  result 1

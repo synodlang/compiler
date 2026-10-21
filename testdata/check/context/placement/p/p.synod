@@ -10,8 +10,11 @@ set count to 1
 Node has
   set count to 0
   set bad to time.Now
-  set bad2 to (message Ping with seq time.Now)
+  set bad2 to (message Ping with seq Five)
   look
+
+define Five
+  result 5
 
 define [n: Node] Soon
   after 1s

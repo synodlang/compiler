@@ -1,10 +1,8 @@
-p/p.synod:12:8: error[shadowing]: "total" hides the local "total" at p/p.synod:11
+p/p.synod:11:8: error[shadowing]: "total" hides the local "total" at p/p.synod:9
   hint: rename it
-p/p.synod:13:9: error[bad-place]: cannot set "k": it is a hole parameter
-p/p.synod:14:8: error[shadowing]: "k" hides the hole "k" at p/p.synod:10
+p/p.synod:13:8: error[shadowing]: "k" hides the hole "k" at p/p.synod:8
   hint: rename it
-p/p.synod:16:8: error[shadowing]: "one" hides the phrase "one" at p/p.synod:7
+p/p.synod:15:8: error[shadowing]: "one" hides the phrase "one" at p/p.synod:5
   hint: rename it
-p/p.synod:18:7: error[shadowing]: "tick" hides the record type "tick" at p/p.synod:4
+p/p.synod:17:7: error[shadowing]: "tick" hides the record type "tick" at p/p.synod:2
   hint: rename it
-p/p.synod:19:7: error[bad-place]: cannot set "lists": it is a package

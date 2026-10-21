@@ -1,9 +1,4 @@
 p/p.synod:3:5: error[duplicate-name]: qualifier "q" is already used by "example.com/t/q"
   hint: rename one with "use example.com/t/r/q as <name>"
-p/p.synod:3:5: error[unused-import]: "example.com/t/r/q" is imported but not used
-p/p.synod:4:5: error[unused-import]: "std/net" is imported but not used
 p/p.synod:5:5: error[duplicate-name]: "std/net" is already imported
-p/p.synod:5:5: error[unused-import]: "std/net" is imported but not used
-p/p.synod:16:15: error[type-mismatch]: "message Ping with seq 1, seq 2" has type Ping, but "x" has type number
-p/p.synod:16:40: error[duplicate-name]: field "seq" is set twice
-p/p.synod:17:15: error[type-mismatch]: "message Ping with seq 2, big 1" has type Ping, but "y" has type number
+p/p.synod:16:38: error[duplicate-name]: field "seq" is set twice

@@ -183,6 +183,7 @@ func (r *resolver) imports() {
 			li := imp.Imp
 			if prev := paths[li.Path]; prev != nil {
 				r.err(f, imp.Pos, source.DuplicateName, `"`+li.Path+`" is already imported`, "")
+				imp.Used = true // one error is enough
 			} else {
 				paths[li.Path] = imp
 			}
@@ -196,6 +197,7 @@ func (r *resolver) imports() {
 				r.err(f, firstPos(li), source.DuplicateName,
 					`qualifier "`+imp.Qual+`" is already used by "`+prev.Imp.Path+`"`,
 					`rename one with "use `+li.Path+` as <name>"`)
+				imp.Used = true // one error is enough
 				continue
 			} else if prev != nil {
 				continue
@@ -348,6 +350,9 @@ func (r *resolver) declHas(f *File, l *parse.Line) {
 		r.pkg.Records = append(r.pkg.Records, rec)
 		r.pkg.records[w.Name] = rec
 	}
+	if rec.File != nil {
+		r.mark(f, w.P, RoleType, &Def{File: rec.File.Path, Pos: rec.Pos})
+	}
 	// fields
 	for _, bl := range l.Block.Lines {
 		fg := bl.Sentence.Groups[0]
@@ -376,6 +381,7 @@ func (r *resolver) declHas(f *File, l *parse.Line) {
 		}
 		fl := &Field{Owner: rec, Name: fw.Name, Exported: Exported(fw.Name), Index: len(rec.Fields), Pos: fw.P, File: f}
 		rec.Fields = append(rec.Fields, fl)
+		r.mark(f, fw.P, RoleField, &Def{File: f.Path, Pos: fw.P})
 		if rec.IsNode {
 			fi := r.fileIndex(f)
 			r.claims = append(r.claims, claim{key: fw.Name, disp: fw.Name, what: "node field", fi: fi, file: f, pos: fw.P,
@@ -545,6 +551,9 @@ func (r *resolver) declDefine(f *File, l *parse.Line) {
 	if reserved[head.Name] {
 		r.err(f, head.P, source.ReservedWord, `"`+head.Name+`" is a reserved word and cannot be a phrase head`, "")
 	}
+	if !reserved[head.Name] {
+		r.mark(f, head.P, RolePhrase, &Def{File: f.Path, Pos: head.P})
+	}
 	ph.Head = head.Name
 	ph.Exported = Exported(head.Name)
 	ph.Items = append(ph.Items, PatItem{Word: head.Name, Pos: head.P})
@@ -578,6 +587,7 @@ func (r *resolver) declDefine(f *File, l *parse.Line) {
 	for i := idx + 1; i < len(items); i++ {
 		switch it := items[i].(type) {
 		case *parse.Word:
+			r.mark(f, it.P, RolePhrase, nil)
 			if sawBlock {
 				if pendingWord != "" {
 					r.err(f, it.P, source.BadPattern, `after a block hole only "<word> [b: block]" pairs follow`, "")
@@ -696,6 +706,7 @@ func isStart(items []parse.Item) bool {
 func (r *resolver) receiver(f *File, h *parse.Hole) *Param {
 	prm := &Param{Name: h.Name.Name, Kind: ParamReceiver, Index: -1, Pos: h.Name.P, Source: typeString(h.Type)}
 	r.nameCheckDecl(f, h.Name.P, h.Name.Name, "hole name")
+	r.mark(f, h.Name.P, RoleName, &Def{File: f.Path, Pos: h.Name.P})
 	if r.pkg.IsMain {
 		r.err(f, h.P, source.BadReceiver, "a main file has no receivers", "")
 		prm.Type = types.TInvalid
@@ -720,6 +731,7 @@ func isInvalid(t types.Type) bool { return types.Equal(t, types.TInvalid) }
 func (r *resolver) param(f *File, h *parse.Hole, pkg *Package) *Param {
 	prm := &Param{Name: h.Name.Name, Index: -1, Pos: h.Name.P, Source: typeString(h.Type)}
 	r.nameCheckDecl(f, h.Name.P, h.Name.Name, "hole name")
+	r.mark(f, h.Name.P, RoleName, &Def{File: f.Path, Pos: h.Name.P})
 	if nt, ok := h.Type.(*parse.NamedType); ok && nt.Name == "block" {
 		prm.Kind = ParamBlock
 		prm.Type = types.TBlock
@@ -984,6 +996,7 @@ func (r *resolver) declStart(f *File, l *parse.Line, ph *Phrase, items []parse.I
 	nt, ok := h.Type.(*parse.NamedType)
 	prm := &Param{Name: h.Name.Name, Kind: ParamReceiver, Index: -1, Pos: h.Name.P, Source: typeString(h.Type)}
 	r.nameCheckDecl(f, h.Name.P, h.Name.Name, "hole name")
+	r.mark(f, h.Name.P, RoleName, &Def{File: f.Path, Pos: h.Name.P})
 	if !ok || nt.Name != "Node" {
 		r.err(f, h.P, source.BadReceiver, "the receiver of start is [n: Node]", "")
 		prm.Type = types.TInvalid

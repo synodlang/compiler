@@ -5,4 +5,3 @@ p/p.synod:11:22: error[unknown-phrase]: "q.Node" has no field "Rol"
   hint: did you mean "Role"?
 p/p.synod:12:22: error[unknown-phrase]: "q.Node" has no field "Tem"
   hint: did you mean "Term"?
-p/p.synod:13:18: error[type-mismatch]: "m" is a q.Node, which does not run p

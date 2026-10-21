@@ -126,6 +126,7 @@ func (r *resolver) bodyWhen(f *File, l *parse.Line) {
 			bd.Type = p.Node.Type()
 		}
 		b.declBinding(bd)
+		b.markSym(recvHole.Name.P, bd)
 		h.Receiver = bd
 	}
 	// Holes.
@@ -188,6 +189,7 @@ func (b *body) matchHole(prm *Param, it parse.Item) Matcher {
 			mt.NodePkg = b.pkgByPath(nt.Pkg)
 		}
 		b.declBinding(bd)
+		b.markSym(v.Name.P, bd)
 		mt.Binding = bd
 		return mt
 	case *parse.Word:

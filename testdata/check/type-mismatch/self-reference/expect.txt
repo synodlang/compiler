@@ -1,3 +1,1 @@
-p/p.synod:6:12: error[ambiguous-empty]: cannot tell the type of {}
-  hint: use it with std/lists or std/maps, or assign it where the type is known
 p/p.synod:7:12: error[type-mismatch]: "{l}" cannot contain itself

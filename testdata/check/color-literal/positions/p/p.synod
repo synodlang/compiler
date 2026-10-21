@@ -9,4 +9,5 @@ define Tinted [c: number]
   result #F4A340
 
 define [n: Node] Mixed
-  set n.c to #F4A340
+  set tint to #F4A340
+  set tint to tint

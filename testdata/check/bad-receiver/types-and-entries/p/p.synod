@@ -15,7 +15,9 @@ when [n: number] (net.Received m from a)
   net.Latency between 1ms and 2ms
 
 when (net.Received m from a)
-  net.Latency between 1ms and 2ms
+  set z to 1
+  set z to (z plus 1)
 
 when [n: Node] (sim.Added m)
-  net.Latency between 1ms and 2ms
+  set z to 1
+  set z to (z plus 1)

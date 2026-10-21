@@ -9,11 +9,8 @@ define [n: Node] Version
 define [n: Node] Bump
   set n.Count to (n.Count plus 1)
 
-define [n: Node] Probe [x: node] and [m: msg] and [t: text]
+define [n: Node] Probe [x: node] and [m: msg]
   set n.Count to x.Count
   set n.Count to m.seq
-  set n.Count to t.size
-  set n.Count to n.Cuont
-  set n.Count to n.Bump
   set n.Count to n.name
   set n.Count to n.Version

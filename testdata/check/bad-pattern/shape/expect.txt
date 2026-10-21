@@ -11,4 +11,3 @@ p/p.synod:20:13: error[bad-pattern]: "Less less than" reads as a comparison; a h
 p/p.synod:23:14: error[bad-pattern]: pattern words after the head start lower-case
 p/p.synod:23:17: error[bad-pattern]: pattern words after the head start lower-case
 p/p.synod:26:18: error[bad-pattern]: only the receiver stands before the head
-p/p.synod:29:8: error[bad-receiver]: a receiver has type Node or p.Node, not number

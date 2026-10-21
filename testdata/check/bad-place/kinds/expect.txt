@@ -7,5 +7,4 @@ p/p.synod:20:9: error[bad-place]: cannot set "i": it is an each name
 p/p.synod:25:7: error[bad-place]: cannot set "peer": it is a when binding
 p/p.synod:26:7: error[bad-place]: cannot set "tick": it is a when binding
 p/p.synod:27:17: error[bad-place]: cannot set "peer": it is a when binding
-p/p.synod:28:17: error[unknown-phrase]: no phrase matches "zzz"
-p/p.synod:29:7: error[bad-place]: cannot set "3": it is not a place
+p/p.synod:28:7: error[bad-place]: cannot set "3": it is not a place

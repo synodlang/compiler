@@ -10,4 +10,3 @@ define [n: Node] Go [r: q.Rec] and [m: q.Node]
   set n.count to r.Kye
   set n.count to m.q.Rol
   set n.count to m.q.Tem
-  set n.count to m.rol

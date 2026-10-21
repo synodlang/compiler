@@ -140,6 +140,9 @@ type Field struct {
 	Index int
 	Pos   source.Pos
 	File  *File
+	// Tainted is set when a sentence that failed to resolve names the field
+	// (see Local.Tainted).
+	Tainted bool
 }
 
 // Lookup returns the field called name, or nil.

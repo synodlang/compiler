@@ -10,10 +10,11 @@ define [n: Node] Go
   each i, e in n.l
     set n.l to {e}
   each k, v in n.m
-    set n.m to {k}
+    set item k of n.m to 1
   each j in n.l
     set n.l to {}
   set used to 1
   set item 0 of n.l to used
+  set item "a" of n.m to 1
   set base to {}
   set item 0 of base to 1

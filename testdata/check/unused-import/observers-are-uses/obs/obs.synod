@@ -2,4 +2,5 @@
 use std/sim
 
 when sim.Started
-  sim.Seed 1
+  set z to 1
+  set z to (z plus 1)

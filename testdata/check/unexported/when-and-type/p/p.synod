@@ -3,7 +3,9 @@ use example.com/t/q
 use std/sim
 
 when (sim.Changed q.secret of n from old to new)
-  sim.Seed 1
+  set z to 1
+  set z to (z plus 1)
 
 when (sim.Emitted q.hidden by n)
-  sim.Seed 2
+  set z to 1
+  set z to (z plus 1)

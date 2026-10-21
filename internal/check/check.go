@@ -125,13 +125,19 @@ type src struct {
 }
 
 type checker struct {
-	rp    *resolve.Package
-	info  *Info
-	deps  map[string]*Info
-	all   map[string]*Info
-	pkgs  map[string]*resolve.Package
-	diags []source.Diagnostic
-	seen  map[string]bool
+	// quiet is above zero while checking a value whose place is named by a
+	// sentence that failed to resolve.
+	quiet int
+	// cycPlace holds the places with a type that contains itself, reported
+	// where the cycle closes.
+	cycPlace map[any]bool
+	rp       *resolve.Package
+	info     *Info
+	deps     map[string]*Info
+	all      map[string]*Info
+	pkgs     map[string]*resolve.Package
+	diags    []source.Diagnostic
+	seen     map[string]bool
 
 	final  bool
 	file   *resolve.File
@@ -175,13 +181,14 @@ func Package(rp *resolve.Package, deps map[string]*Info) (*Info, []source.Diagno
 	c := &checker{
 		rp: rp, info: info, deps: deps,
 		all: map[string]*Info{}, pkgs: map[string]*resolve.Package{},
-		seen:   map[string]bool{},
-		ty:     map[any]types.Type{},
-		forced: map[any]types.Type{},
-		hi:     map[any][]types.Type{},
-		known:  map[any]bool{},
-		names:  map[any]string{},
-		cyc:    map[srcPos]bool{},
+		seen:     map[string]bool{},
+		ty:       map[any]types.Type{},
+		forced:   map[any]types.Type{},
+		hi:       map[any][]types.Type{},
+		known:    map[any]bool{},
+		names:    map[any]string{},
+		cyc:      map[srcPos]bool{},
+		cycPlace: map[any]bool{},
 	}
 	for p, d := range deps {
 		c.all[p] = d
@@ -424,6 +431,7 @@ func (c *checker) fold(p any) types.Type {
 			c.cyc[s.pos] = true
 		}
 		if c.cyc[s.pos] {
+			c.cycPlace[p] = true
 			if c.final {
 				save := c.file
 				c.file = s.file

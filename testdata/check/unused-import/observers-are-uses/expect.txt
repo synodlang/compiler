@@ -1,4 +1,1 @@
-obs/obs.synod:5:3: error[context]: "sim.Seed" is not allowed in look context
 p/p.synod:4:5: error[unused-import]: "example.com/t/quiet" is imported but not used
-p/p.synod:7:12: error[unexported]: "r.a" is not exported by q
-  hint: only names starting upper-case are visible outside q

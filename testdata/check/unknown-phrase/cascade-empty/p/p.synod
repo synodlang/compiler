@@ -1,0 +1,20 @@
+# package p
+use std/lists
+use std/sim
+
+Node has
+  set Role to "follower"
+  set Term to 0
+  set seen to {}
+
+define LeadersAgree
+  set terms to {}
+  each n in (sim.NodesRunning p)
+    if n.Role is "leader"
+      if (n.Term is in terms)
+        result false
+      set terms to (lists.Append n.Term to terms)
+      set n.seen to (lists.Append n.Term to n.seen)
+  result true
+
+always LeadersAgree

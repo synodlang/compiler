@@ -14,8 +14,13 @@ define sim [a: number]
 
 when [n: Node] (net.Received tick from peer)
   each peer in {1}
+    set n.x to peer
     each peer in {2}
       set n.x to peer
+
+when sim.Started
+  set z to 1
+  set z to (z plus 1)
 
 when [n: Node] (net.Received m from tick)
   net.Send m from n to tick

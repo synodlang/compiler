@@ -1,6 +1,4 @@
 p/p.synod:5:21: error[unexported]: "q.secret" is not exported by q
   hint: only names starting upper-case are visible outside q
-p/p.synod:6:3: error[context]: "sim.Seed" is not allowed in look context
-p/p.synod:8:21: error[unexported]: "q.hidden" is not exported by q
+p/p.synod:9:21: error[unexported]: "q.hidden" is not exported by q
   hint: only names starting upper-case are visible outside q
-p/p.synod:9:3: error[context]: "sim.Seed" is not allowed in look context

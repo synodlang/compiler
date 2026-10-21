@@ -137,10 +137,16 @@ func (b *body) markSym(pos source.Pos, s Symbol) {
 
 // zeroCall is a call of a zero-hole phrase.
 func (b *body) zeroCall(ph *Phrase, pos source.Pos, text string, imp *Import) Expr {
+	return b.zeroCallAt(ph, pos, pos, text, imp)
+}
+
+// zeroCallAt is zeroCall with the position of the head word, which differs
+// from pos when a package qualifier stands before it.
+func (b *body) zeroCallAt(ph *Phrase, pos, head source.Pos, text string, imp *Import) Expr {
 	if b.kind == bkConst && ph.Native != "sim.nobody" {
 		b.constErr(pos)
 	}
-	b.r.mark(b.f, pos, RolePhrase, &Def{File: ph.File.Path, Pos: ph.Pos})
+	b.r.mark(b.f, head, RolePhrase, &Def{File: ph.File.Path, Pos: ph.Pos})
 	return &Call{ExprBase: b.eb(pos, text), Phrase: ph, Qual: imp}
 }
 
@@ -153,6 +159,7 @@ func (b *body) memberExpr(m *parse.Member, hole *Param) Expr {
 		if sym, _ := b.lookup(parts[0] + "." + parts[1]); sym != nil {
 			if bd, ok := sym.(*Binding); ok {
 				useSym(bd, m.P)
+				b.markSym(partPos(m, 1), bd)
 				base := &Ref{ExprBase: b.eb(m.P, parts[0]+"."+parts[1]), Sym: bd}
 				if len(parts) == 2 {
 					return base
@@ -163,6 +170,7 @@ func (b *body) memberExpr(m *parse.Member, hole *Param) Expr {
 	}
 	if sym, _ := b.lookup(parts[0]); sym != nil {
 		useSym(sym, m.P)
+		b.markSym(m.P, sym)
 		base := &Ref{ExprBase: b.eb(m.P, parts[0]), Sym: sym}
 		return b.selectOf(m, base, 1)
 	}
@@ -202,7 +210,10 @@ func (b *body) memberExpr(m *parse.Member, hole *Param) Expr {
 					b.r.err(b.f, pos1, source.Unexported, `"`+text+`" is not exported by `+parts[0],
 						"only names starting upper-case are visible outside "+parts[0])
 				}
-				return b.zeroCall(ph, m.P, text, imp)
+				if imp != nil || own {
+					b.r.mark(b.f, m.P, RoleName, nil)
+				}
+				return b.zeroCallAt(ph, m.P, pos1, text, imp)
 			}
 		}
 		b.r.err(b.f, m.P, source.UnknownPhrase, `no phrase matches "`+text+`"`, b.closestMember(imp, own, parts[1]))
@@ -245,6 +256,7 @@ func (b *body) recordOf(it parse.Item) (*Record, bool) {
 	switch v := it.(type) {
 	case *parse.Word:
 		if rec := b.r.pkg.records[v.Name]; rec != nil {
+			b.r.mark(b.f, v.P, RoleType, &Def{File: rec.File.Path, Pos: rec.Pos})
 			return rec, true
 		}
 		hint := ""
@@ -266,6 +278,7 @@ func (b *body) recordOf(it parse.Item) (*Record, bool) {
 						b.r.err(b.f, partPos(v, 1), source.Unexported, `"`+printItem(v)+`" is not exported by `+v.Parts[0],
 							"only names starting upper-case are visible outside "+v.Parts[0])
 					}
+					b.r.mark(b.f, partPos(v, 1), RoleType, &Def{File: rec.File.Path, Pos: rec.Pos})
 					return rec, true
 				}
 				b.r.err(b.f, v.P, source.UnknownPhrase, `no record type "`+printItem(v)+`"`, "")
@@ -544,6 +557,7 @@ func (b *body) bindPhrase(c candidate, text string, items []parse.Item, ln *pars
 			sym, _ := b.lookup(c.recv)
 			if sym != nil {
 				useSym(sym, m.P)
+				b.markSym(m.P, sym)
 				call.Receiver = &Ref{ExprBase: b.eb(m.P, c.recv), Sym: sym}
 			} else if zp := b.zeroPhrase(c.recv); zp != nil {
 				call.Receiver = b.zeroCall(zp, m.P, c.recv, nil)
@@ -588,17 +602,23 @@ func (b *body) touch(items []parse.Item) {
 		case *parse.Word:
 			if s, _ := b.lookup(v.Name); s != nil {
 				useSym(s, v.P)
+				taintSym(s)
 			}
 			if imp := b.f.byQual[v.Name]; imp != nil {
 				imp.Used = true
 			}
+			b.taintField(v.Name)
 		case *parse.Member:
 			if s, _ := b.lookup(v.Parts[0]); s != nil {
 				useSym(s, v.P)
+				taintSym(s)
 			}
-			for _, p := range v.Parts {
+			for i, p := range v.Parts {
 				if imp := b.f.byQual[p]; imp != nil {
 					imp.Used = true
+				}
+				if i > 0 {
+					b.taintField(p)
 				}
 			}
 		case *parse.Paren:
@@ -607,6 +627,25 @@ func (b *body) touch(items []parse.Item) {
 			}
 		case *parse.List:
 			b.touch(v.Items)
+		}
+	}
+}
+
+// taintSym marks a local named by a failed sentence.
+func taintSym(s Symbol) {
+	if l, ok := s.(*Local); ok {
+		l.Tainted = true
+	}
+}
+
+// taintField marks the node and record fields of this package called name.
+func (b *body) taintField(name string) {
+	if fl := b.r.pkg.fields[name]; fl != nil {
+		fl.Tainted = true
+	}
+	for _, rec := range b.r.pkg.Records {
+		if fl := rec.Lookup(name); fl != nil {
+			fl.Tainted = true
 		}
 	}
 }

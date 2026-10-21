@@ -28,7 +28,8 @@ func (c *checker) pass(final bool) {
 			if f.Init == nil {
 				continue
 			}
-			t := c.expr(f.Init, c.ty[f])
+			var t types.Type
+			c.quietly(f.Tainted || c.cycPlace[f], func() { t = c.expr(f.Init, c.ty[f]) })
 			c.addSrc(f, name, f.Init.Where(), t, f.Init.Src())
 			c.refine(f.Init, c.ty[f])
 		}
@@ -222,12 +223,23 @@ func (c *checker) draw(x *resolve.Draw) {
 
 // ---- set ----
 
+// quietly runs f; with tainted set, "{}" ambiguities are not reported, as
+// the uses that would settle them are in sentences that failed to resolve.
+func (c *checker) quietly(tainted bool, f func()) {
+	if tainted {
+		c.quiet++
+		defer func() { c.quiet-- }()
+	}
+	f()
+}
+
 func (c *checker) set(s *resolve.Set) {
 	switch pl := s.Place.(type) {
 	case *resolve.LocalPlace:
 		l := pl.Local
 		c.note(l, l.Name)
-		t := c.expr(s.Value, c.ty[l])
+		var t types.Type
+		c.quietly(l.Tainted || c.cycPlace[l], func() { t = c.expr(s.Value, c.ty[l]) })
 		c.addSrc(l, l.Name, s.Value.Where(), t, s.Value.Src())
 	case *resolve.SelectPlace:
 		f := c.nodeFieldPlace(pl.Select)
@@ -236,7 +248,8 @@ func (c *checker) set(s *resolve.Set) {
 			return
 		}
 		ft := c.fieldType(f)
-		t := c.expr(s.Value, ft)
+		var t types.Type
+		c.quietly(f.Tainted || c.cycPlace[f], func() { t = c.expr(s.Value, ft) })
 		c.flow(f, f.Name, s.Value, t)
 	case *resolve.ItemPlace:
 		c.itemPlace(s, pl)
@@ -293,10 +306,10 @@ func (c *checker) itemPlace(s *resolve.Set, pl *resolve.ItemPlace) {
 	var key any
 	var name string
 	var pt types.Type
-	var own bool
+	var own, tainted bool
 	switch b := pl.Base.(type) {
 	case *resolve.LocalPlace:
-		key, name, own = b.Local, b.Local.Name, true
+		key, name, own, tainted = b.Local, b.Local.Name, true, b.Local.Tainted || c.cycPlace[b.Local]
 		c.note(b.Local, name)
 		pt = c.ty[b.Local]
 	case *resolve.SelectPlace:
@@ -306,7 +319,7 @@ func (c *checker) itemPlace(s *resolve.Set, pl *resolve.ItemPlace) {
 			c.expr(s.Value, nil)
 			return
 		}
-		key, name, own = f, f.Name, f.Owner.Pkg == c.rp
+		key, name, own, tainted = f, f.Name, f.Owner.Pkg == c.rp, f.Tainted || c.cycPlace[f]
 		pt = c.fieldType(f)
 		if own {
 			pt = c.ty[f]
@@ -324,7 +337,8 @@ func (c *checker) itemPlace(s *resolve.Set, pl *resolve.ItemPlace) {
 	case types.Map:
 		want = t.Val
 	}
-	vt := c.expr(s.Value, want)
+	var vt types.Type
+	c.quietly(tainted, func() { vt = c.expr(s.Value, want) })
 	text := "item " + pl.Key.Src() + " of " + name
 	if own {
 		switch {

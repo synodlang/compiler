@@ -13,3 +13,4 @@ define Send [to: node]
   set plus to 1
   each by in {1}
     set x to by
+    set x to (x plus 1)

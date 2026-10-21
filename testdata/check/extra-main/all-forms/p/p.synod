@@ -1,5 +1,3 @@
 # package p
-use std/sim
-
 define main
   sim.Seed 1

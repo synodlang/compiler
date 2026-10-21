@@ -25,5 +25,4 @@ when [n: Node] (net.Received tick from peer)
   set peer to n
   set tick to 1
   set item 1 of peer to 2
-  set item 1 of zzz to 2
   set 3 to 4

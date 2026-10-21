@@ -3,4 +3,3 @@ p/main.synod:8:8: error[bad-receiver]: a main file has no receivers
 p/main.synod:11:8: error[bad-receiver]: a main file has no start
 p/main.synod:14:6: error[bad-receiver]: a main file has no receivers
 p/main.synod:17:1: error[bad-receiver]: a main file has no node-event when
-p/main.synod:21:3: error[context]: "sim.Seed" is not allowed in look context

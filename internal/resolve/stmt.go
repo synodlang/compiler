@@ -229,6 +229,7 @@ func (b *body) checkSettable(sym Symbol, crossed string, pos source.Pos, name st
 			return false
 		}
 		if crossed != "" {
+			x.Tainted = true // the set is lost, and with it what it says of the type
 			b.r.err(b.f, pos, source.BadPlace, `"`+name+`" is captured by `+crossed+`; it cannot be set here`, "")
 			return false
 		}

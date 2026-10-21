@@ -15,6 +15,3 @@ define Qualified [n: q.Node] now
   result 1
 
 define Missing
-define Raw native "x.y"
-define Mix [a: number] native "x.y"
-  result 1

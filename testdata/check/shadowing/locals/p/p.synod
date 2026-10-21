@@ -1,6 +1,4 @@
 # package p
-use std/lists
-
 tick has
   set seq to 0
 
@@ -9,12 +7,12 @@ define one
 
 define Take [k: number]
   set total to 1
+  set sum to 0
   each total in {1, 2}
-    set k to total
+    set sum to total
   each k in {1}
     set total to k
   each one in {1}
     set total to one
   set tick to 3
-  set lists to 5
-  result (tick plus total)
+  result (tick plus (total plus sum))

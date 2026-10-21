@@ -18,7 +18,8 @@ when (net.Received m from a)
   sim.Seed 3
 
 when (sim.Added m)
-  sim.Seed 4
+  set z to 1
+  set z to (z plus 1)
 
 define main
   sim.Seed 1

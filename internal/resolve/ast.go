@@ -87,6 +87,10 @@ type Local struct {
 	// Attached is set for a draw name with "for": the shape is also
 	// attached to the node, text or number given.
 	Attached bool
+	// Tainted is set when a sentence that failed to resolve names the local:
+	// the uses that would settle its type are lost, so the checker stays quiet
+	// about what it cannot infer.
+	Tainted bool
 
 	refs      []source.Pos
 	eachIdx   int // 0 or 1 for the names of an "each a, b"; -1 otherwise
