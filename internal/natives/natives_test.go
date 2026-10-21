@@ -1,6 +1,8 @@
 package natives
 
 import (
+	"fmt"
+	"hash/fnv"
 	"math"
 	"testing"
 
@@ -260,10 +262,26 @@ func TestMath(t *testing.T) {
 	_, f = run(t, h, "math.remainder", nil, num(1e308), num(1e-308))
 	wantFault(t, "math.remainder", f, source.NumberRange, "the result is too large for a number")
 
-	same(t, "hash empty", ok(t, h, "math.hash", txt("")), num(float64(14695981039346656037>>11)/(1<<53)))
-	// FNV-1a 64 of "a" is af63dc4c8601ec8c.
-	same(t, "hash a", ok(t, h, "math.hash", txt("a")), num(float64(uint64(0xaf63dc4c8601ec8c)>>11)/(1<<53)))
-	same(t, "hash foobar", ok(t, h, "math.hash", txt("foobar")), num(float64(uint64(0x85944171f73967e8)>>11)/(1<<53)))
+	for _, in := range []string{"", "a", "foobar", "héllo"} {
+		same(t, "hash "+in, ok(t, h, "math.hash", txt(in)), num(refHash(in)))
+	}
+	// Known values of the reference implementation below.
+	t.Logf("hash %q %v, %q %v, %q %v", "", refHash(""), "a", refHash("a"), "foobar", refHash("foobar"))
+	for name, mk := range map[string]func(i int) string{
+		"user":  func(i int) string { return fmt.Sprintf("user%d", i+1) },
+		"token": func(i int) string { return fmt.Sprintf("n1#%d", i) },
+	} {
+		var decile [10]int
+		for i := 0; i < 100; i++ {
+			x := ok(t, h, "math.hash", txt(mk(i))).Num
+			decile[int(x*10)]++
+		}
+		for d, n := range decile {
+			if n == 0 {
+				t.Errorf("%s: decile %d is empty: %v", name, d, decile)
+			}
+		}
+	}
 	for _, s := range []string{"", "a", "héllo", "zzzzzzzz"} {
 		if x := ok(t, h, "math.hash", txt(s)).Num; x < 0 || x >= 1 {
 			t.Errorf("hash %q = %v out of [0,1)", s, x)
@@ -332,4 +350,18 @@ func TestDisk(t *testing.T) {
 	wantFault(t, "disk.write", f, source.Nobody, "disk.Write on sim.Nobody")
 	_, f = run(t, h, "disk.read", rc, txt("k"), nd(0), lst())
 	wantFault(t, "disk.read", f, source.Nobody, "disk.Read on sim.Nobody")
+}
+
+// refHash is a straightforward FNV-1a 64 with the MurmurHash3 fmix64
+// finalizer, written independently of the native (it uses hash/fnv).
+func refHash(s string) float64 {
+	f := fnv.New64a()
+	f.Write([]byte(s))
+	h := f.Sum64()
+	h ^= h >> 33
+	h *= 0xff51afd7ed558ccd
+	h ^= h >> 33
+	h *= 0xc4ceb9fe1a85ec53
+	h ^= h >> 33
+	return float64(h>>11) / 9007199254740992
 }

@@ -7,21 +7,21 @@ steps:
   sim.Added n2 runs ring
   sim.Added n3 runs ring
   sim.Added n4 runs ring
-  sim.Emitted ring.Placed{Key "ada", Owner n1} by nobody
-  sim.Emitted ring.Placed{Key "alan", Owner n4} by nobody
-  sim.Emitted ring.Placed{Key "bob", Owner n1} by nobody
-  sim.Emitted ring.Placed{Key "dave", Owner n4} by nobody
-  sim.Emitted ring.Placed{Key "grace", Owner n1} by nobody
-  sim.Emitted ring.Placed{Key "linus", Owner n1} by nobody
+  sim.Emitted ring.Placed{Key "user:1", Owner n1} by nobody
+  sim.Emitted ring.Placed{Key "user:2", Owner n3} by nobody
+  sim.Emitted ring.Placed{Key "user:3", Owner n3} by nobody
+  sim.Emitted ring.Placed{Key "cart:7", Owner n3} by nobody
+  sim.Emitted ring.Placed{Key "cart:9", Owner n3} by nobody
+  sim.Emitted ring.Placed{Key "order:12", Owner n2} by nobody
 @2s timer nobody
   sim.Emitted lesson.Asked{Question "A fifth node joins the ring. How many keys move?"} by nobody
   sim.Added n5 runs ring
-  sim.Emitted ring.Placed{Key "ada", Owner n1} by nobody
-  sim.Emitted ring.Placed{Key "alan", Owner n5} by nobody
-  sim.Emitted ring.Placed{Key "bob", Owner n1} by nobody
-  sim.Emitted ring.Placed{Key "dave", Owner n5} by nobody
-  sim.Emitted ring.Placed{Key "grace", Owner n1} by nobody
-  sim.Emitted ring.Placed{Key "linus", Owner n1} by nobody
+  sim.Emitted ring.Placed{Key "user:1", Owner n1} by nobody
+  sim.Emitted ring.Placed{Key "user:2", Owner n3} by nobody
+  sim.Emitted ring.Placed{Key "user:3", Owner n3} by nobody
+  sim.Emitted ring.Placed{Key "cart:7", Owner n5} by nobody
+  sim.Emitted ring.Placed{Key "cart:9", Owner n3} by nobody
+  sim.Emitted ring.Placed{Key "order:12", Owner n2} by nobody
 @2s start n5
   sim.Ended empty
 final:

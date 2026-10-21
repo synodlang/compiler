@@ -38,7 +38,8 @@ func mathRemainder(h Host, c *ir.Call, args []value.Value) (value.Value, *value.
 	return value.Number(r), nil
 }
 
-// mathHash is FNV-1a 64 over the UTF-8 bytes, scaled to [0, 1) by keeping
+// mathHash is FNV-1a 64 over the UTF-8 bytes, mixed with the MurmurHash3
+// 64-bit finalizer so that similar texts spread, scaled to [0, 1) by keeping
 // the top 53 bits.
 func mathHash(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 	const (
@@ -51,5 +52,10 @@ func mathHash(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault
 		sum ^= uint64(s[i])
 		sum *= prime
 	}
+	sum ^= sum >> 33
+	sum *= 0xff51afd7ed558ccd
+	sum ^= sum >> 33
+	sum *= 0xc4ceb9fe1a85ec53
+	sum ^= sum >> 33
 	return value.Number(float64(sum>>11) / (1 << 53)), nil
 }
