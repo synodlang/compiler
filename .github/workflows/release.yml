@@ -85,6 +85,12 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Release notes
+        run: go run ./internal/release/cmd/notes -tag "${GITHUB_REF_NAME}" -changelog CHANGELOG.md > notes.md
       - uses: actions/download-artifact@v8
         with:
           path: dist
@@ -99,7 +105,7 @@ jobs:
           flags=()
           case "${GITHUB_REF_NAME}" in *-*) flags+=(--prerelease) ;; esac
           gh release create "${GITHUB_REF_NAME}" dist/* --repo "${GITHUB_REPOSITORY}" \
-            --title "${GITHUB_REF_NAME}" --generate-notes "${flags[@]}"
+            --title "${GITHUB_REF_NAME}" --notes-file notes.md "${flags[@]}"
 
   homebrew:
     needs: release

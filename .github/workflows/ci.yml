@@ -33,6 +33,15 @@ jobs:
       - run: go vet ./...
       - run: go test ./...
 
+  release-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: go test ./internal/release/...
+
   spec:
     runs-on: ubuntu-latest
     steps:
