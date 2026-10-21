@@ -1,0 +1,1 @@
+use-paren.synod:1:5: error[syntax]: missing import path after use

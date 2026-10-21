@@ -1,0 +1,1 @@
+use-empty-text.synod:1:4: error[syntax]: missing import path after use

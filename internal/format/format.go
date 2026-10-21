@@ -20,22 +20,6 @@ func Format(f *source.File) ([]byte, *source.Diagnostic) {
 	if d != nil {
 		return nil, d
 	}
-	if d := checkImports(f, tree); d != nil {
-		return nil, d
-	}
 	canonicalize(tree)
 	return emit(tree), nil
-}
-
-// checkImports rejects a use line without an import path. The lexer reads a
-// path only after whitespace, so "use(x)" parses, but its printed form
-// "use (x)" would not lex.
-func checkImports(f *source.File, t *parse.File) *source.Diagnostic {
-	for _, n := range t.Body {
-		if l, ok := isUse(n); ok && importPath(l) == "" {
-			d := source.New(f, l.Pos, source.Syntax, "missing import path after use", "")
-			return &d
-		}
-	}
-	return nil
 }

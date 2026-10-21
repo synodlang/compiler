@@ -207,6 +207,13 @@ func (p *parser) line(out []Node, depth int) []Node {
 	if sent == nil {
 		p.stray(p.tok())
 	}
+	if first.Kind == lex.WORD && first.Text == "use" {
+		// The lexer reads an import path only after whitespace, so
+		// "use(x)" lexes without one; its printed form would not lex.
+		if g := sent.Groups[0]; len(g) < 2 || !isPath(g[1]) {
+			p.fail(source.Pos{Line: first.Pos.Line, Col: first.Pos.Col + len(first.Text)}, "missing import path after use", "")
+		}
+	}
 	var trailing *Comment
 	if p.tok().Kind == lex.COMMENT {
 		trailing = p.comment()
@@ -524,4 +531,10 @@ func (p *parser) typ() Type {
 	}
 	bad()
 	return nil
+}
+
+// isPath reports whether it is an import path.
+func isPath(it Item) bool {
+	_, ok := it.(*Path)
+	return ok
 }
