@@ -101,14 +101,51 @@ func parseTokens(f *source.File, toks []lex.Token) (file *File, d *source.Diagno
 // tok returns the current token.
 func (p *parser) tok() *lex.Token { return &p.toks[p.i] }
 
-// fail stops the parse with a syntax error at pos.
-func (p *parser) fail(pos source.Pos, msg, hint string) {
-	d := source.New(p.f, pos, source.Syntax, msg, hint)
+// fail stops the parse with a syntax error whose primary span is sp.
+func (p *parser) fail(sp source.Span, msg, hint string, more ...source.Extra) {
+	d := source.NewSpan(p.f, sp, source.Syntax, msg, hint, more...)
 	panic(bailout{&d})
 }
 
-// failTok is fail at the position of t.
-func (p *parser) failTok(t *lex.Token, msg string) { p.fail(t.Pos, msg, "") }
+// tokSpan returns the span of the token t.
+func tokSpan(t *lex.Token) source.Span { return source.Span{Start: t.Pos, End: t.End()} }
+
+// failTok is fail at the span of t.
+func (p *parser) failTok(t *lex.Token, msg string) { p.fail(tokSpan(t), msg, "") }
+
+// lineEnd returns the end of the code on the line of the token at index i,
+// from the token at i on: the end of its last token before the comment or
+// the end of the line.
+func (p *parser) lineEnd(i int) source.Pos {
+	end := p.toks[i].End()
+	for j := i; j < len(p.toks); j++ {
+		switch p.toks[j].Kind {
+		case lex.NEWLINE, lex.EOF, lex.COMMENT, lex.INDENT, lex.DEDENT:
+			return end
+		}
+		end = p.toks[j].End()
+	}
+	return end
+}
+
+// holeEnd returns the end of the hole whose "[" is the token at index i: the
+// matching "]", or else the end of the line.
+func (p *parser) holeEnd(i int) source.Pos {
+	depth := 0
+	for j := i; j < len(p.toks); j++ {
+		switch p.toks[j].Kind {
+		case lex.LBRACKET:
+			depth++
+		case lex.RBRACKET:
+			if depth--; depth == 0 {
+				return p.toks[j].End()
+			}
+		case lex.NEWLINE, lex.EOF, lex.COMMENT:
+			return p.lineEnd(i)
+		}
+	}
+	return p.lineEnd(i)
+}
 
 // stray fails on a token that cannot continue a sentence.
 func (p *parser) stray(t *lex.Token) {
@@ -196,7 +233,7 @@ func (p *parser) line(out []Node, depth int) []Node {
 	blank := first.Blank
 	if first.Kind == lex.WORD {
 		if depth > 0 && first.Text == "use" {
-			p.failTok(first, "use appears only at the top level")
+			p.fail(source.Span{Start: first.Pos, End: p.lineEnd(p.i)}, "use appears only at the top level", "")
 		}
 		p.holesOK = first.Text == "define" || first.Text == "when"
 	} else {
@@ -211,7 +248,7 @@ func (p *parser) line(out []Node, depth int) []Node {
 		// The lexer reads an import path only after whitespace, so
 		// "use(x)" lexes without one; its printed form would not lex.
 		if g := sent.Groups[0]; len(g) < 2 || !isPath(g[1]) {
-			p.fail(source.Pos{Line: first.Pos.Line, Col: first.Pos.Col + len(first.Text)}, "missing import path after use", "")
+			p.fail(source.At(first.End()), "missing import path after use", "", source.WithLabel("path expected here"))
 		}
 	}
 	var trailing *Comment
@@ -235,8 +272,14 @@ func (p *parser) line(out []Node, depth int) []Node {
 				return out
 			}
 		}
-		p.fail(w.P, "a continuation line must follow a block",
-			`"else" goes directly after its if block, at the if's indentation`)
+		var more []source.Extra
+		if len(out) > 0 {
+			if prev, ok := out[len(out)-1].(*Line); ok {
+				more = append(more, source.Also(p.f.Path, LineSpan(prev), "this line has no block"))
+			}
+		}
+		p.fail(SpanOf(w), "a continuation line must follow a block",
+			`"else" goes directly after its if block, at the if's indentation`, more...)
 	}
 	ln := &Line{Pos: first.Pos, Sentence: sent, Comment: trailing}
 	ln.Block = p.block(depth)
@@ -310,7 +353,7 @@ func itemStart(k lex.Kind) bool {
 func (p *parser) sentence() *Sentence {
 	var groups [][]Item
 	var cur []Item
-	var commas []source.Pos
+	var commas []*lex.Token
 	for {
 		t := p.tok()
 		switch {
@@ -323,7 +366,7 @@ func (p *parser) sentence() *Sentence {
 			}
 			groups = append(groups, cur)
 			cur = nil
-			commas = append(commas, t.Pos)
+			commas = append(commas, t)
 			p.i++
 			continue
 		case t.Kind == lex.COLON:
@@ -333,7 +376,7 @@ func (p *parser) sentence() *Sentence {
 	}
 	if len(cur) == 0 {
 		if len(groups) > 0 {
-			p.fail(commas[len(commas)-1], "unexpected ','", "")
+			p.failTok(commas[len(commas)-1], "unexpected ','")
 		}
 		return nil
 	}
@@ -346,7 +389,7 @@ func (p *parser) sentence() *Sentence {
 // sentence: between the two names of "each", and between the settings of
 // "message T with" (spec/02 section 2.1). It reports the first comma
 // otherwise.
-func (p *parser) checkCommas(groups [][]Item, commas []source.Pos) {
+func (p *parser) checkCommas(groups [][]Item, commas []*lex.Token) {
 	if len(groups) < 2 {
 		return
 	}
@@ -359,14 +402,14 @@ func (p *parser) checkCommas(groups [][]Item, commas []source.Pos) {
 	if len(g) >= 4 && IsWord(g[0], "message") && IsWord(g[2], "with") {
 		return
 	}
-	p.fail(commas[0], "a comma stands only between list items, message settings and each names", "")
+	p.failTok(commas[0], "a comma stands only between list items, message settings and each names")
 }
 
 // enter increases the nesting depth, failing at t when it is too deep.
-func (p *parser) enter(pos source.Pos) {
+func (p *parser) enter(t *lex.Token) {
 	p.nest++
 	if p.nest > maxNest {
-		p.fail(pos, "nesting too deep", "")
+		p.failTok(t, "nesting too deep")
 	}
 }
 
@@ -406,46 +449,59 @@ func (p *parser) item() Item {
 // paren parses "(" sentence ")".
 func (p *parser) paren() Item {
 	open := p.tok()
-	p.enter(open.Pos)
+	oi := p.i
+	p.enter(open)
 	p.i++
 	s := p.sentence()
 	switch t := p.tok(); {
 	case t.Kind == lex.RPAREN:
 		if s == nil {
-			p.failTok(open, "empty parentheses")
+			p.fail(source.Span{Start: open.Pos, End: t.End()}, "empty parentheses", "")
 		}
 	case t.Kind == lex.RBRACE || t.Kind == lex.RBRACKET:
 		p.stray(t)
 	default:
-		p.failTok(open, `unclosed "("`)
+		p.unclosed(oi, `unclosed "("`)
 	}
+	end := p.tok().End()
 	p.i++
 	p.nest--
-	return &Paren{P: open.Pos, S: s}
+	return &Paren{P: open.Pos, E: end, S: s}
+}
+
+// unclosed fails with msg on the opening token at index oi: its span runs to
+// the end of the line.
+func (p *parser) unclosed(oi int, msg string) {
+	p.fail(source.Span{Start: p.toks[oi].Pos, End: p.lineEnd(oi)}, msg, "",
+		source.WithLabel("unclosed here"))
 }
 
 // list parses "{" [ item { "," item } ] "}".
 func (p *parser) list() Item {
 	open := p.tok()
-	p.enter(open.Pos)
+	oi := p.i
+	p.enter(open)
 	p.i++
 	l := &List{P: open.Pos}
 	if p.tok().Kind == lex.RBRACE {
+		l.E = p.tok().End()
 		p.i++
 		p.nest--
 		return l
 	}
 	for {
-		start := p.tok()
 		var els []Item
 		for itemStart(p.tok().Kind) {
 			els = append(els, p.item())
 		}
 		switch t := p.tok(); {
 		case len(els) == 0 && (t.Kind == lex.COMMA || t.Kind == lex.RBRACE):
-			p.fail(t.Pos, "missing list item", "write one item between commas, and no comma before }")
+			p.fail(tokSpan(t), "missing list item", "write one item between commas, and no comma before }")
 		case len(els) > 1:
-			p.fail(start.Pos, "a list item is one item", "parenthesize it")
+			run := SpanOfItems(els)
+			p.fail(run, "a list item is one item", "parenthesize it",
+				source.HelpEdit("parenthesize the item",
+					source.EditAt(source.At(run.Start), "("), source.EditAt(source.At(run.End), ")")))
 		case len(els) == 1:
 			l.Items = append(l.Items, els[0])
 		}
@@ -453,11 +509,12 @@ func (p *parser) list() Item {
 		case lex.COMMA:
 			p.i++
 		case lex.RBRACE:
+			l.E = t.End()
 			p.i++
 			p.nest--
 			return l
 		case lex.NEWLINE, lex.COMMENT, lex.EOF:
-			p.failTok(open, `unclosed "{"`)
+			p.unclosed(oi, `unclosed "{"`)
 		default:
 			p.stray(t)
 		}
@@ -467,10 +524,12 @@ func (p *parser) list() Item {
 // hole parses "[" word ":" type "]".
 func (p *parser) hole() Item {
 	open := p.tok()
+	oi := p.i
+	whole := func() source.Span { return source.Span{Start: open.Pos, End: p.holeEnd(oi)} }
 	if !p.holesOK {
-		p.fail(open.Pos, "holes appear only in define and when lines", "")
+		p.fail(whole(), "holes appear only in define and when lines", "")
 	}
-	bad := func() { p.fail(open.Pos, "a hole is [name: type]", "") }
+	bad := func() { p.fail(whole(), "a hole is [name: type]", "") }
 	p.i++
 	nt := p.tok()
 	if nt.Kind != lex.WORD {
@@ -488,15 +547,16 @@ func (p *parser) hole() Item {
 	if p.tok().Kind != lex.RBRACKET {
 		bad()
 	}
+	end := p.tok().End()
 	p.i++
-	return &Hole{P: open.Pos, Name: &Word{P: nt.Pos, Name: nt.Text}, Type: typ}
+	return &Hole{P: open.Pos, E: end, Name: &Word{P: nt.Pos, Name: nt.Text}, Type: typ}
 }
 
 // typ parses a hole type.
 func (p *parser) typ() Type {
 	t := p.tok()
 	bad := func() {
-		p.fail(t.Pos, "bad type", "write list of T / map of K to V")
+		p.fail(tokSpan(t), "bad type", "write list of T / map of K to V")
 	}
 	expect := func(word string) {
 		if n := p.tok(); n.Kind != lex.WORD || n.Text != word {
@@ -516,16 +576,18 @@ func (p *parser) typ() Type {
 		switch t.Text {
 		case "list":
 			expect("of")
-			p.enter(t.Pos)
+			p.enter(t)
 			defer func() { p.nest-- }()
-			return &ListType{P: t.Pos, Elem: p.typ()}
+			elem := p.typ()
+			return &ListType{P: t.Pos, E: elem.End(), Elem: elem}
 		case "map":
 			expect("of")
-			p.enter(t.Pos)
+			p.enter(t)
 			defer func() { p.nest-- }()
 			k := p.typ()
 			expect("to")
-			return &MapType{P: t.Pos, Key: k, Value: p.typ()}
+			v := p.typ()
+			return &MapType{P: t.Pos, E: v.End(), Key: k, Value: v}
 		}
 		return &NamedType{P: t.Pos, Name: t.Text}
 	}

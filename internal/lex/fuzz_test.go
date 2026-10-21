@@ -38,6 +38,9 @@ func FuzzLex(f *testing.F) {
 			if d.Line < 1 || d.Col < 1 || d.Code == "" || d.Message == "" {
 				t.Fatalf("malformed diagnostic %+v", *d)
 			}
+			if d.End.Line != d.Line || d.End.Col < d.Col {
+				t.Fatalf("diagnostic span ends before it starts: %+v", *d)
+			}
 			return
 		}
 		if len(toks) == 0 || toks[len(toks)-1].Kind != EOF {
@@ -67,6 +70,9 @@ func FuzzLex(f *testing.F) {
 					t.Fatalf("token %d (%s) offset %d does not advance past %d", i, tok.Kind, tok.Off, prevReal)
 				}
 				prevReal = tok.Off
+				if e := tok.End(); e.Line != tok.Pos.Line || e.Col <= tok.Pos.Col {
+					t.Fatalf("token %d (%s) ends at %v, starts at %v", i, tok.Kind, e, tok.Pos)
+				}
 				if tok.Text == "" || !strings.HasPrefix(string(src[tok.Off:]), tok.Text) {
 					t.Fatalf("token %d (%s) text %q is not the source at %d", i, tok.Kind, tok.Text, tok.Off)
 				}

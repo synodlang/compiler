@@ -51,6 +51,10 @@ type Graph struct {
 	Targets []*Package
 	// Modules holds the modules that were read, sorted by path and version.
 	Modules []*Module
+	// Extra holds the source files that belong to no package of the graph:
+	// the main files after the first one of a folder. Diagnostics point
+	// into them.
+	Extra []*File
 }
 
 // Package is one library package or one main file.
@@ -93,6 +97,13 @@ type Import struct {
 	PathPos source.Pos
 	// AliasPos is the position of the alias, or the zero Pos.
 	AliasPos source.Pos
+	// PathSpan is the source span of the path as written, version included.
+	PathSpan source.Span
+	// AliasSpan runs from the word "as" to the end of the alias, or is the
+	// zero Span if there is no alias.
+	AliasSpan source.Span
+	// LineSpan is the source span of the whole use line, without a comment.
+	LineSpan source.Span
 	// Pkg is the imported library package, or nil if the import failed.
 	Pkg *Package
 }
@@ -117,6 +128,7 @@ type folder struct {
 	lib, main *Package
 	libDiags  []source.Diagnostic // reported when lib joins the graph
 	mainDiags []source.Diagnostic
+	extra     []*File // main files after the first
 }
 
 type loader struct {
@@ -432,7 +444,7 @@ func headerDiag(t *parse.File, name string) *source.Diagnostic {
 	default:
 		return nil
 	}
-	d := source.New(t.Source, t.Header.Pos, source.BadHeader, msg, "")
+	d := source.NewSpan(t.Source, parse.CommentSpan(t.Header), source.BadHeader, msg, "")
 	return &d
 }
 
@@ -528,10 +540,11 @@ func (l *loader) folder(dir string, mod *Module, ipath, name string) *folder {
 	if len(mainFiles) > 0 {
 		first := mainFiles[0]
 		fo.main = &Package{Path: ipath + "#main", Name: "main", Dir: dir, Module: mod, IsMain: true, IsStd: mod.Std, Files: []*File{first}}
+		fo.extra = mainFiles[1:]
 		for _, extra := range mainFiles[1:] {
-			pos := extra.Tree.Header.Pos
-			fo.mainDiags = append(fo.mainDiags, source.New(extra.Src, pos, source.ExtraMain,
-				"a second main file in "+l.dirShown(dir, mod)+"; the first is "+first.Src.Path, ""))
+			fo.mainDiags = append(fo.mainDiags, source.NewSpan(extra.Src, parse.CommentSpan(extra.Tree.Header), source.ExtraMain,
+				"a second main file in "+l.dirShown(dir, mod)+"; the first is "+first.Src.Path, "",
+				source.Also(first.Src.Path, parse.CommentSpan(first.Tree.Header), "first main file")))
 		}
 	}
 	for _, p := range []*Package{fo.lib, fo.main} {
@@ -570,13 +583,15 @@ func importsOf(p *Package) []*Import {
 			if !ok {
 				continue
 			}
-			imp := &Import{File: f, Line: ln, Raw: pa.Text, Path: pa.Text, PathPos: pa.P}
+			imp := &Import{File: f, Line: ln, Raw: pa.Text, Path: pa.Text, PathPos: pa.P,
+				PathSpan: parse.SpanOf(pa), LineSpan: parse.LineSpan(ln)}
 			if i := strings.LastIndexByte(pa.Text, '@'); i >= 0 {
 				imp.Path, imp.Version = pa.Text[:i], pa.Text[i+1:]
 			}
 			if len(g) >= 4 && parse.IsWord(g[2], "as") {
 				if w, ok := g[3].(*parse.Word); ok {
 					imp.Alias, imp.AliasPos = w.Name, w.P
+					imp.AliasSpan = source.Span{Start: g[2].Pos(), End: w.End()}
 				}
 			}
 			out = append(out, imp)
@@ -615,9 +630,13 @@ func hasPathPrefix(p, prefix string) bool {
 // resolve finds the library package that imp names, or reports why not.
 func (l *loader) resolve(from *Package, imp *Import) *Package {
 	p := imp.Path
-	fail := func(msg, hint string) *Package {
-		l.diag(imp.File.Src, imp.PathPos, source.UnknownImport, msg, hint)
+	fail := func(msg, hint string, more ...source.Extra) *Package {
+		l.diags = append(l.diags, source.NewSpan(imp.File.Src, imp.PathSpan, source.UnknownImport, msg, hint, more...))
 		return nil
+	}
+	// write is the help that replaces the path with the spelling to.
+	write := func(to string) source.Extra {
+		return source.HelpEdit(`write "use `+to+`"`, source.EditAt(imp.PathSpan, to))
 	}
 	if last := lastSegment(p); !isWord(last) {
 		return fail(`the last segment of "`+imp.Raw+`" is not a word`, "")
@@ -625,10 +644,11 @@ func (l *loader) resolve(from *Package, imp *Import) *Package {
 	if p == "std" || strings.HasPrefix(p, "std/") {
 		rest := strings.TrimPrefix(strings.TrimPrefix(p, "std"), "/")
 		if imp.Version != "" {
-			return fail(`"`+imp.Raw+`" takes no version: std is versioned with the language`, `write "use `+p+`"`)
+			return fail(`"`+imp.Raw+`" takes no version: std is versioned with the language`, `write "use `+p+`"`, write(p))
 		}
 		if rest == "" {
-			return fail(`no library package at "std"`, `write "use std/<package>"`)
+			return fail(`no library package at "std"`, `write "use std/<package>"`,
+				source.HelpText(`write "use std/<package>"`))
 		}
 		if fo := l.folder("$std/"+rest, l.stdMod, p, lastSegment(p)); fo != nil && fo.lib != nil {
 			return fo.lib
@@ -637,10 +657,12 @@ func (l *loader) resolve(from *Package, imp *Import) *Package {
 	}
 	if hasPathPrefix(p, StdModule) {
 		hint := ""
+		var more []source.Extra
 		if rest := strings.TrimPrefix(strings.TrimPrefix(p, StdModule), "/"); rest != "" {
 			hint = `write "use std/` + rest + `"`
+			more = append(more, write("std/"+rest))
 		}
-		return fail(`"`+imp.Raw+`" cannot be imported by the std module path`, hint)
+		return fail(`"`+imp.Raw+`" cannot be imported by the std module path`, hint, more...)
 	}
 
 	mod, rel, ok := l.moduleOf(from, p)
@@ -648,25 +670,29 @@ func (l *loader) resolve(from *Package, imp *Import) *Package {
 		hint := `add "require <module> <version>" to synod.mod`
 		if from.Module.Path == "" && !from.IsStd {
 			hint = "no synod.mod found above " + l.dirShown(from.Dir, from.Module)
+			return fail(`no module provides "`+imp.Raw+`"`, hint,
+				source.HelpText("add a synod.mod with a module directive above the folder"))
 		}
-		return fail(`no module provides "`+imp.Raw+`"`, hint)
+		return fail(`no module provides "`+imp.Raw+`"`, hint, source.HelpText(hint))
 	}
 	if mod.Version == "" && imp.Version != "" {
-		return fail(`"`+imp.Raw+`" is a local package and takes no version`, `write "use `+p+`"`)
+		return fail(`"`+imp.Raw+`" is a local package and takes no version`, `write "use `+p+`"`, write(p))
 	}
 	if mod.Version != "" && imp.Version != "" && imp.Version != mod.Version {
 		return fail(`"`+p+`" asks for `+imp.Version+` but synod.mod selects `+mod.Version, "")
 	}
 	if mod.Dir == "" {
 		return fail(`module "`+mod.Path+"@"+mod.Version+`" is not in vendor/`,
-			`run "synod get `+mod.Path+"@"+mod.Version+`"`)
+			`run "synod get `+mod.Path+"@"+mod.Version+`"`,
+			source.HelpText(`run "synod get `+mod.Path+"@"+mod.Version+`"`))
 	}
 	dir := mod.Dir
 	if rel != "" {
 		for _, seg := range strings.Split(rel, "/") {
 			dir = join(dir, seg)
 			if _, err := l.fsys.ReadFile(join(dir, "synod.mod")); err == nil {
-				return fail(`"`+imp.Raw+`" lies in a nested module`, "import it by the path of its own module")
+				return fail(`"`+imp.Raw+`" lies in a nested module`, "import it by the path of its own module",
+					source.HelpText("import it by the path of its own module"))
 			}
 		}
 	}
@@ -743,6 +769,7 @@ func (l *loader) order(g *Graph) {
 		}
 		if p.IsMain {
 			l.diags = append(l.diags, fo.mainDiags...)
+			g.Extra = append(g.Extra, fo.extra...)
 		} else {
 			l.diags = append(l.diags, fo.libDiags...)
 		}
@@ -833,14 +860,35 @@ func (l *loader) reportCycle(cyc []*Package, reported map[string]bool) {
 			names = append(names, lastSegment(p.Path))
 		}
 	}
-	next := cyc[0]
-	if len(cyc) > 1 {
-		next = cyc[1]
+	// edge finds the import of from that names to.
+	edge := func(from, to *Package) *Import {
+		for _, imp := range from.Imports {
+			if imp.Pkg == to {
+				return imp
+			}
+		}
+		return nil
 	}
-	for _, imp := range cyc[0].Imports {
-		if imp.Pkg == next {
-			l.diag(imp.File.Src, imp.PathPos, source.ImportCycle, "import cycle: "+strings.Join(names, " → "), "")
-			return
+	first := edge(cyc[0], cyc[nextIndex(len(cyc))])
+	if first == nil {
+		return
+	}
+	var more []source.Extra
+	for i := 1; i < len(cyc); i++ {
+		to := cyc[(i+1)%len(cyc)]
+		if imp := edge(cyc[i], to); imp != nil {
+			more = append(more, source.Also(imp.File.Src.Path, imp.PathSpan, names[i]+" imports "+names[i+1]+" here"))
 		}
 	}
+	l.diags = append(l.diags, source.NewSpan(first.File.Src, first.PathSpan, source.ImportCycle,
+		"import cycle: "+strings.Join(names, " → "), "", more...))
+}
+
+// nextIndex returns the index of the package that the first package of a
+// cycle of n packages imports.
+func nextIndex(n int) int {
+	if n > 1 {
+		return 1
+	}
+	return 0
 }

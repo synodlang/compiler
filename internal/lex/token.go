@@ -5,7 +5,11 @@
 // and stops at the first error.
 package lex
 
-import "github.com/synodlang/compiler/internal/source"
+import (
+	"unicode/utf8"
+
+	"github.com/synodlang/compiler/internal/source"
+)
 
 // Kind is the kind of a token.
 type Kind uint8
@@ -77,4 +81,11 @@ type Token struct {
 	Blank bool
 	// Own is set on a COMMENT that stands alone on its line.
 	Own bool
+}
+
+// End returns the position just after the token (exclusive, in code points).
+// Tokens lie on one line. A token without text (NEWLINE, INDENT, DEDENT,
+// EOF) ends where it starts.
+func (t Token) End() source.Pos {
+	return source.Pos{Line: t.Pos.Line, Col: t.Pos.Col + utf8.RuneCountInString(t.Text)}
 }

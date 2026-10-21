@@ -19,9 +19,9 @@ var punct = map[byte]Kind{
 	'[': LBRACKET, ']': RBRACKET, ':': COLON, ',': COMMA,
 }
 
-// syntax builds a syntax diagnostic at off.
-func (l *lexer) syntax(off int, msg, hint string) *source.Diagnostic {
-	return l.fail(off, source.Syntax, msg, hint)
+// syntax builds a syntax diagnostic whose primary span is src[start:end].
+func (l *lexer) syntax(start, end int, msg, hint string, more ...source.Extra) *source.Diagnostic {
+	return l.failRange(start, end, source.Syntax, msg, hint, more...)
 }
 
 // atom emits an atom token for src[start:end], refusing it when it touches
@@ -30,8 +30,10 @@ func (l *lexer) atom(k Kind, start, end int) *source.Diagnostic {
 	if n := len(l.toks); n > 0 {
 		prev := l.toks[n-1]
 		if prev.Kind.isAtom() && prev.Off+len(prev.Text) == start {
-			return l.syntax(start, "missing space between "+strconv.Quote(prev.Text)+
-				" and "+strconv.Quote(string(l.src[start:end])), "")
+			return l.syntax(start, end, "missing space between "+strconv.Quote(prev.Text)+
+				" and "+strconv.Quote(string(l.src[start:end])), "",
+				source.WithLabel("add a space before this"),
+				source.HelpEdit("put a space between them", source.EditAt(source.At(l.f.PosOf(start)), " ")))
 		}
 	}
 	l.emit(k, start, end)
@@ -48,7 +50,7 @@ func (l *lexer) scan(i, end int) *source.Diagnostic {
 		case c == ' ':
 			i++
 		case c == '\t':
-			return l.syntax(i, "tabs are not allowed", "")
+			return l.syntax(i, i+1, "tabs are not allowed", "")
 		case c == '#':
 			i, d = l.hash(i, end)
 		case isLetter(c):
@@ -65,15 +67,17 @@ func (l *lexer) scan(i, end int) *source.Diagnostic {
 					j++
 				}
 				txt := string(l.src[i:j])
-				return l.syntax(i, strconv.Quote(txt)+" is not a number", "write 0"+txt)
+				return l.syntax(i, j, strconv.Quote(txt)+" is not a number", "write 0"+txt,
+					source.HelpEdit("write 0"+txt, source.EditAt(source.At(l.f.PosOf(i)), "0")))
 			}
 			return l.unexpected(i, end)
 		case c == '+':
-			return l.syntax(i, `"+" is not allowed`, "add with plus; numbers have no leading +")
+			return l.syntax(i, i+1, `"+" is not allowed`, "add with plus; numbers have no leading +",
+				source.HelpText(`write numbers without a leading "+"; add with "plus"`))
 		case c == '"':
 			i, d = l.text(i, end)
 		case c == '_':
-			return l.syntax(i, "names have no underscores", "")
+			return l.syntax(i, i+1, "names have no underscores", "")
 		default:
 			k, ok := punct[c]
 			if !ok {
@@ -89,10 +93,16 @@ func (l *lexer) scan(i, end int) *source.Diagnostic {
 	return nil
 }
 
+// unterminated reports the text literal that starts at the quote at start
+// and runs to end, the end of the line.
+func (l *lexer) unterminated(start, end int) *source.Diagnostic {
+	return l.syntax(start, end, "unterminated text", "", source.WithLabel("text starts here"))
+}
+
 // unexpected reports the character at i.
 func (l *lexer) unexpected(i, end int) *source.Diagnostic {
-	r, _ := utf8.DecodeRune(l.src[i:end])
-	return l.syntax(i, "unexpected character "+strconv.Quote(string(r)), "")
+	r, n := utf8.DecodeRune(l.src[i:end])
+	return l.syntax(i, i+n, "unexpected character "+strconv.Quote(string(r)), "")
 }
 
 // hash lexes a trailing comment or a color literal starting at i.
@@ -110,8 +120,14 @@ func (l *lexer) hash(i, end int) (int, *source.Diagnostic) {
 			return i + 7, l.atom(COLOR, i, i+7)
 		}
 	}
-	return i, l.syntax(i, "# starts a comment only when followed by a space",
-		`write "# text"; a color is # and six hex digits`)
+	j := i + 1
+	for j < end && l.src[j] != ' ' {
+		j++
+	}
+	return i, l.syntax(i, j, "# starts a comment only when followed by a space",
+		`write "# text"; a color is # and six hex digits`,
+		source.HelpEdit(`put a space after "#" to write a comment`, source.EditAt(source.At(l.f.PosOf(i+1)), " ")),
+		source.Note("a color is # and six hex digits"))
 }
 
 // word lexes a word or a member starting at i.
@@ -137,13 +153,14 @@ func (l *lexer) word(i, end int) (int, *source.Diagnostic) {
 				j++
 			}
 			num := string(l.src[i+1 : j])
-			return i, l.syntax(start, strconv.Quote(member+"."+num)+" is not a member",
-				"write item "+num+" of "+member)
+			return i, l.syntax(start, j, strconv.Quote(member+"."+num)+" is not a member",
+				"write item "+num+" of "+member,
+				source.HelpText("write item "+num+" of "+member))
 		}
-		return i, l.syntax(start, "bad member", "")
+		return i, l.syntax(start, i+1, "bad member", "")
 	}
 	if i < end && l.src[i] == '_' {
-		return i, l.syntax(i, "names have no underscores", "")
+		return i, l.syntax(i, i+1, "names have no underscores", "")
 	}
 	return i, l.atom(kind, start, i)
 }
@@ -154,7 +171,8 @@ func (l *lexer) number(i, end int) (int, *source.Diagnostic) {
 	if l.src[i] == '-' {
 		i++
 		if i >= end || !isDigit(l.src[i]) {
-			return start, l.syntax(start, `"-" must be followed by a digit`, "subtract with minus")
+			return start, l.syntax(start, start+1, `"-" must be followed by a digit`, "subtract with minus",
+				source.HelpText(`write "minus" to subtract`))
 		}
 	}
 	for i < end && isDigit(l.src[i]) {
@@ -174,7 +192,11 @@ func (l *lexer) number(i, end int) (int, *source.Diagnostic) {
 		kind, i = DURATION, i+1
 	}
 	if i < end && (isAlnum(l.src[i]) || l.src[i] == '.' || l.src[i] == '_') {
-		return start, l.syntax(start, "bad number", "")
+		j := i
+		for j < end && (isAlnum(l.src[j]) || l.src[j] == '.' || l.src[j] == '_') {
+			j++
+		}
+		return start, l.syntax(start, j, "bad number", "")
 	}
 	return i, l.atom(kind, start, i)
 }
@@ -184,21 +206,23 @@ func (l *lexer) text(i, end int) (int, *source.Diagnostic) {
 	start := i
 	for j := i + 1; ; {
 		if j >= end {
-			return start, l.syntax(start, "unterminated text", "")
+			return start, l.unterminated(start, end)
 		}
 		switch c := l.src[j]; {
 		case c == '"':
 			return j + 1, l.atom(TEXT, start, j+1)
 		case c == '\\':
 			if j+1 >= end {
-				return start, l.syntax(start, "unterminated text", "")
+				return start, l.unterminated(start, end)
 			}
 			if e := l.src[j+1]; e != '"' && e != '\\' && e != 'n' {
-				return j, l.syntax(j, "unknown escape", `escapes are \" \\ \n`)
+				_, n := utf8.DecodeRune(l.src[j+1 : end])
+				return j, l.syntax(j, j+1+n, "unknown escape", `escapes are \" \\ \n`,
+					source.HelpText(`write one of \" \\ \n`))
 			}
 			j += 2
 		case c < 0x20 || c == 0x7f:
-			return j, l.syntax(j, "control character in text", "")
+			return j, l.syntax(j, j+1, "control character in text", "")
 		default:
 			j++
 		}
@@ -213,7 +237,7 @@ func (l *lexer) path(i, end int) (int, *source.Diagnostic) {
 		j++
 	}
 	if j < end && l.src[j] == '\t' {
-		return j, l.syntax(j, "tabs are not allowed", "")
+		return j, l.syntax(j, j+1, "tabs are not allowed", "")
 	}
 	if j == i && i < end {
 		return i, nil // not separated from "use"; the main loop reports it
@@ -223,10 +247,10 @@ func (l *lexer) path(i, end int) (int, *source.Diagnostic) {
 		k++
 	}
 	if k == j {
-		return j, l.syntax(j, "missing import path after use", "")
+		return j, l.syntax(j, j, "missing import path after use", "", source.WithLabel("path expected here"))
 	}
 	if !validPath(string(l.src[j:k])) {
-		return j, l.syntax(j, "bad import path", "")
+		return j, l.syntax(j, k, "bad import path", "")
 	}
 	return k, l.atom(PATH, j, k)
 }

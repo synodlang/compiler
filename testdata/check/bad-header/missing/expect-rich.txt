@@ -3,4 +3,7 @@ p/p.synod:1:1: error[bad-header]: missing "# package" header
 1 | define One
   | ^
   |
-  = help: the first line is "# package <folder>"
+help: add the header "# package p" as the first line
+  |
+1 + # package p
+  |

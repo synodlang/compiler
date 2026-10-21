@@ -67,6 +67,9 @@ func Check(opts Options, targets []string) Result {
 			}
 		}
 	}
+	for _, f := range g.Extra {
+		res.Sources[f.Src.Path] = f.Src
+	}
 	for _, m := range g.Modules {
 		if m.Src != nil {
 			res.Sources[m.Src.Path] = m.Src

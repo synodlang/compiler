@@ -30,7 +30,12 @@
 // form one Line.
 package parse
 
-import "github.com/synodlang/compiler/internal/source"
+import (
+	"strings"
+	"unicode/utf8"
+
+	"github.com/synodlang/compiler/internal/source"
+)
 
 // File is a parsed source file.
 type File struct {
@@ -101,6 +106,9 @@ type Sentence struct {
 // Item is one element of a sentence: the unit an inline hole receives.
 type Item interface {
 	Pos() source.Pos
+	// End returns the position just after the item as written (exclusive,
+	// in code points). It is on the line of Pos.
+	End() source.Pos
 	item()
 }
 
@@ -149,18 +157,21 @@ type Path struct {
 // Paren is a parenthesized sentence.
 type Paren struct {
 	P source.Pos
+	E source.Pos // just after the closing parenthesis
 	S *Sentence
 }
 
 // List is a list literal "{a, b}".
 type List struct {
 	P     source.Pos
+	E     source.Pos // just after the closing brace
 	Items []Item
 }
 
 // Hole is a typed hole "[name: type]".
 type Hole struct {
 	P    source.Pos
+	E    source.Pos // just after the closing bracket
 	Name *Word
 	Type Type
 }
@@ -168,6 +179,8 @@ type Hole struct {
 // Type is the type of a hole.
 type Type interface {
 	Pos() source.Pos
+	// End returns the position just after the type as written.
+	End() source.Pos
 	typ()
 }
 
@@ -180,12 +193,14 @@ type NamedType struct {
 // ListType is "list of T".
 type ListType struct {
 	P    source.Pos
+	E    source.Pos // the end of Elem
 	Elem Type
 }
 
 // MapType is "map of K to V".
 type MapType struct {
 	P          source.Pos
+	E          source.Pos // the end of Value
 	Key, Value Type
 }
 
@@ -215,6 +230,29 @@ func (i *Paren) Pos() source.Pos    { return i.P }
 func (i *List) Pos() source.Pos     { return i.P }
 func (i *Hole) Pos() source.Pos     { return i.P }
 
+// width returns the number of code points of s.
+func width(s string) int { return utf8.RuneCountInString(s) }
+
+// after returns the position n code points to the right of p.
+func after(p source.Pos, n int) source.Pos { return source.Pos{Line: p.Line, Col: p.Col + n} }
+
+// End returns the position just after the item as written.
+func (i *Word) End() source.Pos     { return after(i.P, width(i.Name)) }
+func (i *Member) End() source.Pos   { return after(i.P, width(strings.Join(i.Parts, "."))) }
+func (i *Number) End() source.Pos   { return after(i.P, width(i.Text)) }
+func (i *Duration) End() source.Pos { return after(i.P, width(i.Text)) }
+func (i *Text) End() source.Pos     { return after(i.P, width(i.Raw)) }
+func (i *Color) End() source.Pos    { return after(i.P, width(i.Text)) }
+func (i *Path) End() source.Pos     { return after(i.P, width(i.Text)) }
+func (i *Paren) End() source.Pos    { return i.E }
+func (i *List) End() source.Pos     { return i.E }
+func (i *Hole) End() source.Pos     { return i.E }
+
+// End returns the position just after the type as written.
+func (t *NamedType) End() source.Pos { return after(t.P, width(t.Name)) }
+func (t *ListType) End() source.Pos  { return t.E }
+func (t *MapType) End() source.Pos   { return t.E }
+
 func (*NamedType) typ() {}
 func (*ListType) typ()  {}
 func (*MapType) typ()   {}
@@ -229,3 +267,53 @@ func IsWord(it Item, name string) bool {
 	w, ok := it.(*Word)
 	return ok && w.Name == name
 }
+
+// SpanOf returns the source span of it.
+func SpanOf(it Item) source.Span { return source.Span{Start: it.Pos(), End: it.End()} }
+
+// SpanOfItems returns the span from the start of the first item to the end
+// of the last. It is empty at the zero position for no items.
+func SpanOfItems(items []Item) source.Span {
+	if len(items) == 0 {
+		return source.Span{}
+	}
+	return source.Span{Start: items[0].Pos(), End: items[len(items)-1].End()}
+}
+
+// SentenceSpan returns the span from the first item of s to its last,
+// commas included.
+func SentenceSpan(s *Sentence) source.Span {
+	if s == nil || len(s.Groups) == 0 {
+		return source.Span{}
+	}
+	return source.Span{
+		Start: s.Groups[0][0].Pos(),
+		End:   s.Groups[len(s.Groups)-1][len(s.Groups[len(s.Groups)-1])-1].End(),
+	}
+}
+
+// LineSpan returns the span of the sentence of l, without its comment.
+func LineSpan(l *Line) source.Span { return SentenceSpan(l.Sentence) }
+
+// PartSpan returns the span of part i of the member m.
+func PartSpan(m *Member, i int) source.Span {
+	col := m.P.Col
+	for _, p := range m.Parts[:i] {
+		col += width(p) + 1
+	}
+	start := source.Pos{Line: m.P.Line, Col: col}
+	return source.Span{Start: start, End: after(start, width(m.Parts[i]))}
+}
+
+// CommentSpan returns the span of the comment c as it is written: "#" and,
+// unless the comment is bare, a space and its text.
+func CommentSpan(c *Comment) source.Span {
+	n := 1
+	if c.Text != "" {
+		n += 1 + width(c.Text)
+	}
+	return source.Span{Start: c.Pos, End: after(c.Pos, n)}
+}
+
+// TypeSpan returns the source span of t.
+func TypeSpan(t Type) source.Span { return source.Span{Start: t.Pos(), End: t.End()} }

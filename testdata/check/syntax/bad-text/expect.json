@@ -1,1 +1,1 @@
-{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":4,"col":12,"end":{"line":4,"col":12},"severity":"error","code":"syntax","message":"unterminated text"}]}
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":4,"col":12,"end":{"line":4,"col":25},"severity":"error","code":"syntax","message":"unterminated text","label":"text starts here"}]}

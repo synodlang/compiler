@@ -1,6 +1,6 @@
 p/p.synod:4:1: error[indent]: tabs are not allowed
   |
 4 |     set a to 1
-  | ^
+  | ^^^^
   |
   = help: indent with 2 spaces per level

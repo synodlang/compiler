@@ -1,1 +1,1 @@
-{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":4,"col":4,"end":{"line":4,"col":4},"severity":"error","code":"indent","message":"indentation is not a multiple of 2 spaces"}]}
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":4,"col":4,"end":{"line":4,"col":7},"severity":"error","code":"indent","message":"indentation is not a multiple of 2 spaces","label":"indented 3 spaces","notes":["indentation steps are 2 spaces"]}]}

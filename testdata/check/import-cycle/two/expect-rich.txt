@@ -1,4 +1,9 @@
 a/a.synod:2:5: error[import-cycle]: import cycle: a → b → a
   |
 2 | use example.com/t/b
-  |     ^
+  |     ^^^^^^^^^^^^^^^
+  |
+ ::: b/b.synod:2:5
+  |
+2 | use example.com/t/a
+  |     --------------- b imports a here

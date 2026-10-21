@@ -1,9 +1,16 @@
 Q/Q.synod:1:1: error[bad-header]: package name "Q" must be a lower-case word
   |
 1 | # package Q
-  | ^
+  | ^^^^^^^^^^^
 
 p/p.synod:1:1: error[bad-header]: package "other" must be the folder name "p" or main
   |
 1 | # package other
-  | ^
+  | ^^^^^^^^^^^^^^^
+  |
+  = note: a main file writes "main"
+help: write the folder name "p"
+  |
+1 | # package p
+  |           ~
+  |

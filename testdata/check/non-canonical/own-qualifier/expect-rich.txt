@@ -1,20 +1,32 @@
 a/a.synod:6:9: error[non-canonical]: line is not canonical
   |
 6 |   set n.a.Role to "x"
-  |         ^
+  |         ^^
   |
-  = help: write "  set n.Role to "x""
+help: write the canonical line (synod fmt does this)
+  |
+6 -   set n.a.Role to "x"
+6 +   set n.Role to "x"
+  |
 
 b/b.synod:6:10: error[non-canonical]: line is not canonical
   |
 6 |   result b.One
-  |          ^
+  |          ^^
   |
-  = help: write "  result One"
+help: write the canonical line (synod fmt does this)
+  |
+6 -   result b.One
+6 +   result One
+  |
 
 c/c.synod:6:19: error[non-canonical]: line is not canonical
   |
 6 |   result (message c.Rec with a 1)
-  |                   ^
+  |                   ^^
   |
-  = help: write "  result (message Rec with a 1)"
+help: write the canonical line (synod fmt does this)
+  |
+6 -   result (message c.Rec with a 1)
+6 +   result (message Rec with a 1)
+  |

@@ -1,4 +1,6 @@
 p/p.synod:4:4: error[indent]: indentation is not a multiple of 2 spaces
   |
 4 |    set a to 1
-  |    ^
+  |    ^^^ indented 3 spaces
+  |
+  = note: indentation steps are 2 spaces

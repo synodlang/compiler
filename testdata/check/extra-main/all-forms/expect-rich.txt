@@ -9,3 +9,11 @@ p/p.synod:2:1: error[extra-main]: "define main" stands only in a main file
   | ^
 
 p/second.synod:1:1: error[extra-main]: a second main file in p; the first is p/main.synod
+  |
+1 | # package main
+  | ^^^^^^^^^^^^^^
+  |
+ ::: p/main.synod:1:1
+  |
+1 | # package main
+  | -------------- first main file

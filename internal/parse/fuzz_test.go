@@ -22,9 +22,21 @@ func FuzzParse(f *testing.F) {
 			if d.Line < 1 || d.Col < 1 || d.Message == "" {
 				t.Fatalf("malformed diagnostic %+v", *d)
 			}
+			if d.End.Line != d.Line || d.End.Col < d.Col {
+				t.Fatalf("diagnostic span ends before it starts: %+v", *d)
+			}
 			return
 		}
 		checkInvariants(t, src, file)
+		walkItems(file, func(it Item) {
+			if e := it.End(); e.Line != it.Pos().Line || e.Col < it.Pos().Col {
+				t.Fatalf("%T at %v ends at %v", it, it.Pos(), e)
+			}
+		}, func(ty Type) {
+			if e := ty.End(); e.Line != ty.Pos().Line || e.Col < ty.Pos().Col {
+				t.Fatalf("%T at %v ends at %v", ty, ty.Pos(), e)
+			}
+		})
 		_ = Dump(file)
 		HeaderDiagnostic(file, "x")
 	})

@@ -31,20 +31,34 @@ func packageName(text string) string {
 // be "# package <word>" with the word equal to folder or to "main". It
 // returns nil if the header is fine.
 func HeaderDiagnostic(f *File, folder string) *source.Diagnostic {
-	fail := func(p source.Pos, msg, hint string) *source.Diagnostic {
-		d := source.New(f.Source, p, source.BadHeader, msg, hint)
+	fail := func(sp source.Span, msg, hint string, more ...source.Extra) *source.Diagnostic {
+		d := source.NewSpan(f.Source, sp, source.BadHeader, msg, hint, more...)
 		return &d
 	}
+	want := headerPrefixMark + folder
 	switch {
 	case f.Header == nil:
-		return fail(source.Pos{Line: 1, Col: 1}, `missing "# package" header`,
-			`the first line is "# package <folder>"`)
+		top := source.At(source.Pos{Line: 1, Col: 1})
+		return fail(top, `missing "# package" header`,
+			`the first line is "# package <folder>"`,
+			source.HelpEdit(`add the header "`+want+`" as the first line`, source.EditAt(top, want+"\n")))
 	case f.Package == "":
-		return fail(f.Header.Pos, `bad package header "# `+f.Header.Text+`"`,
-			`write "# package <name>"`)
+		sp := CommentSpan(f.Header)
+		return fail(sp, `bad package header "# `+f.Header.Text+`"`,
+			`write "# package <name>"`,
+			source.HelpEdit(`write "`+want+`"`, source.EditAt(sp, want)))
 	case f.Package != folder && f.Package != "main":
-		return fail(f.Header.Pos,
-			`package "`+f.Package+`" must be the folder name "`+folder+`" or main`, "")
+		// The span is the whole header, so that the position stays at its
+		// start; the edit changes the name.
+		nameAt := source.Pos{Line: f.Header.Pos.Line, Col: f.Header.Pos.Col + width(headerPrefixMark)}
+		name := source.Span{Start: nameAt, End: after(nameAt, width(f.Package))}
+		return fail(CommentSpan(f.Header),
+			`package "`+f.Package+`" must be the folder name "`+folder+`" or main`, "",
+			source.HelpEdit(`write the folder name "`+folder+`"`, source.EditAt(name, folder)),
+			source.Note(`a main file writes "main"`))
 	}
 	return nil
 }
+
+// headerPrefixMark is the header as written up to the name.
+const headerPrefixMark = "# " + headerPrefix

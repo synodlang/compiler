@@ -2,6 +2,7 @@ package lex
 
 import (
 	"bytes"
+	"strconv"
 	"unicode/utf8"
 
 	"github.com/synodlang/compiler/internal/source"
@@ -51,10 +52,21 @@ func Lex(f *source.File) ([]Token, *source.Diagnostic) {
 	return l.toks, nil
 }
 
-// fail builds a diagnostic at byte offset off.
-func (l *lexer) fail(off int, code source.Code, msg, hint string) *source.Diagnostic {
-	d := source.New(l.f, l.f.PosOf(off), code, msg, hint)
+// fail builds a diagnostic whose primary span is empty, at byte offset off.
+func (l *lexer) fail(off int, code source.Code, msg, hint string, more ...source.Extra) *source.Diagnostic {
+	return l.failRange(off, off, code, msg, hint, more...)
+}
+
+// failRange builds a diagnostic whose primary span is the bytes
+// src[start:end]. Both offsets are mapped with PosOf.
+func (l *lexer) failRange(start, end int, code source.Code, msg, hint string, more ...source.Extra) *source.Diagnostic {
+	d := source.NewSpan(l.f, l.span(start, end), code, msg, hint, more...)
 	return &d
+}
+
+// span returns the span of the bytes src[start:end].
+func (l *lexer) span(start, end int) source.Span {
+	return source.Span{Start: l.f.PosOf(start), End: l.f.PosOf(end)}
 }
 
 // emit appends a token for src[start:end]. Structural kinds carry no text.
@@ -78,9 +90,9 @@ func (l *lexer) line(start, end, term int) *source.Diagnostic {
 		r, n := utf8.DecodeRune(l.src[i:end])
 		switch {
 		case r == utf8.RuneError && n == 1:
-			return l.fail(i, source.Syntax, "invalid UTF-8", "")
+			return l.failRange(i, i+1, source.Syntax, "invalid UTF-8", "")
 		case r == '\r':
-			return l.fail(i, source.Syntax, "carriage return without line feed", "")
+			return l.failRange(i, i+1, source.Syntax, "carriage return without line feed", "")
 		}
 		i += n
 	}
@@ -90,7 +102,12 @@ func (l *lexer) line(start, end, term int) *source.Diagnostic {
 		i++
 	}
 	if i < end && l.src[i] == '\t' {
-		return l.fail(i, source.Indent, "tabs are not allowed", "indent with 2 spaces per level")
+		j := i
+		for j < end && (l.src[j] == ' ' || l.src[j] == '\t') {
+			j++
+		}
+		return l.failRange(i, j, source.Indent, "tabs are not allowed", "indent with 2 spaces per level",
+			source.HelpText("indent with 2 spaces per level"))
 	}
 	if i == end {
 		l.blank = true
@@ -104,7 +121,7 @@ func (l *lexer) line(start, end, term int) *source.Diagnostic {
 		return nil
 	}
 
-	if d := l.indent(start, i-start); d != nil {
+	if d := l.indent(start, i-start, end); d != nil {
 		return d
 	}
 	l.code = true
@@ -123,18 +140,35 @@ func (l *lexer) comment(i, end int) *Token {
 	return l.emit(COMMENT, i, end)
 }
 
-// indent handles the indentation width of a code line starting at lineStart.
-func (l *lexer) indent(lineStart, width int) *source.Diagnostic {
+// indent handles the indentation width of a code line that starts at
+// lineStart and ends at end. The primary span of its errors is the first
+// word of the line, which is where the position of the error lies.
+func (l *lexer) indent(lineStart, width, end int) *source.Diagnostic {
 	at := lineStart + width
+	word := func() int {
+		j := at
+		for j < end && l.src[j] != ' ' {
+			j++
+		}
+		return j
+	}
 	if width%2 != 0 {
-		return l.fail(at, source.Indent, "indentation is not a multiple of 2 spaces", "")
+		return l.failRange(at, word(), source.Indent, "indentation is not a multiple of 2 spaces", "",
+			source.WithLabel("indented "+strconv.Itoa(width)+" spaces"),
+			source.Note("indentation steps are 2 spaces"))
 	}
 	top := l.stack[len(l.stack)-1]
 	switch {
 	case width > top:
 		if width != top+2 || !l.code {
-			return l.fail(at, source.Indent, "unexpected indent",
-				"a block is indented 2 spaces more than its statement")
+			label := "indented " + strconv.Itoa(width) + " spaces, at most " + strconv.Itoa(top+2) + " allowed"
+			if !l.code {
+				label = "the first line starts at the left edge"
+			}
+			return l.failRange(at, word(), source.Indent, "unexpected indent",
+				"a block is indented 2 spaces more than its statement",
+				source.WithLabel(label),
+				source.HelpText("indent a block 2 spaces more than its statement"))
 		}
 		l.stack = append(l.stack, width)
 		l.emit(INDENT, lineStart, lineStart)

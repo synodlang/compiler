@@ -1,1 +1,1 @@
-{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"a/a.synod","line":2,"col":5,"end":{"line":2,"col":5},"severity":"error","code":"import-cycle","message":"import cycle: a → b → a"}]}
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"a/a.synod","line":2,"col":5,"end":{"line":2,"col":20},"severity":"error","code":"import-cycle","message":"import cycle: a → b → a","labels":[{"file":"b/b.synod","line":2,"col":5,"end":{"line":2,"col":20},"text":"b imports a here"}]}]}
