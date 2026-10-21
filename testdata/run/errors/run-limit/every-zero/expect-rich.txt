@@ -4,4 +4,4 @@ failed at 0s: std/time/every.synod:4:3: error[run-limit]: more than 100000 steps
   |   ^^^^^^^
   |
   = note: at most 100000 steps run at one instant of simulated time
-scene 0.03s, 1 shapes -> out/scene.json
+scene 0.03s, 1 shape -> out/scene.json

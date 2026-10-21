@@ -1,5 +1,5 @@
 run example.com/t/p seed 5
-end: empty at 22.315ms, 1 nodes, 4 steps, 7 events
+end: empty at 22.315ms, 1 node, 4 steps, 7 events
 always:
   holds          p/p.synod:18: always (1 is 1)
 steps:

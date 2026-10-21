@@ -37,8 +37,8 @@ func WriteSummary(w io.Writer, in SummaryInput, o Options) error {
 		reason = "failed"
 	}
 	b.WriteString("end: " + reason + " at " + value.FormatTime(in.End) + ", " +
-		strconv.Itoa(len(in.Final)) + " nodes, " + strconv.Itoa(len(in.Steps)) + " steps, " +
-		strconv.Itoa(len(in.Facts)) + " events\n")
+		Count(len(in.Final), "node") + ", " + Count(len(in.Steps), "step") + ", " +
+		Count(len(in.Facts), "event") + "\n")
 
 	if len(in.Invariants) > 0 {
 		b.WriteString("always:\n")
@@ -293,4 +293,13 @@ func FailedLine(f *value.Fault, end int64, o Options) string {
 		pos = o.pos(f.Pos) + ": "
 	}
 	return "failed at " + value.FormatTime(end) + ": " + pos + "error[" + string(f.Code) + "]: " + f.Message
+}
+
+// Count is n followed by the word, with an "s" unless n is 1: "1 node",
+// "2 nodes".
+func Count(n int, word string) string {
+	if n == 1 {
+		return "1 " + word
+	}
+	return strconv.Itoa(n) + " " + word + "s"
 }

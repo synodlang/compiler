@@ -1,5 +1,5 @@
 run github.com/synodlang/examples/wal seed 1
-end: stop at 5s, 1 nodes, 29 steps, 81 events
+end: stop at 5s, 1 node, 29 steps, 81 events
 steps:
 @0s main
   sim.Started

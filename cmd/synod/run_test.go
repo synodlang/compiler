@@ -63,7 +63,7 @@ func TestRunOK(t *testing.T) {
 	if code != 0 || stderr != "" {
 		t.Fatalf("exit %d, stderr %q, stdout %q", code, stderr, stdout)
 	}
-	want := "ok seed 5: empty at 22.315ms, 1 nodes, 7 events -> " + out + "\n"
+	want := "ok seed 5: empty at 22.315ms, 1 node, 7 events -> " + out + "\n"
 	if i := strings.Index(stdout, "scene "); i < 0 || !strings.HasSuffix(stdout, " -> "+sc+"\n") {
 		t.Errorf("no scene line in %q", stdout)
 	} else {
@@ -199,7 +199,7 @@ func TestRunDefaultTracePath(t *testing.T) {
 	}
 	lines := strings.Split(strings.TrimSuffix(stdout, "\n"), "\n")
 	if len(lines) != 2 || !strings.HasSuffix(lines[0], " events -> out/trace.jsonl") ||
-		!regexp.MustCompile(`^scene [0-9.]+s, \d+ shapes -> out/scene\.json$`).MatchString(lines[1]) {
+		!regexp.MustCompile(`^scene [0-9.]+s, \d+ shapes? -> out/scene\.json$`).MatchString(lines[1]) {
 		t.Errorf("stdout %q", stdout)
 	}
 	if sc := read(t, filepath.Join(dir, "out", "scene.json")); !strings.HasPrefix(sc, `{"format":"synod-scene/1",`) {

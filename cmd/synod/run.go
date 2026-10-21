@@ -294,7 +294,7 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 		if dest == "-" {
 			dest = "stdout"
 		}
-		fmt.Fprintf(status, "scene %s, %d shapes -> %s\n", formatSceneLength(sc.Duration), len(sc.Shapes), dest)
+		fmt.Fprintf(status, "scene %s, %s -> %s\n", formatSceneLength(sc.Duration), trace.Count(len(sc.Shapes), "shape"), dest)
 	}
 	if r.Failed != nil {
 		return exitDiags
@@ -361,8 +361,8 @@ func writeStatus(w io.Writer, ra runArgs, r *sim.Result, o trace.Options, known 
 	if dest == "-" {
 		dest = "stdout"
 	}
-	fmt.Fprintf(w, "ok seed %d: %s at %s, %d nodes, %d events -> %s\n",
-		r.Header.Seed, r.EndReason, value.FormatTime(r.End), len(r.Final), len(r.Facts), dest)
+	fmt.Fprintf(w, "ok seed %d: %s at %s, %s, %s -> %s\n",
+		r.Header.Seed, r.EndReason, value.FormatTime(r.End), trace.Count(len(r.Final), "node"), trace.Count(len(r.Facts), "event"), dest)
 	for _, inv := range r.Invariants {
 		if inv.Breaks == 0 {
 			continue
