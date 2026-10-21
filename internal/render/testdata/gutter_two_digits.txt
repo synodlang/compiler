@@ -1,0 +1,7 @@
+p/p.synod:9:1: error[syntax]: boom
+   |
+ 9 | line
+   | ^^^^ here
+10 | line x
+11 | line xx
+   | -- and here

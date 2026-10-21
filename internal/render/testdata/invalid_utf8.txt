@@ -1,0 +1,4 @@
+p/p.synod:1:4: error[syntax]: invalid
+  |
+1 | ab�cd�
+  |    ^^ after

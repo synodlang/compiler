@@ -106,7 +106,7 @@ func Load(cfg Config, targets []string) (*Graph, []source.Diagnostic) {
 	source.Sort(l.diags)
 	out := l.diags[:0]
 	for i, d := range l.diags {
-		if i == 0 || d != l.diags[i-1] {
+		if i == 0 || d.Key() != l.diags[i-1].Key() {
 			out = append(out, d)
 		}
 	}

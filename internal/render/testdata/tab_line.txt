@@ -1,0 +1,4 @@
+p/p.synod:2:5: error[syntax]: tab
+  |
+2 |     if x y
+  |        ^^^ these

@@ -116,7 +116,7 @@ func tidy(ds []source.Diagnostic) []source.Diagnostic {
 	out := ds[:0]
 	nc := map[string]bool{}
 	for i, d := range ds {
-		if i > 0 && d == ds[i-1] {
+		if i > 0 && d.Key() == ds[i-1].Key() {
 			continue
 		}
 		if d.Code == source.NonCanonical {

@@ -13,7 +13,10 @@ const bom = "\xef\xbb\xbf"
 
 // Pos is a position in a source file. Line and Col are 1-based and Col
 // counts code points, not bytes.
-type Pos struct{ Line, Col int }
+type Pos struct {
+	Line int `json:"line"`
+	Col  int `json:"col"`
+}
 
 // File is a source file together with an index of its line starts.
 type File struct {
@@ -62,3 +65,27 @@ func (f *File) PosOf(off int) Pos {
 // LineCount returns the number of lines, counting a final line that has no
 // terminating newline and counting the empty line after a final newline.
 func (f *File) LineCount() int { return len(f.lines) }
+
+// Line returns the text of line n (1-based) without its line terminator: no
+// "\n", no trailing "\r" and, on line 1, no BOM. It returns "" when n is out
+// of range.
+func (f *File) Line(n int) string {
+	if n < 1 || n > len(f.lines) {
+		return ""
+	}
+	start := f.lines[n-1]
+	if n == 1 {
+		start = f.skip
+	}
+	end := len(f.Src)
+	if n < len(f.lines) {
+		end = f.lines[n] - 1
+	}
+	if end > start && f.Src[end-1] == '\r' {
+		end--
+	}
+	if end < start {
+		end = start
+	}
+	return string(f.Src[start:end])
+}

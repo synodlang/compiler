@@ -1,0 +1,13 @@
+p/p.synod:5:8: error[unknown-phrase]: unknown name
+  |
+5 |     if n.Role is "leader"
+  |        ^^^^^^
+  |
+  = help: past the end
+  = help: overlapping
+  = help: spans lines
+help: ok
+  |
+5 |     if Rule is "leader"
+  |        ~~~~
+  |

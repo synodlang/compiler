@@ -1,0 +1,4 @@
+p/p.synod:1:3: error[bad-header]: bad header
+  |
+1 | # package p
+  |   ^^^^^^^ this word

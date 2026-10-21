@@ -1,0 +1,4 @@
+p/p.synod:1:7: error[syntax]: mark
+  |
+1 | café au lait
+  |      ^^ au

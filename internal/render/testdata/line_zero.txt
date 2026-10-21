@@ -1,0 +1,2 @@
+p/p.synod:0:0: error[missing-main]: no main
+  = help: add main

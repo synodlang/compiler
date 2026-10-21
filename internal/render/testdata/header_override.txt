@@ -1,0 +1,4 @@
+failed at 0s: p/p.synod:5:8: error[division-by-zero]: division by zero
+  |
+5 |     if n.Role is "leader"
+  |        ^^^^^^ here

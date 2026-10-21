@@ -1,0 +1,2 @@
+p/p.synod:99:1: error[syntax]: far
+  = note: n

@@ -211,8 +211,8 @@ func TestCheckJSONAndText(t *testing.T) {
 
 	code, out, _ := exec("check", "--json", dir)
 	want := `{"format":"synod-check/1","ok":false,"diagnostics":[` +
-		`{"file":"` + pa + `","line":3,"col":15,"severity":"error","code":"non-canonical","message":"trailing spaces"},` +
-		`{"file":"` + pb + `","line":3,"col":1,"severity":"error","code":"indent","message":"tabs are not allowed","hint":"indent with 2 spaces per level"}]}` + "\n"
+		`{"file":"` + pa + `","line":3,"col":15,"end":{"line":3,"col":15},"severity":"error","code":"non-canonical","message":"trailing spaces"},` +
+		`{"file":"` + pb + `","line":3,"col":1,"end":{"line":3,"col":1},"severity":"error","code":"indent","message":"tabs are not allowed","hint":"indent with 2 spaces per level"}]}` + "\n"
 	if code != 1 || out != want {
 		t.Fatalf("code=%d\ngot  %q\nwant %q", code, out, want)
 	}

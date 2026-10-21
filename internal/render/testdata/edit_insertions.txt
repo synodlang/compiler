@@ -1,0 +1,11 @@
+p/p.synod:5:5: error[unknown-phrase]: no phrase matches "if n.Role is "leader""
+  |
+5 |     if n.Role is "leader"
+  |     ^^^^^^^^^^^^^^^^^^^^^ no phrase takes these items
+  |        ------------------ 3 items here; "if" takes one condition
+  |
+help: parenthesize the condition
+  |
+5 |     if (n.Role is "leader")
+  |        +                  +
+  |

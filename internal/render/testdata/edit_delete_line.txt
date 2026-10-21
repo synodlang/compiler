@@ -1,0 +1,9 @@
+p/p.synod:2:1: error[non-canonical]: unexpected blank line
+  |
+2 |
+  | ^
+  |
+help: remove it
+  |
+2 -
+  |

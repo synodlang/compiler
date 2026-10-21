@@ -1,0 +1,10 @@
+p/p.synod:5:5: error[non-canonical]: line is not canonical
+  |
+5 |     if n.Role is "leader"
+  |     ^^^^^^^^^^^^^^^^^^^^^
+  |
+help: write the canonical line
+  |
+5 -     if n.Role is "leader"
+5 +     if (n.Role is "leader")
+  |

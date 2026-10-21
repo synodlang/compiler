@@ -1,0 +1,6 @@
+p/p.synod:1:13: error[syntax]: wide
+  |
+1 | say "日本語" 🙂 done
+  |      ------     ^^^^ done
+  |      |
+  |      cjk

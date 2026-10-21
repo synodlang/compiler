@@ -1,0 +1,4 @@
+p/p.synod:3:8: error[syntax]: unclosed
+  |
+3 | define main
+  |        ^^^^ opens here…

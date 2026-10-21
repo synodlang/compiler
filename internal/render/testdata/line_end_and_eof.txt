@@ -1,0 +1,4 @@
+p/p.synod:2:4: error[syntax]: missing newline at end of file
+  |
+2 | def
+  |    ^ line ends here

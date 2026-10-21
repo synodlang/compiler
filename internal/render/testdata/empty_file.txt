@@ -1,0 +1,4 @@
+p/p.synod:1:1: error[bad-header]: missing header
+  |
+1 |
+  | ^

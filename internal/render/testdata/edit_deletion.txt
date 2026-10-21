@@ -1,0 +1,10 @@
+p/p.synod:6:7: error[syntax]: oops
+  |
+6 |       send hello
+  |       ^^^^
+  |
+help: remove the word
+  |
+6 -       send hello
+6 +       send
+  |

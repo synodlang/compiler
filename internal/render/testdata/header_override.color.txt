@@ -1,0 +1,4 @@
+failed at 0s: p/p.synod:5:8: [1;31merror[division-by-zero][0m: [1mdivision by zero[0m
+ [1;34m |[0m
+[1;34m5 |[0m     if n.Role is "leader"
+ [1;34m |[0m        [1;31m^^^^^^[0m [1;31mhere[0m

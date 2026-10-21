@@ -1,0 +1,9 @@
+p/p.synod:5:5: error[syntax]: one
+  |
+5 |     if n.Role is "leader"
+  |     ^^ a
+
+p/p.synod:3:1: error[syntax]: two
+  |
+3 | define main
+  | ^^^^^^

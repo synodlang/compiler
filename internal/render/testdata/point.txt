@@ -1,0 +1,4 @@
+p/p.synod:5:8: error[syntax]: unexpected character
+  |
+5 |     if n.Role is "leader"
+  |        ^

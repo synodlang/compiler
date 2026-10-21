@@ -1,0 +1,11 @@
+p/p.synod:5:8: [1;31merror[duplicate-name][0m: [1malready defined[0m
+ [1;34m |[0m
+[1;34m5 |[0m     if n.Role is "leader"
+ [1;34m |[0m        [1;31m^^^^^^[0m [1;31msecond[0m
+ [1;34m |[0m
+ [1;34m::: q/q.synod:2:8[0m
+ [1;34m |[0m
+[1;34m2 |[0m define Foo
+ [1;34m |[0m        [1;34m---[0m [1;34mfirst defined here[0m
+ [1;34m |[0m
+  [1m= note:[0m names are per package

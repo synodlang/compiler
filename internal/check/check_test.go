@@ -1,6 +1,7 @@
 package check_test
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -125,7 +126,7 @@ define [n: Node] Go [t: text]
 		t.Fatalf("diagnostics: %d and %d", len(a.Diags), len(b.Diags))
 	}
 	for i := range a.Diags {
-		if a.Diags[i] != b.Diags[i] {
+		if !reflect.DeepEqual(a.Diags[i], b.Diags[i]) {
 			t.Errorf("differs at %d", i)
 		}
 	}

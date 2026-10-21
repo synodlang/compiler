@@ -1,0 +1,11 @@
+p/p.synod:5:5: [1;31merror[unknown-phrase][0m: [1mno phrase matches "if n.Role is "leader""[0m
+ [1;34m |[0m
+[1;34m5 |[0m     if n.Role is "leader"
+ [1;34m |[0m     [1;31m^^^^^^^^^^^^^^^^^^^^^[0m [1;31mno phrase takes these items[0m
+ [1;34m |[0m        [1;34m------------------[0m [1;34m3 items here; "if" takes one condition[0m
+ [1;34m |[0m
+[1;36mhelp:[0m parenthesize the condition
+ [1;34m |[0m
+[1;34m5 |[0m     if [32m([0mn.Role is "leader"[32m)[0m
+ [1;34m |[0m        [32m+[0m                  [32m+[0m
+ [1;34m |[0m

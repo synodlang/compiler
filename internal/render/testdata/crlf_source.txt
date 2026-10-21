@@ -1,0 +1,4 @@
+p/p.synod:2:5: error[syntax]: crlf
+  |
+2 | foo bar
+  |     ^^^ bar

@@ -1,0 +1,6 @@
+p/p.synod:1:1: error[syntax]: ctl
+  |
+1 | a�b�c�d�e�f
+  | ^^^^^^^^^^^ bad�[31m label�
+  |
+  = note: note � here

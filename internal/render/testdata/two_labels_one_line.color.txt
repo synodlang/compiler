@@ -1,0 +1,7 @@
+p/p.synod:5:5: [1;31merror[unknown-phrase][0m: [1mno phrase matches[0m
+ [1;34m |[0m
+[1;34m5 |[0m     if n.Role is "leader"
+ [1;34m |[0m     [1;31m^^[0m [1;34m------[0m    [1;34m--------[0m [1;34mright operand[0m
+ [1;34m |[0m     [1;31m|[0m  [1;34m|[0m
+ [1;34m |[0m     [1;31m|[0m  [1;34mleft operand[0m
+ [1;34m |[0m     [1;31mthe head[0m

@@ -1,0 +1,11 @@
+p/p.synod:5:8: error[duplicate-name]: already defined
+  |
+5 |     if n.Role is "leader"
+  |        ^^^^^^ second
+  |
+ ::: q/q.synod:2:8
+  |
+2 | define Foo
+  |        --- first defined here
+  |
+  = note: names are per package

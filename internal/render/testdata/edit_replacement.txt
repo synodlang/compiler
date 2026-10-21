@@ -1,0 +1,10 @@
+p/p.synod:5:8: error[unknown-phrase]: unknown name
+  |
+5 |     if n.Role is "leader"
+  |        ^^^^^^
+  |
+help: did you mean "Rule"?
+  |
+5 |     if Rule is "leader"
+  |        ~~~~
+  |

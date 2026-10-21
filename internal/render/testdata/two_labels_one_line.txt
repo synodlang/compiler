@@ -1,0 +1,7 @@
+p/p.synod:5:5: error[unknown-phrase]: no phrase matches
+  |
+5 |     if n.Role is "leader"
+  |     ^^ ------    -------- right operand
+  |     |  |
+  |     |  left operand
+  |     the head

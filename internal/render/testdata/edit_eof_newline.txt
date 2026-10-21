@@ -1,0 +1,10 @@
+p/p.synod:2:4: error[non-canonical]: missing newline at end of file
+  |
+2 | def
+  |    ^
+  |
+help: end the file with a newline
+  |
+2 | def
+  |    +
+  |
