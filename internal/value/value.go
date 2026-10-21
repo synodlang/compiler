@@ -32,11 +32,14 @@ const (
 	KPackage // Ref is *ir.Package
 	KField   // Ref is *ir.Field
 	KBlock   // Ref is *Closure
+	KShape   // Int is the shape index (look interpreter)
+	KColor   // Str is the color name (look interpreter)
 )
 
 // Value is one Synod value. Which fields are used depends on K:
 // text uses Str; number uses Num (never -0); time uses Int (microseconds);
 // node uses Int (the node id, 0 is sim.Nobody); bool uses Int (0 or 1);
+// shape uses Int (its index); color uses Str (its name);
 // list, map, record, package, field and block use Ref (*List, *Map,
 // *Record, *ir.Package, *ir.Field, *Closure). Values are compared with
 // Equal, never with ==.
@@ -156,6 +159,12 @@ func PackageOf(p *ir.Package) Value { return Value{K: KPackage, Ref: p} }
 // FieldOf returns a field value.
 func FieldOf(f *ir.Field) Value { return Value{K: KField, Ref: f} }
 
+// Shape returns the shape value with the given index.
+func Shape(i int) Value { return Value{K: KShape, Int: int64(i)} }
+
+// Color returns the color value with the given name.
+func Color(name string) Value { return Value{K: KColor, Str: name} }
+
 // BlockOf returns a block value.
 func BlockOf(c *Closure) Value { return Value{K: KBlock, Ref: c} }
 
@@ -258,8 +267,10 @@ func Compare(a, b Value) int {
 			return 1
 		}
 		return 0
-	case KBool, KTime, KNode:
+	case KBool, KTime, KNode, KShape:
 		return cmpInt(a.Int, b.Int)
+	case KColor:
+		return cmpStr(a.Str, b.Str)
 	case KList:
 		x, y := a.List().Items, b.List().Items
 		for i := 0; i < len(x) && i < len(y); i++ {

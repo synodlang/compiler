@@ -39,6 +39,9 @@ type Config struct {
 	// to the working directory), else the path as it is. Std files are
 	// always shown as "std/<package>/<file>".
 	Display func(path string) string
+	// ExtraStd lists std import paths ("std/look/basic") that are always
+	// loaded, with their dependencies, though they are not targets.
+	ExtraStd []string
 }
 
 // Graph is the result of Load.
@@ -145,6 +148,8 @@ type loader struct {
 	folders  map[string]*folder
 	pkgs     map[string]*Package // by Path
 	linked   map[*Package]bool
+	extraStd []string
+	extra    []*Package // loaded ExtraStd packages
 	diags    []source.Diagnostic
 }
 
@@ -153,6 +158,7 @@ func newLoader(cfg Config) *loader {
 		fsys:     cfg.FS,
 		std:      cfg.Std,
 		over:     cfg.Modules,
+		extraStd: cfg.ExtraStd,
 		display:  cfg.Display,
 		mods:     map[string]*Module{},
 		selected: map[string]string{},
@@ -275,6 +281,15 @@ func (l *loader) run(args []string) *Graph {
 				g.Targets = append(g.Targets, p)
 				l.link(p)
 			}
+		}
+	}
+	for _, p := range l.extraStd {
+		rest := strings.TrimPrefix(strings.TrimPrefix(p, "std"), "/")
+		if fo := l.folder("$std/"+rest, l.stdMod, p, lastSegment(p)); fo != nil && fo.lib != nil {
+			l.link(fo.lib)
+			l.extra = append(l.extra, fo.lib)
+		} else {
+			l.plain(p, source.UnknownImport, `no std package "`+rest+`"`, "")
 		}
 	}
 	l.order(g)
@@ -761,6 +776,9 @@ func (l *loader) order(g *Graph) {
 	}
 	for _, t := range g.Targets {
 		visit(t)
+	}
+	for _, p := range l.extra {
+		visit(p)
 	}
 	for _, p := range g.Packages {
 		fo := l.folders[p.Dir]

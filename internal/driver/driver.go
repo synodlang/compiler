@@ -13,6 +13,9 @@ import (
 	"github.com/synodlang/compiler/internal/stdlib"
 )
 
+// DefaultLookPath is the std package loaded by Options.DefaultLook.
+const DefaultLookPath = "std/look/basic"
+
 // Options configures Check.
 type Options struct {
 	// Load tells the loader where to read from. A nil Std is replaced by the
@@ -20,6 +23,11 @@ type Options struct {
 	Load load.Config
 	// Tokens asks for the token lists of the files (Result.Tokens).
 	Tokens bool
+	// DefaultLook also loads std/look/basic, the look used by programs that
+	// do not use std/look: Programs then has an entry for it, lowered
+	// together with the targets so that it shares their packages and
+	// records. The trace header is unchanged.
+	DefaultLook bool
 }
 
 // Result is the outcome of Check.
@@ -57,6 +65,9 @@ func Check(opts Options, targets []string) Result {
 	cfg := opts.Load
 	if cfg.Std == nil {
 		cfg.Std = stdlib.Root()
+	}
+	if opts.DefaultLook {
+		cfg.ExtraStd = append(append([]string(nil), cfg.ExtraStd...), DefaultLookPath)
 	}
 	g, diags := load.Load(cfg, targets)
 	res := Result{Graph: g, ByPath: map[string]*resolve.Package{}, Fixes: map[string][]format.Fix{}, Sources: map[string]*source.File{}}
@@ -103,7 +114,7 @@ func Check(opts Options, targets []string) Result {
 			}
 		}
 	}
-	diags = append(diags, runCheck(&res, diags)...)
+	diags = append(diags, runCheck(&res, diags, opts)...)
 	res.Diags = tidy(diags)
 	return res
 }
@@ -112,7 +123,7 @@ func Check(opts Options, targets []string) Result {
 // checks contexts across the whole graph, and lowers the program to the IR
 // when nothing has been reported. prior are the diagnostics of the earlier
 // stages.
-func runCheck(res *Result, prior []source.Diagnostic) []source.Diagnostic {
+func runCheck(res *Result, prior []source.Diagnostic, opts Options) []source.Diagnostic {
 	var out []source.Diagnostic
 	res.Infos = map[string]*check.Info{}
 	for _, rp := range res.Packages {
@@ -123,7 +134,11 @@ func runCheck(res *Result, prior []source.Diagnostic) []source.Diagnostic {
 	}
 	out = append(out, check.Contexts(res.Packages, res.Infos)...)
 	if len(prior) == 0 && len(out) == 0 {
-		res.Programs = check.Lower(res.Packages, res.Infos)
+		if opts.DefaultLook {
+			res.Programs = check.LowerStd(res.Packages, res.Infos, DefaultLookPath)
+		} else {
+			res.Programs = check.Lower(res.Packages, res.Infos)
+		}
 	}
 	return out
 }

@@ -1,6 +1,7 @@
 package check
 
 import (
+	"slices"
 	"sort"
 
 	"github.com/synodlang/compiler/internal/ir"
@@ -17,6 +18,14 @@ import (
 // appended): a library gets a program without Main, which the simulator can
 // use to run its observers.
 func Lower(all []*resolve.Package, infos map[string]*Info) map[string]*ir.Program {
+	return LowerStd(all, infos)
+}
+
+// LowerStd is Lower that also returns a program for each of the std import
+// paths in std (for instance "std/look/basic") that is among all. Every
+// program comes from the same lowering, so they share their *ir.Package,
+// *ir.Record and *ir.Field values.
+func LowerStd(all []*resolve.Package, infos map[string]*Info, std ...string) map[string]*ir.Program {
 	l := &lowerer{
 		infos: infos,
 		pk:    map[*resolve.Package]*ir.Package{},
@@ -39,7 +48,7 @@ func Lower(all []*resolve.Package, infos map[string]*Info) map[string]*ir.Progra
 	}
 	out := map[string]*ir.Program{}
 	for _, rp := range all {
-		if rp.IsStd {
+		if rp.IsStd && !slices.Contains(std, rp.Path) {
 			continue
 		}
 		out[rp.Path] = l.program(rp)

@@ -2,7 +2,6 @@ package sim
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/synodlang/compiler/internal/ir"
 	"github.com/synodlang/compiler/internal/source"
@@ -27,53 +26,7 @@ type ex struct {
 }
 
 func fault(code source.Code, p ir.Pos, format string, a ...any) *value.Fault {
-	return &value.Fault{Code: code, Message: fmt.Sprintf(format, a...), Pos: p, HasPos: true}
-}
-
-// mapSize is the note that tells how many keys a map has.
-func mapSize(n int) string {
-	switch n {
-	case 0:
-		return "the map is empty"
-	case 1:
-		return "the map has 1 key"
-	}
-	return fmt.Sprintf("the map has %d keys", n)
-}
-
-// indexFault adds the labels of an index out of range: the index at p, and
-// the valid indexes of a list of n items.
-func indexFault(f *value.Fault, p ir.Pos, k value.Value, n int) *value.Fault {
-	f.WithAlso(p, "index "+value.FormatNumber(k.Num))
-	switch n {
-	case 0:
-		return f.WithNote("the list is empty")
-	case 1:
-		return f.WithNote("the only valid index is 0")
-	}
-	return f.WithNote(fmt.Sprintf("valid indexes are 0 to %d", n-1))
-}
-
-func plural(n int) string {
-	if n == 1 {
-		return "1 item"
-	}
-	return fmt.Sprintf("%d items", n)
-}
-
-func numResult(f float64, p ir.Pos) (value.Value, *value.Fault) {
-	if math.IsInf(f, 0) || math.IsNaN(f) {
-		return value.Value{}, fault(source.NumberRange, p, "the result is too large for a number").WithLabel("too large")
-	}
-	return value.Number(f), nil
-}
-
-func timeResult(f float64, p ir.Pos) (value.Value, *value.Fault) {
-	f = math.Floor(f)
-	if !(f >= -9.223372036854775808e18 && f < 9.223372036854775808e18) {
-		return value.Value{}, fault(source.NumberRange, p, "the result is too large for a number").WithLabel("too large")
-	}
-	return value.Time(int64(f)), nil
+	return value.NewFault(code, p, format, a...)
 }
 
 func (s *sim) eval(e *ex, x ir.Expr) (value.Value, *value.Fault) {
@@ -151,22 +104,7 @@ func (s *sim) eval(e *ex, x ir.Expr) (value.Value, *value.Fault) {
 		if f != nil {
 			return k, f
 		}
-		if x.IsMap {
-			v, ok := c.Map().Get(k)
-			if !ok {
-				return v, fault(source.MissingKey, x.Pos(), "key %s is not in the map", value.Format(k, value.FormatOpts{})).
-					WithAlso(x.Key.Pos(), "not in the map").
-					WithNote(mapSize(c.Map().Len()))
-			}
-			return v, nil
-		}
-		items := c.List().Items
-		i, ok := index(k, len(items))
-		if !ok {
-			return k, indexFault(fault(source.IndexRange, x.Pos(), "index %s is out of range for a list of %s", value.FormatNumber(k.Num), plural(len(items))),
-				x.Key.Pos(), k, len(items))
-		}
-		return items[i], nil
+		return value.ItemOf(c, k, x.IsMap, x.Pos(), x.Key.Pos())
 	case *ir.Arith:
 		return s.arith(e, x)
 	case *ir.Compare:
@@ -240,14 +178,6 @@ func (s *sim) eval(e *ex, x ir.Expr) (value.Value, *value.Fault) {
 	panic(fmt.Sprintf("sim: expression %T is not available in a simulation", x))
 }
 
-// index reports k as an index into n items.
-func index(k value.Value, n int) (int, bool) {
-	if k.Num != math.Floor(k.Num) || k.Num < 0 || k.Num >= float64(n) {
-		return 0, false
-	}
-	return int(k.Num), true
-}
-
 func (s *sim) arith(e *ex, x *ir.Arith) (value.Value, *value.Fault) {
 	a, f := s.eval(e, x.A)
 	if f != nil {
@@ -257,53 +187,5 @@ func (s *sim) arith(e *ex, x *ir.Arith) (value.Value, *value.Fault) {
 	if f != nil {
 		return b, f
 	}
-	p := x.Pos()
-	switch {
-	case a.K == value.KNumber && b.K == value.KNumber:
-		switch x.Op {
-		case ir.Plus:
-			return numResult(a.Num+b.Num, p)
-		case ir.Minus:
-			return numResult(a.Num-b.Num, p)
-		case ir.Times:
-			return numResult(a.Num*b.Num, p)
-		}
-		if b.Num == 0 {
-			return value.Value{}, fault(source.DivisionByZero, p, "division by zero").WithAlso(x.B.Pos(), "this is 0")
-		}
-		return numResult(a.Num/b.Num, p)
-	case a.K == value.KTime && b.K == value.KTime:
-		switch x.Op {
-		case ir.Plus:
-			r := a.Int + b.Int
-			if (a.Int > 0 && b.Int > 0 && r < 0) || (a.Int < 0 && b.Int < 0 && r >= 0) {
-				return value.Value{}, fault(source.NumberRange, p, "the result is too large for a number").WithLabel("too large")
-			}
-			return value.Time(r), nil
-		case ir.Minus:
-			r := a.Int - b.Int
-			if (a.Int >= 0 && b.Int < 0 && r < 0) || (a.Int < 0 && b.Int > 0 && r >= 0) {
-				return value.Value{}, fault(source.NumberRange, p, "the result is too large for a number").WithLabel("too large")
-			}
-			return value.Time(r), nil
-		case ir.Divide:
-			if b.Int == 0 {
-				return value.Value{}, fault(source.DivisionByZero, p, "division by zero").WithAlso(x.B.Pos(), "this is 0s")
-			}
-			return numResult(float64(a.Int)/float64(b.Int), p)
-		}
-	case a.K == value.KTime && b.K == value.KNumber:
-		switch x.Op {
-		case ir.Times:
-			return timeResult(float64(float64(a.Int)*b.Num), p)
-		case ir.Divide:
-			if b.Num == 0 {
-				return value.Value{}, fault(source.DivisionByZero, p, "division by zero").WithAlso(x.B.Pos(), "this is 0")
-			}
-			return timeResult(float64(float64(a.Int)/b.Num), p)
-		}
-	case a.K == value.KNumber && b.K == value.KTime && x.Op == ir.Times:
-		return timeResult(float64(a.Num*float64(b.Int)), p)
-	}
-	panic("sim: ill-typed arithmetic")
+	return value.Arith(x.Op, a, b, x.Pos(), x.B.Pos())
 }

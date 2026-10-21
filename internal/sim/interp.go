@@ -201,19 +201,9 @@ func (s *sim) setItem(e *ex, st *ir.SetItem) *value.Fault {
 	} else {
 		cur = e.fr[st.Base.(*ir.VarPlace).Var.Slot]
 	}
-	var nv value.Value
-	if st.IsMap {
-		nv = value.MapValue(cur.Map().With(k, x))
-	} else {
-		items := cur.List().Items
-		i, ok := index(k, len(items))
-		if !ok {
-			return indexFault(fault(source.IndexRange, st.Pos(), "index %s is out of range for a list of %s", value.FormatNumber(k.Num), plural(len(items))),
-				st.Key.Pos(), k, len(items))
-		}
-		cp := append([]value.Value(nil), items...)
-		cp[i] = x
-		nv = value.ListOf(cp)
+	nv, f := value.SetItemOf(cur, k, x, st.IsMap, st.Pos(), st.Key.Pos())
+	if f != nil {
+		return f
 	}
 	if fp != nil {
 		s.setField(nodeID, fp, nv)

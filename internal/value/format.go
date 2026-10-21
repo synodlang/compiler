@@ -147,6 +147,10 @@ func format(b *strings.Builder, v Value, o FormatOpts) {
 		b.WriteString(qualName(f.Pkg, o) + "." + f.Name)
 	case KBlock:
 		b.WriteString("<block>")
+	case KShape:
+		b.WriteString("<shape>")
+	case KColor:
+		b.WriteString(v.Str)
 	default:
 		b.WriteString("<invalid>")
 	}

@@ -144,7 +144,7 @@ func (e *encoder) fact(seq int, f *Fact) error {
 		}
 	case "sim.Broken":
 		w.key("rule", false)
-		w.str(e.o.rule(f.Rule, f.RulePos))
+		w.str(RuleText(*f, e.o))
 	case "sim.Failed":
 		if f.Fault == nil {
 			return encodeError("sim.Failed without fault")
@@ -206,3 +206,7 @@ func (e *encoder) runsState(f *Fact) error {
 	w.byte('}')
 	return nil
 }
+
+// RuleText is the rule text of a sim.Broken fact as the trace writes it: with
+// the display path of the rule's file replaced by its trace path.
+func RuleText(f Fact, o Options) string { return o.rule(f.Rule, f.RulePos) }
