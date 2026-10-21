@@ -112,16 +112,35 @@ jobs:
 
   wasm:
     runs-on: ubuntu-latest
+    env:
+      GOOS: js
+      GOARCH: wasm
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+      - name: Vet for WebAssembly
+        run: go vet ./...
       - name: Build for WebAssembly
         run: go build ./...
+      - name: Hash the example traces and scenes under Node
+        run: |
+          export PATH="$(go env GOROOT)/lib/wasm:$(go env GOROOT)/misc/wasm:$PATH"
+          go test ./internal/runtest -run 'TestExampleGoldens|TestTraceHashes' -count=1
         env:
-          GOOS: js
-          GOARCH: wasm
+          SYNOD_HASHES_OUT: ${{ github.workspace }}/hashes.txt
+      - name: Check goldens under Node
+        run: |
+          export PATH="$(go env GOROOT)/lib/wasm:$(go env GOROOT)/misc/wasm:$PATH"
+          go test ./internal/driver -run TestGolden -count=1
+      - uses: actions/upload-artifact@v7
+        with:
+          name: hashes-wasm
+          path: hashes.txt
 
   trace-hashes:
     strategy:
@@ -150,15 +169,16 @@ jobs:
           path: hashes.txt
 
   trace-hashes-compare:
-    needs: trace-hashes
+    needs: [trace-hashes, wasm]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v8
         with:
           pattern: hashes-*
           path: hashes
-      - name: Traces and scenes are byte-identical on Linux, macOS and Windows
+      - name: Traces and scenes are byte-identical on Linux, macOS, Windows and WebAssembly
         run: |
           wc -l hashes/hashes-*/hashes.txt
           diff hashes/hashes-linux/hashes.txt hashes/hashes-macos/hashes.txt
           diff hashes/hashes-linux/hashes.txt hashes/hashes-windows/hashes.txt
+          diff hashes/hashes-linux/hashes.txt hashes/hashes-wasm/hashes.txt

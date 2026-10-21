@@ -79,8 +79,31 @@ jobs:
           name: synod-darwin-universal
           path: dist/synod-*.tar.gz
 
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+      - name: Test the WebAssembly build under Node
+        run: go test ./internal/wasmtest -count=1
+        env:
+          SYNOD_REQUIRE_NODE: "1"
+      - name: Build
+        run: go run ./internal/release/cmd/wasm -tag "${GITHUB_REF_NAME}" -out dist
+      - uses: actions/upload-artifact@v7
+        with:
+          name: synod-wasm
+          path: |
+            dist/synod-*.wasm
+            dist/synod-*-wasm_exec.js
+
   release:
-    needs: [build, universal]
+    needs: [build, universal, wasm]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -97,7 +120,7 @@ jobs:
           merge-multiple: true
       - name: Checksums
         working-directory: dist
-        run: sha256sum synod-*.tar.gz synod-*.zip > SHA256SUMS
+        run: sha256sum synod-*.tar.gz synod-*.zip synod-*.wasm synod-*-wasm_exec.js > SHA256SUMS
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
