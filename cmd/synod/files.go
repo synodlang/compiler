@@ -13,19 +13,29 @@ import (
 // Directories are walked recursively for *.synod files, skipping directories
 // whose names start with "." or "_" and directories named testdata. Explicit
 // files are taken whatever their extension. The returned paths are cleaned
-// and slash-separated.
-func collect(paths []string) ([]string, error) {
+// and slash-separated. targets are the paths to load: an explicit file stands
+// for itself, a directory for the folders that hold the files found below it.
+func collect(paths []string) (files, targets []string, err error) {
 	if len(paths) == 0 {
 		paths = []string{"."}
 	}
 	var out []string
+	seen := map[string]bool{}
+	addTarget := func(t string) {
+		if !seen[t] {
+			seen[t] = true
+			targets = append(targets, t)
+		}
+	}
 	for _, p := range paths {
 		info, err := os.Stat(p)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if !info.IsDir() {
-			out = append(out, filepath.ToSlash(filepath.Clean(p)))
+			f := filepath.ToSlash(filepath.Clean(p))
+			out = append(out, f)
+			addTarget(f)
 			continue
 		}
 		err = filepath.WalkDir(p, func(path string, d fs.DirEntry, err error) error {
@@ -40,18 +50,20 @@ func collect(paths []string) ([]string, error) {
 				return nil
 			}
 			if strings.HasSuffix(name, ".synod") {
-				out = append(out, filepath.ToSlash(filepath.Clean(path)))
+				f := filepath.ToSlash(filepath.Clean(path))
+				out = append(out, f)
+				addTarget(filepath.ToSlash(filepath.Dir(path)))
 			}
 			return nil
 		})
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 	if len(out) == 0 {
-		return nil, errors.New("no .synod files found")
+		return nil, nil, errors.New("no .synod files found")
 	}
-	return out, nil
+	return out, targets, nil
 }
 
 // writeFileAtomic replaces path with data, keeping its mode, by writing a

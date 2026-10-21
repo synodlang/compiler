@@ -13,7 +13,7 @@ const examples = "../../testdata/examples"
 
 func needReal(t *testing.T) {
 	t.Helper()
-	if formatFn == nil || checkFn == nil {
+	if formatFn == nil {
 		t.Skip("internal/format not bound")
 	}
 }

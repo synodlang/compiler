@@ -11,18 +11,15 @@ import (
 	"github.com/synodlang/compiler/internal/source"
 )
 
-// Formatter hooks. They are bound to internal/format in binding.go and
-// replaced by fakes in unit tests.
-var (
-	formatFn func(f *source.File) ([]byte, *source.Diagnostic)
-	checkFn  func(f *source.File) *source.Diagnostic
-)
+// formatFn is the formatter without fixes. It is bound to internal/format in
+// binding.go and replaced by a fake in unit tests.
+var formatFn func(f *source.File) ([]byte, *source.Diagnostic)
 
 const usage = `usage: synod <command> [arguments]
 
 commands:
   fmt [paths...] [--check]
-  check [paths...] [--json]
+  check [paths...] [--json] [--tokens]
   version
 `
 

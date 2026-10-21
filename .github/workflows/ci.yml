@@ -75,3 +75,37 @@ jobs:
         env:
           SYNOD_EXAMPLES: ${{ github.workspace }}/_examples
           SYNOD_REQUIRE_EXAMPLES: "1"
+
+  std-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: synodlang/std
+          path: _std
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Embedded std matches synodlang/std
+        run: go test ./internal/stdlib -run TestStdDrift -v
+        env:
+          SYNOD_STD: ${{ github.workspace }}/_std
+          SYNOD_REQUIRE_STD: "1"
+
+  catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: synodlang/dsl
+          path: _dsl
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Std catalog and README snippets match the std tables
+        run: go test ./internal/stdlib -run 'TestCatalog|TestReadmeSnippets' -v
+        env:
+          SYNOD_DSL: ${{ github.workspace }}/_dsl
+          SYNOD_REQUIRE_DSL: "1"

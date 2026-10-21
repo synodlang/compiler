@@ -11,7 +11,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/synodlang/compiler/internal/driver"
 	"github.com/synodlang/compiler/internal/format"
+	"github.com/synodlang/compiler/internal/load"
 	"github.com/synodlang/compiler/internal/parse"
 	"github.com/synodlang/compiler/internal/source"
 )
@@ -114,6 +116,7 @@ func TestSpecSnippets(t *testing.T) {
 	sort.Strings(mds)
 
 	var complete, fragments, noncanon int
+	var typed []block
 	for _, p := range mds {
 		data, err := os.ReadFile(p)
 		if err != nil {
@@ -136,6 +139,11 @@ func TestSpecSnippets(t *testing.T) {
 				if d != nil {
 					t.Errorf("%s: not canonical: %s", where, d.String())
 				}
+				// The blocks of std/README.md are covered by the std
+				// equality test in internal/stdlib.
+				if b.file != "std/README.md" {
+					typed = append(typed, b)
+				}
 				continue
 			}
 			fragments++
@@ -147,6 +155,7 @@ func TestSpecSnippets(t *testing.T) {
 			}
 		}
 	}
+	typeCheckBlocks(t, typed)
 	t.Logf("%d complete files checked, %d fragments (%d not canonical, logged only)", complete, fragments, noncanon)
 	if complete+fragments == 0 {
 		t.Error("no synod code blocks found")
@@ -225,4 +234,60 @@ func collectExamples(t *testing.T, root string) map[string][]byte {
 		t.Fatal(err)
 	}
 	return out
+}
+
+// typeCheckBlocks type-checks the complete blocks together. Each becomes a
+// file of an in-memory module example.com/spec, in a folder named after its
+// package (main blocks in main1, main2, ...; a repeated package name goes
+// one folder deeper). github.com/synodlang/examples is the vendored copy of
+// the examples, placed in the same file system.
+func typeCheckBlocks(t *testing.T, blocks []block) {
+	t.Helper()
+	if len(blocks) == 0 {
+		return
+	}
+	fsys := load.MapFS{"/spec/synod.mod": "module example.com/spec\nsynod 0.2\n"}
+	exRoot := filepath.Join(moduleRoot(t), "testdata", "examples")
+	for name, data := range collectExamples(t, exRoot) {
+		fsys["/examples/"+name] = string(data)
+	}
+	where := map[string]string{}
+	used := map[string]int{}
+	mains := 0
+	for _, b := range blocks {
+		name := strings.TrimPrefix(firstLine(b.src), "# package ")
+		var dir, file string
+		if name == "main" {
+			mains++
+			dir, file = "main"+strconv.Itoa(mains), "main.synod"
+		} else {
+			dir, file = name, name+".synod"
+			if n := used[name]; n > 0 {
+				dir = "dup" + strconv.Itoa(n+1) + "/" + name
+				file = name + strconv.Itoa(n+1) + ".synod"
+			}
+			used[name]++
+		}
+		p := "/spec/" + dir + "/" + file
+		fsys[p] = b.src
+		where[p] = b.file + ":" + strconv.Itoa(b.line)
+	}
+	targets, err := load.Discover(fsys, "/spec")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res := driver.Check(driver.Options{Load: load.Config{
+		FS:      fsys,
+		Modules: map[string]string{"github.com/synodlang/examples": "/examples"},
+		Display: func(p string) string {
+			if w, ok := where[p]; ok {
+				return w
+			}
+			return p
+		},
+	}}, targets)
+	for _, d := range res.Diags {
+		t.Errorf("spec snippet: %s", d.String())
+	}
+	t.Logf("%d complete blocks type-checked", len(blocks))
 }

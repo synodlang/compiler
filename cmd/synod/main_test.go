@@ -24,26 +24,12 @@ func fakeFormat(f *source.File) ([]byte, *source.Diagnostic) {
 	return []byte(strings.Join(lines, "\n")), nil
 }
 
-func fakeCheck(f *source.File) *source.Diagnostic {
-	out, _ := fakeFormat(f)
-	if bytes.Equal(out, f.Src) {
-		return nil
-	}
-	for i, l := range strings.Split(string(f.Src), "\n") {
-		if strings.TrimRight(l, " ") != l {
-			d := source.New(f, source.Pos{Line: i + 1, Col: 1}, source.NonCanonical, "trailing spaces", "")
-			return &d
-		}
-	}
-	return nil
-}
-
 // useFakes installs the fake formatter for the test.
 func useFakes(t *testing.T) {
 	t.Helper()
-	of, oc := formatFn, checkFn
-	formatFn, checkFn = fakeFormat, fakeCheck
-	t.Cleanup(func() { formatFn, checkFn = of, oc })
+	of := formatFn
+	formatFn = fakeFormat
+	t.Cleanup(func() { formatFn = of })
 }
 
 func exec(args ...string) (code int, stdout, stderr string) {
@@ -183,7 +169,7 @@ func TestExitCodes(t *testing.T) {
 		{"missing path", []string{"check", filepath.Join(dir, "nope")}},
 		{"missing fmt path", []string{"fmt", filepath.Join(dir, "nope")}},
 		{"no synod files", []string{"check", empty}},
-		{"tokens", []string{"check", "--tokens", dir}},
+		{"tokens without json", []string{"check", "--tokens", dir}},
 		{"unknown flag", []string{"fmt", "--frob", dir}},
 	}
 	for _, c := range cases {
@@ -196,7 +182,6 @@ func TestExitCodes(t *testing.T) {
 }
 
 func TestIOErrorBeatsDiagnostics(t *testing.T) {
-	useFakes(t)
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "pkg", "a.synod"), "# package pkg\n\nx-1\n")
 	if code, _, _ := exec("check", filepath.Join(dir, "pkg"), filepath.Join(dir, "missing")); code != 2 {
@@ -216,31 +201,31 @@ func TestVersion(t *testing.T) {
 }
 
 func TestCheckJSONAndText(t *testing.T) {
-	useFakes(t)
 	dir := t.TempDir()
-	a := filepath.Join(dir, "pkg", "a.synod")
-	b := filepath.Join(dir, "pkg", "b.synod")
-	write(t, a, bad)
-	write(t, b, "# package pkg\n\nx\n\tfoo\n")
+	a := filepath.Join(dir, "one", "a.synod")
+	b := filepath.Join(dir, "two", "b.synod")
+	const okSrc = "# package one\nNode has\n  set Foo to 0\n"
+	write(t, a, "# package one\nNode has\n  set Foo to 0   \n")
+	write(t, b, "# package two\nNode has\n\tset Foo to 0\n")
 	pa, pb := filepath.ToSlash(a), filepath.ToSlash(b)
 
 	code, out, _ := exec("check", "--json", dir)
 	want := `{"format":"synod-check/1","ok":false,"diagnostics":[` +
-		`{"file":"` + pa + `","line":3,"col":1,"severity":"error","code":"non-canonical","message":"trailing spaces"},` +
-		`{"file":"` + pb + `","line":4,"col":1,"severity":"error","code":"indent","message":"tabs are not allowed","hint":"indent with 2 spaces per level"}]}` + "\n"
+		`{"file":"` + pa + `","line":3,"col":15,"severity":"error","code":"non-canonical","message":"trailing spaces"},` +
+		`{"file":"` + pb + `","line":3,"col":1,"severity":"error","code":"indent","message":"tabs are not allowed","hint":"indent with 2 spaces per level"}]}` + "\n"
 	if code != 1 || out != want {
 		t.Fatalf("code=%d\ngot  %q\nwant %q", code, out, want)
 	}
 
 	code, out, _ = exec("check", dir)
-	want = pa + ":3:1: error[non-canonical]: trailing spaces\n" +
-		pb + ":4:1: error[indent]: tabs are not allowed\n  hint: indent with 2 spaces per level\n"
+	want = pa + ":3:15: error[non-canonical]: trailing spaces\n" +
+		pb + ":3:1: error[indent]: tabs are not allowed\n  hint: indent with 2 spaces per level\n"
 	if code != 1 || out != want {
 		t.Fatalf("text: code=%d\ngot  %q\nwant %q", code, out, want)
 	}
 
-	write(t, a, good)
-	write(t, b, good)
+	write(t, a, okSrc)
+	write(t, b, "# package two\nNode has\n  set Foo to 0\n")
 	code, out, _ = exec("check", dir, "--json")
 	if code != 0 || out != `{"format":"synod-check/1","ok":true,"diagnostics":[]}`+"\n" {
 		t.Errorf("clean: code=%d out=%q", code, out)
@@ -248,17 +233,15 @@ func TestCheckJSONAndText(t *testing.T) {
 }
 
 func TestBadHeader(t *testing.T) {
-	useFakes(t)
 	dir := t.TempDir()
 	cases := []struct {
 		name, folder, src string
 		want              string // substring of output, "" = clean
 	}{
-		{"ok", "pkg", good, ""},
-		{"main", "pkg", "# package main\n\nfoo\n", ""},
-		{"missing", "pkg", "foo\n", `bad-header]: missing "# package" header`},
-		{"wrong", "pkg", "# package other\n\nfoo\n", `package "other" must be the folder name "pkg" or main`},
-		{"malformed", "pkg", "# package a_b\n\nfoo\n", `bad package header`},
+		{"ok", "pkg", "# package pkg\nNode has\n  set Foo to 0\n", ""},
+		{"missing", "pkg", "Node has\n  set Foo to 0\n", `bad-header]: missing "# package" header`},
+		{"wrong", "pkg", "# package other\nNode has\n  set Foo to 0\n", `package "other" must be the folder name "pkg" or main`},
+		{"malformed", "pkg", "# package a_b\nNode has\n  set Foo to 0\n", `bad package header`},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -279,9 +262,8 @@ func TestBadHeader(t *testing.T) {
 }
 
 func TestBadHeaderPosition(t *testing.T) {
-	useFakes(t)
 	p := filepath.Join(t.TempDir(), "pkg", "a.synod")
-	write(t, p, "foo\n")
+	write(t, p, "Node has\n  set Foo to 0\n")
 	_, out, _ := exec("check", p)
 	if !strings.Contains(out, ":1:1: error[bad-header]") {
 		t.Errorf("out=%q", out)
