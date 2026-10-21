@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/synodlang/compiler/internal/render"
+	"github.com/synodlang/compiler/internal/pipeline"
 	"github.com/synodlang/compiler/internal/source"
 )
 
@@ -90,14 +90,9 @@ func (s styleFlags) resolve(w io.Writer) (rich, color bool) {
 type sources struct {
 	known map[string]*source.File
 	cache map[string]*source.File
-	// alias maps a name the diagnostic uses to the key in known.
-	alias map[string]string
 }
 
 func (s *sources) get(file string) *source.File {
-	if a, ok := s.alias[file]; ok {
-		file = a
-	}
 	if f := s.known[file]; f != nil {
 		return f
 	}
@@ -120,13 +115,5 @@ func (s *sources) get(file string) *source.File {
 // writeDiags writes ds to w, in the one-line form or the rich form.
 func writeDiags(w io.Writer, ds []source.Diagnostic, sf styleFlags, src *sources) error {
 	rich, color := sf.resolve(w)
-	if !rich {
-		for _, d := range ds {
-			if _, err := fmt.Fprintln(w, d.String()); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-	return render.All(w, ds, render.Options{Color: color, Source: src.get})
+	return pipeline.WriteDiags(w, ds, pipeline.Style{Rich: rich, Color: color}, src.get)
 }

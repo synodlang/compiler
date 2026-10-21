@@ -140,7 +140,7 @@ func TestFmtCheck(t *testing.T) {
 func TestFmtWalkSkips(t *testing.T) {
 	useFakes(t)
 	dir := t.TempDir()
-	for _, d := range []string{"testdata", ".hidden", "_x", "pkg/testdata"} {
+	for _, d := range []string{"testdata", ".hidden", "_x", "pkg/testdata", "vendor", "pkg/vendor"} {
 		write(t, filepath.Join(dir, d, "a.synod"), bad)
 	}
 	write(t, filepath.Join(dir, "pkg", "notes.txt"), "x   ")

@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/synodlang/compiler/internal/driver"
-	"github.com/synodlang/compiler/internal/format"
 	"github.com/synodlang/compiler/internal/load"
+	"github.com/synodlang/compiler/internal/pipeline"
 	"github.com/synodlang/compiler/internal/source"
 )
 
@@ -16,12 +16,11 @@ import (
 // or with the M1 formatter when the file's package did not load.
 func formatWith(res driver.Result, path string, f *source.File) ([]byte, *source.Diagnostic) {
 	fsys := load.OSFS{}
+	display := ""
 	if abs, err := fsys.Abs(path); err == nil {
-		if fixes, ok := res.Fixes[fsys.Display(abs)]; ok && len(fixes) > 0 {
-			return format.FormatWith(f, fixes)
-		}
+		display = fsys.Display(abs)
 	}
-	return formatFn(f)
+	return pipeline.FormatFile(res, display, f, formatFn)
 }
 
 func runFmt(args []string, stdout, stderr io.Writer) int {

@@ -5,6 +5,10 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+### Changed
+
+- `synod check` and `synod fmt` skip folders named `vendor` when they walk a folder, like `testdata`, `.x` and `_x`; an explicit file or folder argument is still processed.
+
 ## v0.2.3 — 2026-10-22
 
 Implements Synod 0.2, now complete. `synod run` draws the run: next to the

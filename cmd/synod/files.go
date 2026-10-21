@@ -11,7 +11,7 @@ import (
 
 // collect expands paths (default ".") into the list of files to process.
 // Directories are walked recursively for *.synod files, skipping directories
-// whose names start with "." or "_" and directories named testdata. Explicit
+// whose names start with "." or "_" and directories named testdata or vendor. Explicit
 // files are taken whatever their extension. The returned paths are cleaned
 // and slash-separated. targets are the paths to load: an explicit file stands
 // for itself, a directory for the folders that hold the files found below it.
@@ -44,7 +44,7 @@ func collect(paths []string) (files, targets []string, err error) {
 			}
 			name := d.Name()
 			if d.IsDir() {
-				if path != p && (strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") || name == "testdata") {
+				if path != p && (strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") || name == "testdata" || name == "vendor") {
 					return filepath.SkipDir
 				}
 				return nil

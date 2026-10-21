@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -9,14 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/synodlang/compiler/internal/driver"
-	"github.com/synodlang/compiler/internal/ir"
-	"github.com/synodlang/compiler/internal/render"
+	"github.com/synodlang/compiler/internal/pipeline"
 	"github.com/synodlang/compiler/internal/scene"
 	"github.com/synodlang/compiler/internal/sim"
-	"github.com/synodlang/compiler/internal/source"
-	"github.com/synodlang/compiler/internal/trace"
-	"github.com/synodlang/compiler/internal/value"
 )
 
 // simRun runs the simulator; tests replace it to provoke a panic.
@@ -45,27 +39,6 @@ type runArgs struct {
 
 // notYet are the flags of later milestones: recognized and rejected.
 var notYet = map[string]bool{"watch": true, "json-events": true}
-
-// parsePace reads a decimal number of at most three fraction digits from 0.25
-// to 4 as thousandths.
-func parsePace(v string) (int, bool) {
-	whole, frac, dot := strings.Cut(v, ".")
-	if len(whole) != 1 || len(frac) > 3 || dot && frac == "" {
-		return 0, false
-	}
-	for _, part := range []string{whole, frac} {
-		for _, c := range part {
-			if c < '0' || c > '9' {
-				return 0, false
-			}
-		}
-	}
-	n := int(whole[0]-'0') * 1000
-	for i := 0; i < len(frac); i++ {
-		n += int(frac[i]-'0') * [3]int{100, 10, 1}[i]
-	}
-	return n, n >= 250 && n <= 4000
-}
 
 // parseRunArgs parses `synod run` arguments: one folder, --seed (n or =n),
 // --trace (file or =file) and --summary, in any order. "--" ends the flags.
@@ -152,7 +125,7 @@ func parseRunArgs(args []string) (runArgs, error) {
 			if err != nil {
 				return ra, err
 			}
-			n, ok := parsePace(v)
+			n, ok := pipeline.ParsePace(v)
 			if !ok {
 				return ra, fmt.Errorf("--pace needs a number from 0.25 to 4, not %q", v)
 			}
@@ -211,95 +184,50 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 		return exitUsage
 	}
 	folder := filepath.ToSlash(filepath.Clean(ra.folder))
-	res := driver.Check(driver.Options{DefaultLook: true}, []string{folder})
-	if diags := userDiags(res); len(diags) > 0 {
-		if err := writeDiags(stdout, diags, ra.style, &sources{known: res.Sources}); err != nil {
-			fmt.Fprintf(stderr, "synod run: %v\n", err)
-			return exitUsage
-		}
-		return exitDiags
-	}
-	var ipath string
-	if res.Graph != nil {
-		for _, p := range res.Graph.Targets {
-			if p.IsMain {
-				ipath = p.Path
-			}
-		}
-	}
-	prog := res.Programs[ipath]
-	if ipath == "" || prog == nil {
-		d := source.Diagnostic{File: folder, Severity: "error", Code: source.MissingMain, Message: "no main file in " + folder}
-		if err := writeDiags(stdout, []source.Diagnostic{d}, ra.style, &sources{known: res.Sources}); err != nil {
-			fmt.Fprintf(stderr, "synod run: %v\n", err)
-			return exitUsage
-		}
-		return exitDiags
-	}
-
-	opts := sim.Options{}
-	if ra.seed != nil {
-		opts.Seed = ra.seed
-	}
-	r := simRun(prog, opts)
-	topts := trace.Options{Paths: trace.FilePaths(res.Graph), Qual: trace.Qualifiers(prog)}
-	var buf bytes.Buffer
-	if err := trace.Encode(&buf, r.Header, r.Facts, topts); err != nil {
-		fmt.Fprintf(stderr, "synod run: %v\n", err)
-		return exitUsage
-	}
-	var look *ir.Program
-	if !scene.UsesLook(prog) {
-		look = res.Programs[driver.DefaultLookPath]
-	}
-	sc, lfail := scene.Build(scene.Input{Prog: prog, Look: look, Facts: r.Facts, Trace: topts},
-		scene.Options{Pace: ra.pace, Mode: ra.mode})
-	var sbuf bytes.Buffer
-	if err := trace.EncodeScene(&sbuf, sc); err != nil {
-		fmt.Fprintf(stderr, "synod run: %v\n", err)
-		return exitUsage
-	}
 	status := stdout
 	if ra.trace == "-" || ra.scene == "-" {
 		status = stderr
 	}
-	if err := writeOut(ra.trace, buf.Bytes(), stdout); err != nil {
-		fmt.Fprintf(stderr, "synod run: %v\n", err)
+	diagRich, diagColor := ra.style.resolve(stdout)
+	statusRich, statusColor := ra.style.resolve(status)
+	out := pipeline.Run(pipeline.RunInput{
+		Folder: folder, FolderShown: folder,
+		Seed: ra.seed, Pace: ra.pace, Mode: ra.mode,
+		TraceDest: ra.trace, SceneDest: ra.scene, TracePath: ra.trace,
+		WantSummary: ra.summary,
+		DiagStyle:   pipeline.Style{Rich: diagRich, Color: diagColor},
+		StatusStyle: pipeline.Style{Rich: statusRich, Color: statusColor},
+		Lookup:      (&sources{}).get,
+		Sim:         simRun,
+	})
+	if out.Err != nil {
+		fmt.Fprintf(stderr, "synod run: %v\n", out.Err)
 		return exitUsage
 	}
-	if err := writeOut(ra.scene, sbuf.Bytes(), stdout); err != nil {
-		fmt.Fprintf(stderr, "synod run: %v\n", err)
-		return exitUsage
-	}
-
-	if ra.summary {
-		in := trace.SummaryInput{
-			Header: r.Header, Facts: r.Facts, Steps: r.Steps, Final: r.Final,
-			Invariants: r.Invariants, EndReason: r.EndReason, End: r.End,
-			Failed: r.Failed, TracePath: ra.trace,
-		}
-		if err := trace.WriteSummary(status, in, topts); err != nil {
+	if out.Trace == nil {
+		if _, err := stdout.Write(out.Status); err != nil {
 			fmt.Fprintf(stderr, "synod run: %v\n", err)
 			return exitUsage
 		}
-	} else {
-		writeStatus(status, ra, r, topts, res.Sources)
+		return out.Code
 	}
-	if lfail != nil {
-		writeLookFailure(status, ra, lfail, topts, res.Sources)
-		return exitDiags
+	if err := writeOut(ra.trace, out.Trace, stdout); err != nil {
+		fmt.Fprintf(stderr, "synod run: %v\n", err)
+		return exitUsage
 	}
-	if !ra.summary {
-		dest := ra.scene
-		if dest == "-" {
-			dest = "stdout"
-		}
-		fmt.Fprintf(status, "scene %s, %s -> %s\n", formatSceneLength(sc.Duration), trace.Count(len(sc.Shapes), "shape"), dest)
+	if err := writeOut(ra.scene, out.Scene, stdout); err != nil {
+		fmt.Fprintf(stderr, "synod run: %v\n", err)
+		return exitUsage
 	}
-	if r.Failed != nil {
-		return exitDiags
+	text := out.Status
+	if ra.summary {
+		text = out.Summary
 	}
-	return exitOK
+	if _, err := status.Write(text); err != nil {
+		fmt.Fprintf(stderr, "synod run: %v\n", err)
+		return exitUsage
+	}
+	return out.Code
 }
 
 // writeOut writes data to the file, creating its folders, or to stdout for "-".
@@ -316,85 +244,5 @@ func writeOut(path string, data []byte, stdout io.Writer) error {
 	return os.WriteFile(path, data, 0o644)
 }
 
-// writeLookFailure prints the failure of a look in place of the scene line.
-func writeLookFailure(w io.Writer, ra runArgs, lf *scene.Failure, o trace.Options, known map[string]*source.File) {
-	line := "look " + trace.FailedLine(lf.Fault, lf.T, o)
-	rich, color := ra.style.resolve(w)
-	if !rich {
-		fmt.Fprintln(w, line)
-		return
-	}
-	alias := map[string]string{}
-	for display, tp := range o.Paths {
-		alias[tp] = display
-	}
-	src := &sources{known: known, alias: alias}
-	d := trace.FaultDiagnostic(lf.Fault, o)
-	if err := render.Write(w, d, render.Options{Color: color, Source: src.get, Header: line}); err != nil {
-		fmt.Fprintln(w, line)
-	}
-}
-
-// writeStatus prints the status line and one line per broken always.
-func writeStatus(w io.Writer, ra runArgs, r *sim.Result, o trace.Options, known map[string]*source.File) {
-	if f := r.Failed; f != nil {
-		line := trace.FailedLine(f, r.End, o)
-		rich, color := ra.style.resolve(w)
-		if !rich {
-			fmt.Fprintln(w, line)
-			return
-		}
-		// The renderer looks files up by trace path; known is keyed by
-		// display path.
-		alias := map[string]string{}
-		for display, tp := range o.Paths {
-			alias[tp] = display
-		}
-		src := &sources{known: known, alias: alias}
-		d := trace.FaultDiagnostic(f, o)
-		if err := render.Write(w, d, render.Options{Color: color, Source: src.get, Header: line}); err != nil {
-			fmt.Fprintln(w, line)
-		}
-		return
-	}
-	dest := ra.trace
-	if dest == "-" {
-		dest = "stdout"
-	}
-	fmt.Fprintf(w, "ok seed %d: %s at %s, %s, %s -> %s\n",
-		r.Header.Seed, r.EndReason, value.FormatTime(r.End), trace.Count(len(r.Final), "node"), trace.Count(len(r.Facts), "event"), dest)
-	for _, inv := range r.Invariants {
-		if inv.Breaks == 0 {
-			continue
-		}
-		rule := inv.Rule
-		if inv.Pos.File != "" && strings.HasPrefix(rule, inv.Pos.File+":") {
-			if t, ok := o.Paths[inv.Pos.File]; ok {
-				rule = t + rule[len(inv.Pos.File):]
-			}
-		}
-		times := "1 time"
-		if inv.Breaks > 1 {
-			times = fmt.Sprintf("%d times", inv.Breaks)
-		}
-		fmt.Fprintf(w, "broken at %s (%s): %s\n", value.FormatTime(inv.FirstBreak), times, rule)
-	}
-}
-
-// formatSceneLength prints ms as seconds with at most two decimals, trailing
-// zeros trimmed, rounding half away from zero: 147982 is "147.98s".
-func formatSceneLength(ms int64) string {
-	neg := ms < 0
-	if neg {
-		ms = -ms
-	}
-	h := (ms + 5) / 10 // hundredths of a second
-	s := strconv.FormatInt(h/100, 10)
-	if f := h % 100; f != 0 {
-		s += "." + strings.TrimRight(fmt.Sprintf("%02d", f), "0")
-	}
-	if neg && h != 0 {
-		s = "-" + s
-	}
-	return s + "s"
-}
+// formatSceneLength prints ms as seconds, such as "147.98s".
+func formatSceneLength(ms int64) string { return pipeline.FormatSceneLength(ms) }
