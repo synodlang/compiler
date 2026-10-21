@@ -422,6 +422,8 @@ func wantRule(gives string, holes []*parse.Hole) (Rule, bool) {
 		return Fixed(types.List{Elem: types.TNode}), true
 	case "list of number":
 		return Fixed(types.List{Elem: types.TNumber}), true
+	case "list of text":
+		return Fixed(types.List{Elem: types.TText}), true
 	case "p.Node":
 		return NodeOfPkg(pkgHole()), true
 	case "list of p.Node":

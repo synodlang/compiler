@@ -1,0 +1,4 @@
+p/p.synod:11:31: error[context]: look context reads only exported fields
+   |
+11 |   look.Layout (text.From Ping.hidden)
+   |                               ^^^^^^

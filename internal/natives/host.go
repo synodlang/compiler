@@ -6,8 +6,9 @@
 // Host.RNG, all time from Host.Now.
 //
 // Table has exactly one entry per stdlib native id of kind phrase, except
-// look.* (looks run in a later milestone) and event ids (which are handled by
-// the simulator, not called).
+// the look-only natives (Contexts == stdlib.Look: look.*, sim.stateRows,
+// net.id, net.type, which internal/scene.Table implements) and event ids
+// (which are handled by the simulator, not called).
 package natives
 
 import (

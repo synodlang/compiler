@@ -7,17 +7,18 @@ define Card for [n: node]
   draw (Rect 96 by 56) as box
   Fill box with theme.Ink
   draw (Label (sim.Name n)) as name
+  Fill name with theme.Paper
   result (Group {box, name})
 
-# Interim (M2): the catalog natives cannot read a shape's position, so the
-# shape jumps to the start and, after d, to the end. Replaced in M4.
 # Move along a straight path
 define Travel [s: shape] from [a: shape] to [b: shape] over [d: time]
-  Place s beside a
-  after d
-    Place s beside b
+  Tween "x" of s to a over 0s
+  Tween "y" of s to a over 0s
+  Tween "x" of s to b over d
+  Tween "y" of s to b over d
 
-# Interim (M2): the catalog natives cannot delete a shape, so it only fades out.
 # Fade out, then delete
 define Remove [s: shape]
   Fade s to 0
+  after 300ms
+    delete s

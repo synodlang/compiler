@@ -20,7 +20,7 @@ define Fill [s: shape] with [c: color] native "look.fill"
 # Outline color (morphs)
 define Stroke [s: shape] with [c: color] native "look.stroke"
 
-# The only motion primitive (`spec/09`)
+# The only motion primitive (`spec/09`); of `"x"` or `"y"` it also takes a shape: that shape's position
 define Tween [p: text] of [s: shape] to [v: value] over [d: time] native "look.tween"
 
 # `"glow"`, `"blur"` or `"trail"`, for 600ms
@@ -43,3 +43,9 @@ define Center native "look.center"
 
 # Place on a circle of radius 300 around `c`, at fraction `f` of a turn (0 is 12 o'clock, clockwise)
 define Orbit [s: shape] around [c: shape] at [f: number] native "look.orbit"
+
+# Move `s` from `a` to `b`, landing when `m` arrives (halfway when dropped)
+define Flight [s: shape] from [a: shape] to [b: shape] for [m: msg] native "look.flight"
+
+# Unexported: delete the shape now (used by `Remove`)
+define delete [s: shape] native "look.delete"

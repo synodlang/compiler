@@ -76,3 +76,6 @@ define Emitted [e: msg] by [n: node] native "sim.emitted"
 
 # Trace event: a run-time error stops the run
 define Failed [error: text] native "sim.failed"
+
+# One line per exported field of `n`: name and value as text
+define StateRows [n: node] native "sim.stateRows"

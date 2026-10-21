@@ -1,5 +1,5 @@
 (program "github.com/synodlang/examples/raftlook"
-  (packages "std/lists" "std/math" "std/net" "std/random" "std/sim" "std/time" "github.com/synodlang/examples/raft" "std/theme" "std/look" "std/lesson" "std/look/basic" "github.com/synodlang/examples/raftlook")
+  (packages "std/lists" "std/math" "std/net" "std/random" "std/sim" "std/time" "github.com/synodlang/examples/raft" "std/theme" "std/look" "std/lesson" "std/text" "std/look/basic" "github.com/synodlang/examples/raftlook")
   (package "std/lists" std
     (runs "std/lists"))
   (package "std/math" std
@@ -189,17 +189,21 @@
         (draw (native "look.rect" 96 56) box#1)
         (native "look.fill" box#1 (call "theme.Ink"))
         (draw (native "look.label" (native "sim.name" n#0)) name#2)
+        (native "look.fill" name#2 (call "theme.Paper"))
         (result (native "look.group" (list box#1 name#2)))))
     (phrase "Travel … from … to … over"
       (vars (0 s param shape) (1 a param shape) (2 b param shape) (3 d param time))
       (body
-        (native "look.placeBeside" s#0 a#1)
-        (after d#3
-          (native "look.placeBeside" s#0 b#2))))
+        (native "look.tween" "x" s#0 a#1 (time 0))
+        (native "look.tween" "y" s#0 a#1 (time 0))
+        (native "look.tween" "x" s#0 b#2 d#3)
+        (native "look.tween" "y" s#0 b#2 d#3)))
     (phrase "Remove"
       (vars (0 s param shape))
       (body
-        (call "look.Fade … to" s#0 0)))
+        (call "look.Fade … to" s#0 0)
+        (after (time 300000)
+          (native "look.delete" s#0))))
     (phrase "Fade … to"
       (vars (0 s param shape) (1 o param number))
       (body
@@ -225,51 +229,92 @@
       (vars (0 t param text))
       (body
         (emit (message lesson.Noted (Text t#0)) (native "sim.nobody")))))
+  (package "std/text" std
+    (runs "std/text"))
   (package "std/look/basic" std
-    (uses "std/lesson" "std/look" "std/net" "std/sim" "std/theme")
-    (runs "std/sim" "std/lesson" "std/theme" "std/look" "std/net" "std/look/basic")
+    (uses "std/lesson" "std/lists" "std/look" "std/net" "std/sim" "std/text" "std/theme")
+    (runs "std/sim" "std/lesson" "std/lists" "std/theme" "std/look" "std/net" "std/text" "std/look/basic")
     (when-trace "sim.started"
-      (vars)
+      (vars (0 border draw shape))
       (body
-        (native "look.layout" "ring")))
+        (native "look.layout" "ring")
+        (draw (native "look.rect" 1592 992) border#0 (for "border" "border"))
+        (native "look.stroke" border#0 (call "theme.Critical"))
+        (native "look.tween" "opacity" border#0 0 (time 0))))
     (when-trace "sim.added"
-      (vars (0 n binding node) (1 card draw shape))
+      (vars (0 n binding node) (1 card draw shape) (2 above local shape) (3 i each number) (4 line each text) (5 row draw shape))
       (match 0 bind n#0)
       (body
-        (draw (call "look.Card for" n#0) card#1 (for "card" n#0))))
+        (draw (call "look.Card for" n#0) card#1 (for "card" n#0))
+        (set above#2 card#1)
+        (each i#3 line#4 (native "sim.stateRows" n#0)
+          (draw (native "look.label" line#4) row#5 (for "row" (native "text.join" (list (native "sim.name" n#0) "/" (native "text.from" (plus i#3 1)))))
+            (reactive
+              (native "look.tween" "text" row#5 (item (native "sim.stateRows" n#0) i#3) (time 300000))))
+          (native "look.placeBelow" row#5 above#2)
+          (set above#2 row#5))))
     (when-trace "sim.crashed"
       (vars (0 n binding node))
       (match 0 bind n#0)
       (body
-        (call "look.Fade … to" (attached "card" n#0) 0.3)))
+        (native "look.fill" (attached "card" n#0) (call "theme.Quiet"))))
     (when-trace "sim.restarted"
       (vars (0 n binding node))
       (match 0 bind n#0)
       (body
-        (call "look.Fade … to" (attached "card" n#0) 1)))
+        (native "look.fill" (attached "card" n#0) (call "theme.Ink"))))
     (when-trace "sim.removed"
-      (vars (0 n binding node))
+      (vars (0 n binding node) (1 i each number))
       (match 0 bind n#0)
       (body
-        (call "look.Remove" (attached "card" n#0))))
+        (call "look.Remove" (attached "card" n#0))
+        (each _ i#1 (native "lists.range" 1 (native "lists.size" (native "sim.stateRows" n#0)))
+          (call "look.Remove" (attached "row" (native "text.join" (list (native "sim.name" n#0) "/" (native "text.from" i#1))))))))
     (when-trace "net.sent"
-      (vars (0 m binding msg) (1 a binding node) (2 b binding node) (3 dot draw shape))
+      (vars (0 m binding msg) (1 a binding node) (2 b binding node) (3 ball draw shape) (4 tag draw shape) (5 dot draw shape))
       (match 0 bind m#0)
       (match 1 bind a#1)
       (match 2 bind b#2)
       (body
-        (draw (native "look.circle" 6) dot#3)
-        (native "look.fill" dot#3 (call "theme.Accent"))
-        (call "look.Travel … from … to … over" dot#3 (attached "card" a#1) (attached "card" b#2) (time 400000))))
+        (draw (native "look.circle" 6) ball#3)
+        (native "look.fill" ball#3 (call "theme.Accent"))
+        (draw (native "look.label" (native "net.type" m#0)) tag#4)
+        (native "look.placeAbove" tag#4 ball#3)
+        (draw (native "look.group" (list ball#3 tag#4)) dot#5 (for "dot" (native "net.id" m#0)))
+        (native "look.flight" dot#5 (attached "card" a#1) (attached "card" b#2) m#0)))
+    (when-trace "net.arrived"
+      (vars (0 m binding msg) (1 a binding node) (2 b binding node))
+      (match 0 bind m#0)
+      (match 1 bind a#1)
+      (match 2 bind b#2)
+      (body
+        (call "look.Remove" (attached "dot" (native "net.id" m#0)))))
+    (when-trace "net.dropped"
+      (vars (0 m binding msg) (1 a binding node) (2 b binding node) (3 r binding text))
+      (match 0 bind m#0)
+      (match 1 bind a#1)
+      (match 2 bind b#2)
+      (match 3 bind r#3)
+      (body
+        (call "look.Remove" (attached "dot" (native "net.id" m#0)))))
+    (when-trace "sim.broken"
+      (vars (0 rule binding text))
+      (match 0 bind rule#0)
+      (body
+        (call "look.Fade … to" (attached "border" "border") 1)
+        (native "look.effect" "glow" (attached "border" "border"))
+        (after (time 900000)
+          (call "look.Fade … to" (attached "border" "border") 0))))
     (when-trace "sim.emitted"
       (vars (0 lesson.Noted binding lesson.Noted) (1 origin binding node) (2 caption draw shape))
       (match 0 record lesson.Noted lesson.Noted#0)
       (match 1 bind origin#1)
       (body
-        (draw (native "look.label" (recfield lesson.Noted#0 Text)) caption#2 (for "caption" "caption")))))
+        (draw (native "look.label" (recfield lesson.Noted#0 Text)) caption#2 (for "caption" "caption"))
+        (native "look.tween" "y" caption#2 930 (time 0)))))
   (package "github.com/synodlang/examples/raftlook"
     (uses "github.com/synodlang/examples/raft" "std/look" "std/look/basic" "std/sim" "std/theme")
-    (runs "std/lists" "std/math" "std/net" "std/random" "std/sim" "std/time" "github.com/synodlang/examples/raft" "std/theme" "std/look" "std/lesson" "std/look/basic" "github.com/synodlang/examples/raftlook")
+    (runs "std/lists" "std/math" "std/net" "std/random" "std/sim" "std/time" "github.com/synodlang/examples/raft" "std/theme" "std/look" "std/lesson" "std/text" "std/look/basic" "github.com/synodlang/examples/raftlook")
     (phrase "RoleColor" (result color)
       (vars (0 r param text))
       (body

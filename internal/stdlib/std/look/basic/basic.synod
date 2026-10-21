@@ -1,31 +1,58 @@
 # package basic
 use std/lesson
+use std/lists
 use std/look
 use std/net
 use std/sim
+use std/text
 use std/theme
 
-# Interim (M2): enough to check clean. The state rows, message labels, the
-# dropped-message fade and the border flash need natives that arrive in M4.
 when sim.Started
   look.Layout "ring"
+  draw (look.Rect 1592 by 992) as border for "border"
+  look.Stroke border with theme.Critical
+  look.Tween "opacity" of border to 0 over 0s
 
 when (sim.Added n)
   draw (look.Card for n) as card for n
+  set above to card
+  each i, line in (sim.StateRows n)
+    draw (look.Label line) as row for (text.Join {(sim.Name n), "/", (text.From (i plus 1))})
+      look.Tween "text" of row to (item i of (sim.StateRows n)) over 300ms
+    look.Place row below above
+    set above to row
 
 when (sim.Crashed n)
-  look.Fade (card of n) to 0.3
+  look.Fill (card of n) with theme.Quiet
 
 when (sim.Restarted n)
-  look.Fade (card of n) to 1
+  look.Fill (card of n) with theme.Ink
 
 when (sim.Removed n)
   look.Remove (card of n)
+  each i in (lists.Range 1 to (lists.Size (sim.StateRows n)))
+    look.Remove (row of (text.Join {(sim.Name n), "/", (text.From i)}))
 
 when (net.Sent m from a to b)
-  draw (look.Circle 6) as dot
-  look.Fill dot with theme.Accent
-  look.Travel dot from (card of a) to (card of b) over 400ms
+  draw (look.Circle 6) as ball
+  look.Fill ball with theme.Accent
+  draw (look.Label (net.Type m)) as tag
+  look.Place tag above ball
+  draw (look.Group {ball, tag}) as dot for (net.Id m)
+  look.Flight dot from (card of a) to (card of b) for m
+
+when (net.Arrived m from a to b)
+  look.Remove (dot of (net.Id m))
+
+when (net.Dropped m from a to b because r)
+  look.Remove (dot of (net.Id m))
+
+when (sim.Broken rule)
+  look.Fade (border of "border") to 1
+  look.Effect "glow" on (border of "border")
+  after 900ms
+    look.Fade (border of "border") to 0
 
 when (sim.Emitted lesson.Noted by origin)
   draw (look.Label lesson.Noted.Text) as caption for "caption"
+  look.Tween "y" of caption to 930 over 0s

@@ -1,0 +1,11 @@
+# package p
+use std/look
+use std/sim
+use std/text
+
+Ping has
+  set seq to 0
+  set hidden to 0
+
+when (sim.Emitted Ping by origin)
+  look.Layout (text.From Ping.hidden)

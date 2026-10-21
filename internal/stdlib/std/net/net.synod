@@ -34,3 +34,9 @@ define Partitioned [a: list of node] from [b: list of node] native "net.partitio
 
 # Trace event: net.Heal
 define Healed native "net.healed"
+
+# The message id of the net fact that bound `m`
+define Id [m: msg] native "net.id"
+
+# The unqualified record type name of `m`
+define Type [m: msg] native "net.type"

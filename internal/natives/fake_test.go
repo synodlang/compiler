@@ -155,7 +155,8 @@ func wantLog(t *testing.T, h *fake, want ...string) {
 func TestCoverage(t *testing.T) {
 	want := map[string]bool{}
 	for id, s := range stdlib.Natives {
-		if s.Kind == stdlib.Phrase && len(id) > 5 && id[:5] != "look." {
+		// Look-only natives are implemented by internal/scene.Table.
+		if s.Kind == stdlib.Phrase && s.Contexts != stdlib.Look {
 			want[id] = true
 		}
 	}

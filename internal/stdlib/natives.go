@@ -195,6 +195,7 @@ func buildNatives() map[string]*Sig {
 	val("sim.nodes", Main|Check|Look, nodes)
 	add("sim.nodesRunning", Phrase, Main|Check|Look, ListOfNodeOfPkg(0), -1)
 	val("sim.isUp", Main|Check|Look, flag)
+	val("sim.stateRows", Look, types.List{Elem: txt})
 	node("sim.delivered")
 	for _, id := range []string{"started", "ended", "added", "removed", "crashed", "restarted",
 		"changed", "injected", "fired", "broken", "emitted", "failed"} {
@@ -208,6 +209,8 @@ func buildNatives() map[string]*Sig {
 	act("net.partition", Main)
 	act("net.heal", Main)
 	act("net.dropNext", Main)
+	val("net.id", Look, num)
+	val("net.type", Look, txt)
 	node("net.received")
 	for _, id := range []string{"sent", "arrived", "dropped", "partitioned", "healed"} {
 		trace("net." + id)
@@ -256,5 +259,7 @@ func buildNatives() map[string]*Sig {
 		"placeAbove", "placeBelow", "placeBeside", "orbit"} {
 		act("look."+id, Look)
 	}
+	act("look.flight", Look)
+	act("look.delete", Look)
 	return m
 }

@@ -326,6 +326,10 @@ func (w *ctxWalker) nodeState(sel *resolve.Select, write bool) {
 	}
 	states := 0
 	for _, st := range si.Steps {
+		if st.Kind == StepRecordField && w.ctx == stdlib.Look && !st.Field.Exported {
+			w.errf(st.Sp, source.Context, "look context reads only exported fields", "")
+			return
+		}
 		switch st.Kind {
 		case StepNodeField, StepRecvPhrase:
 		default:
