@@ -1,0 +1,78 @@
+# package sim
+# Seed the run's PRNG (default 1)
+define Seed [n: number] native "sim.seed"
+
+# End the run at simulated time `t`
+define StopAt [t: time] native "sim.stopAt"
+
+# Create and start one node
+define Spawn [p: package] native "sim.spawn"
+
+# Create and start `count` nodes
+define Cluster of [count: number] running [p: package] native "sim.cluster"
+
+# Stop a node (`spec/07`)
+define Crash [n: node] native "sim.crash"
+
+# Restart a crashed node with fresh state
+define Restart [n: node] native "sim.restart"
+
+# Remove a node for good
+define Remove [n: node] native "sim.remove"
+
+# 1, 2, 3… in creation order
+define Id [n: node] native "sim.id"
+
+# `"n1"`, `"n2"`, …
+define Name [n: node] native "sim.name"
+
+# The "no node" value
+define Nobody native "sim.nobody"
+
+# All nodes not removed, in creation order
+define Nodes native "sim.nodes"
+
+# Nodes running `p`
+define NodesRunning [p: package] native "sim.nodesRunning"
+
+# Not crashed and not removed
+define IsUp [n: node] native "sim.isUp"
+
+# Node event: a record injected with deliver
+define Delivered [r: msg] native "sim.delivered"
+
+# Trace event: the run starts
+define Started native "sim.started"
+
+# Trace event: the run ends
+define Ended native "sim.ended"
+
+# Trace event: a node is created
+define Added [n: node] native "sim.added"
+
+# Trace event: a node is removed with sim.Remove
+define Removed [n: node] native "sim.removed"
+
+# Trace event: a node is stopped with sim.Crash
+define Crashed [n: node] native "sim.crashed"
+
+# Trace event: a node is restarted with sim.Restart
+define Restarted [n: node] native "sim.restarted"
+
+# Trace event: set changes an exported node field
+define Changed [f: field] of [n: node] from [old: value] to [new: value] native "sim.changed"
+
+# Trace event: deliver injects a record from main
+define Injected [r: msg] into [n: node] native "sim.injected"
+
+# Trace event: an after timer fires on a node
+define Fired on [n: node] native "sim.fired"
+
+# Trace event: an always turns false
+define Broken [rule: text] native "sim.broken"
+
+# Trace event: emit e by n; n is sim.Nobody when main emits
+define Emitted [e: msg] by [n: node] native "sim.emitted"
+
+# Trace event: a run-time error stops the run
+define Failed [error: text] native "sim.failed"

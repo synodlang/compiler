@@ -1,0 +1,18 @@
+# package math
+# Round down
+define Floor [x: number] native "math.floor"
+
+# Round up
+define Ceil [x: number] native "math.ceil"
+
+# Smaller
+define Min of [a: number] and [b: number] native "math.min"
+
+# Larger
+define Max of [a: number] and [b: number] native "math.max"
+
+# `a − b × floor(a / b)`
+define Remainder of [a: number] by [b: number] native "math.remainder"
+
+# FNV-1a 64-bit of the UTF-8 bytes, divided by 2⁶⁴: a fraction in [0, 1)
+define Hash [t: text] native "math.hash"

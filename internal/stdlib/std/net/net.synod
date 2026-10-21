@@ -1,0 +1,36 @@
+# package net
+# Send through the network from `a`, which must be the receiver
+define Send [m: msg] from [a: node] to [b: node] native "net.send"
+
+# Uniform delay per message (default 10ms–30ms)
+define Latency between [a: time] and [b: time] native "net.latency"
+
+# Probability each message is lost (default 0)
+define Loss [p: number] native "net.loss"
+
+# Cut every link between the two groups
+define Partition [a: list of node] from [b: list of node] native "net.partition"
+
+# Remove all partitions
+define Heal native "net.heal"
+
+# Drop the next message of that record type (unqualified name) on that link
+define DropNext [type: text] from [a: node] to [b: node] native "net.dropNext"
+
+# Node event: a message arrives at the receiving node
+define Received [m: msg] from [a: node] native "net.received"
+
+# Trace event: net.Send m from a to b
+define Sent [m: msg] from [a: node] to [b: node] native "net.sent"
+
+# Trace event: the message is received
+define Arrived [m: msg] from [a: node] to [b: node] native "net.arrived"
+
+# Trace event: loss, partition, crash or net.DropNext
+define Dropped [m: msg] from [a: node] to [b: node] because [r: text] native "net.dropped"
+
+# Trace event: net.Partition
+define Partitioned [a: list of node] from [b: list of node] native "net.partitioned"
+
+# Trace event: net.Heal
+define Healed native "net.healed"

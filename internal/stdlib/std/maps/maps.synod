@@ -1,0 +1,12 @@
+# package maps
+# Number of keys
+define Size [m: map of value to value] native "maps.size"
+
+# Keys in ascending order
+define Keys [m: map of value to value] native "maps.keys"
+
+# A copy without key `k`
+define Without [k: value] from [m: map of value to value] native "maps.without"
+
+# Keys ordered by ascending value, ties by key
+define KeysByValue [m: map of value to value] native "maps.keysByValue"

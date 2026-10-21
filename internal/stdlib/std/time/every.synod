@@ -1,0 +1,6 @@
+# package time
+define Every [d: time] [b: block]
+  b
+  after d
+    Every d
+      b

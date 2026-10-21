@@ -1,0 +1,3 @@
+# package time
+# Simulated time since the run started
+define Now native "time.now"

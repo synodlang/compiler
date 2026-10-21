@@ -1,0 +1,8 @@
+# package look
+define Fade [s: shape] to [o: number]
+  Tween "opacity" of s to o over 300ms
+
+define Pulse [s: shape]
+  Tween "scale" of s to 1.15 over 150ms
+  after 150ms
+    Tween "scale" of s to 1 over 150ms

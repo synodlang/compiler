@@ -1,0 +1,14 @@
+# package lesson
+use std/sim
+
+Asked has
+  set Question to ""
+
+Noted has
+  set Text to ""
+
+define Ask [q: text]
+  emit (message Asked with Question q) by sim.Nobody
+
+define Note [t: text]
+  emit (message Noted with Text t) by sim.Nobody

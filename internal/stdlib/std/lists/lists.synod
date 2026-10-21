@@ -1,0 +1,21 @@
+# package lists
+# Number of items
+define Size [l: list of value] native "lists.size"
+
+# A copy of `l` with `x` added at the end
+define Append [x: value] to [l: list of value] native "lists.append"
+
+# A copy of `a` followed by every item of `b`
+define Extend [a: list of value] with [b: list of value] native "lists.extend"
+
+# A copy without any item equal to `x`
+define Without [x: value] from [l: list of value] native "lists.without"
+
+# The first `n` items (fewer if the list is shorter)
+define Take [n: number] from [l: list of value] native "lists.take"
+
+# Whole numbers from `a` to `b`, inclusive; empty when `a` is more than `b`
+define Range [a: number] to [b: number] native "lists.range"
+
+# Ascending; items must all be numbers, all times or all text
+define Sort [l: list of value] native "lists.sort"

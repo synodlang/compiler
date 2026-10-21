@@ -1,0 +1,9 @@
+# package text
+# Text form: numbers without trailing zeros, durations canonical, nodes by name, `true`/`false`
+define From [v: value] native "text.from"
+
+# Concatenate a list of texts
+define Join [l: list of text] native "text.join"
+
+# Number of characters
+define Size [t: text] native "text.size"

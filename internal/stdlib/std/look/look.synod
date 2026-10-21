@@ -1,0 +1,45 @@
+# package look
+# A circle of radius `r` points
+define Circle [r: number] native "look.circle"
+
+# A rounded rectangle
+define Rect [w: number] by [h: number] native "look.rect"
+
+# Text
+define Label [t: text] native "look.label"
+
+# A line that follows both shapes
+define Line from [a: shape] to [b: shape] native "look.line"
+
+# Shapes moved and faded together
+define Group [l: list of shape] native "look.group"
+
+# Fill color (morphs)
+define Fill [s: shape] with [c: color] native "look.fill"
+
+# Outline color (morphs)
+define Stroke [s: shape] with [c: color] native "look.stroke"
+
+# The only motion primitive (`spec/09`)
+define Tween [p: text] of [s: shape] to [v: value] over [d: time] native "look.tween"
+
+# `"glow"`, `"blur"` or `"trail"`, for 600ms
+define Effect [e: text] on [s: shape] native "look.effect"
+
+# `"ring"`, `"row"` or `"grid"` for node cards
+define Layout [kind: text] native "look.layout"
+
+# Position relative to another shape; likewise `below`, `beside`
+define Place [s: shape] above [t: shape] native "look.placeAbove"
+
+# Position relative to another shape: below
+define Place [s: shape] below [t: shape] native "look.placeBelow"
+
+# Position relative to another shape: beside
+define Place [s: shape] beside [t: shape] native "look.placeBeside"
+
+# An invisible point at the scene centre
+define Center native "look.center"
+
+# Place on a circle of radius 300 around `c`, at fraction `f` of a turn (0 is 12 o'clock, clockwise)
+define Orbit [s: shape] around [c: shape] at [f: number] native "look.orbit"

@@ -1,0 +1,31 @@
+# package basic
+use std/lesson
+use std/look
+use std/net
+use std/sim
+use std/theme
+
+# Interim (M2): enough to check clean. The state rows, message labels, the
+# dropped-message fade and the border flash need natives that arrive in M4.
+when sim.Started
+  look.Layout "ring"
+
+when (sim.Added n)
+  draw (look.Card for n) as card for n
+
+when (sim.Crashed n)
+  look.Fade (card of n) to 0.3
+
+when (sim.Restarted n)
+  look.Fade (card of n) to 1
+
+when (sim.Removed n)
+  look.Remove (card of n)
+
+when (net.Sent m from a to b)
+  draw (look.Circle 6) as dot
+  look.Fill dot with theme.Accent
+  look.Travel dot from (card of a) to (card of b) over 400ms
+
+when (sim.Emitted lesson.Noted by origin)
+  draw (look.Label lesson.Noted.Text) as caption for "caption"

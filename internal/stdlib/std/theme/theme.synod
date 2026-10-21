@@ -1,0 +1,32 @@
+# package theme
+# scene ground
+define Paper
+  result #151A2E
+
+# node cards, primary text
+define Ink
+  result #EDE9E1
+
+# links, borders
+define Line
+  result #3A4366
+
+# secondary text, idle nodes
+define Quiet
+  result #8A90A8
+
+# messages, the one thing to look at
+define Accent
+  result #F4A340
+
+# success, committed
+define Good
+  result #5CC8B8
+
+# candidate, pending
+define Warning
+  result #E8C35A
+
+# broken invariant, crashed
+define Critical
+  result #E86F5A

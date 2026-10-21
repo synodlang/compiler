@@ -1,0 +1,12 @@
+# package random
+# A uniformly chosen item; an `index-range` run-time error on an empty list
+define Pick [l: list of value] native "random.pick"
+
+# Uniform in [a, b)
+define Between [a: number] and [b: number] native "random.between"
+
+# Uniform in [a, b), whole microseconds
+define TimeBetween [a: time] and [b: time] native "random.timeBetween"
+
+# True with probability `p`
+define Chance [p: number] native "random.chance"
