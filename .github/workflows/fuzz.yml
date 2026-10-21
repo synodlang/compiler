@@ -1,0 +1,53 @@
+name: fuzz
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  lex:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go test ./internal/lex -run '^$' -fuzz '^FuzzLex$' -fuzztime 10m
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: lex-crashers
+          path: internal/lex/testdata/fuzz
+          if-no-files-found: ignore
+  parse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go test ./internal/parse -run '^$' -fuzz '^FuzzParse$' -fuzztime 10m
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: parse-crashers
+          path: internal/parse/testdata/fuzz
+          if-no-files-found: ignore
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go test ./internal/format -run '^$' -fuzz '^FuzzFormat$' -fuzztime 10m
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: format-crashers
+          path: internal/format/testdata/fuzz
+          if-no-files-found: ignore

@@ -12,3 +12,37 @@ permissions:
 jobs:
   go:
     uses: synodlang/.github/.github/workflows/go.yml@main
+
+  spec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: synodlang/dsl
+          path: _dsl
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Spec snippets
+        run: go test ./internal/spectest -run TestSpecSnippets -v
+        env:
+          SYNOD_DSL: ${{ github.workspace }}/_dsl
+          SYNOD_REQUIRE_DSL: "1"
+
+  examples-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: synodlang/examples
+          path: _examples
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Vendored examples match synodlang/examples
+        run: go test ./internal/spectest -run TestExamplesDrift -v
+        env:
+          SYNOD_EXAMPLES: ${{ github.workspace }}/_examples
+          SYNOD_REQUIRE_EXAMPLES: "1"
