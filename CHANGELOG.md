@@ -5,6 +5,13 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+## v0.2.0 — 2026-10-21
+
+`synod check` now understands whole programs: it loads modules, finds the
+phrase every sentence calls, and checks types and contexts, reporting every
+compile-time error of specification v0.2.1. Running programs
+(`synod run`) comes in the next release.
+
 ### Added
 
 - Language types and their acceptance rules (`list of T`, `map of K to V`,
@@ -28,6 +35,9 @@ section is the text of its GitHub release page.
 
 ### Changed
 
+- `synod fmt` applies the fixes above when the package loads; a file in a
+  package that does not load is formatted as before.
+- Diagnostic paths are shown relative to the working directory when inside it.
 - CI and release workflows use the Node 24 versions of GitHub Actions.
 
 ## v0.1.0 — 2026-10-21
