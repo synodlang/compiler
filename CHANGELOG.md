@@ -5,11 +5,17 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
-M5, "Scene builder and looks": `synod run` now draws the run.
+## v0.2.3 — 2026-10-22
+
+Implements Synod 0.2, now complete. `synod run` draws the run: next to the
+trace it writes `scene.json`, the animation the player will show. Programs
+without their own look are drawn by the default look: node cards with their
+state, messages flying between nodes, crashes, broken invariants and
+captions.
 
 ### Added
 
-- `synod run` writes `out/scene.json` (`synod-scene/1`) next to the trace and prints `scene <length>, <n> shapes -> out/scene.json` after the existing status lines. The scene is written for every run, also after `sim.Failed`; `--summary` prints the same text as before and writes the scene silently.
+- `synod run` writes `out/scene.json` (`synod-scene/1`) next to the trace and prints `scene <length>, <n> shapes -> out/scene.json` (the length in seconds, such as `147.98s`) after the existing status lines. The scene is written for every run, also after `sim.Failed`; `--summary` prints the same text as before and writes the scene silently.
 - `--scene file` (`-` for stdout, with the status lines on stderr; `--trace -` and `--scene -` together exit 2), `--pace x` (0.25 to 4, up to three decimals) and `--mode ordered|proportional`. `--watch` and `--json-events` still exit 2.
 - The scene builder runs the observers of the program's looks over the facts of the run. A program that does not use `std/look` is drawn by `std/look/basic`: node cards, state rows, message flights, the `sim.Broken` border and lesson captions.
 - A fault inside a look is a look failure, not part of the trace: `look failed at <time>: <pos>: error[<code>]: <message>`, exit 1, and a partial scene with a `failed` marker.
