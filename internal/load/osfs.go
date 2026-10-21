@@ -36,16 +36,3 @@ func (OSFS) Display(name string) string {
 	}
 	return filepath.ToSlash(rel)
 }
-
-// DefaultCacheDir returns $SYNOD_CACHE, or ~/.synod/cache, as a slash path.
-// It is "" when neither is known.
-func DefaultCacheDir() string {
-	if c := os.Getenv("SYNOD_CACHE"); c != "" {
-		return filepath.ToSlash(c)
-	}
-	home, err := os.UserHomeDir()
-	if err != nil || home == "" {
-		return ""
-	}
-	return filepath.ToSlash(filepath.Join(home, ".synod", "cache"))
-}

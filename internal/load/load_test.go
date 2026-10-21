@@ -24,7 +24,6 @@ var testdata = filepath.Join("..", "..", "testdata", "load")
 //	root <dir>          the module tree, default "fs"
 //	target <path>       a target below the root, default "."
 //	discover            targets are all folders below the root
-//	cache <dir>         the module cache
 //	module <path>=<dir> a Config.Modules override
 //
 // Directories are relative to the case. The std tree is testdata/load/std.
@@ -33,7 +32,6 @@ type loadCase struct {
 	root     string // absolute slash path
 	targets  []string
 	discover bool
-	cache    string
 	modules  map[string]string
 }
 
@@ -63,8 +61,6 @@ func readCase(t *testing.T, name string) loadCase {
 			c.targets = append(c.targets, val)
 		case "discover":
 			c.discover = true
-		case "cache":
-			c.cache = abs(val)
 		case "module":
 			mp, d, _ := strings.Cut(val, "=")
 			c.modules[mp] = abs(d)
@@ -123,7 +119,7 @@ func shown(p string, mounts map[string]string) string {
 func (c loadCase) run(t *testing.T, mem bool) string {
 	t.Helper()
 	cfg := Config{Std: stdFS(t)}
-	root, cache := c.root, c.cache
+	root := c.root
 	mods := map[string]string{}
 	for k, v := range c.modules {
 		mods[k] = v
@@ -132,11 +128,6 @@ func (c loadCase) run(t *testing.T, mem bool) string {
 	if mem {
 		m := MapFS{}
 		readTree(t, m, root, "/m")
-		remap := map[string]string{root: "/m"}
-		if cache != "" {
-			readTree(t, m, cache, "/cache")
-			remap[cache] = "/cache"
-		}
 		for k, d := range mods {
 			if strings.HasPrefix(d, root+"/") {
 				mods[k] = "/m" + d[len(root):]
@@ -146,23 +137,14 @@ func (c loadCase) run(t *testing.T, mem bool) string {
 			mods[k] = "/mod/" + k
 		}
 		fsys, root = m, "/m"
-		if cache != "" {
-			cache = "/cache"
-		}
 	}
-	mounts := map[string]string{root: ".", cache: "$cache"}
-	if cache == "" {
-		delete(mounts, cache)
-	}
+	mounts := map[string]string{root: "."}
 	for k, d := range mods {
 		if !strings.HasPrefix(d, root+"/") {
 			mounts[d] = "$mod/" + k
 		}
 	}
-	cfg.FS, cfg.CacheDir, cfg.Modules = fsys, cache, mods
-	if cache == "" {
-		cfg.CacheDir = "/nonexistent-cache" // never fall back to $HOME
-	}
+	cfg.FS, cfg.Modules = fsys, mods
 	cfg.Display = func(p string) string { return shown(p, mounts) }
 
 	targets := c.targets
@@ -255,7 +237,7 @@ func caseNames(t *testing.T) []string {
 	}
 	var out []string
 	for _, e := range ents {
-		if e.IsDir() && e.Name() != "std" && e.Name() != "cache" {
+		if e.IsDir() && e.Name() != "std" {
 			out = append(out, e.Name())
 		}
 	}

@@ -1,7 +1,8 @@
 // Package load finds the modules, packages and imports of a Synod program
 // (spec/06). It reads synod.mod files, turns folders into packages, splits
 // the main file from the library, resolves every import against the module
-// itself, the embedded std, local overrides and the module cache, and orders
+// itself, the embedded std, local overrides and the main module's vendor
+// folder, and orders
 // the packages with their dependencies first.
 //
 // The loader reads through the FS interface only, so it runs on the real
@@ -30,11 +31,8 @@ type Config struct {
 	// Std is the std module: synod.mod at its root and one folder per
 	// package ("net/net.synod", "look/basic/basic.synod"). nil means no std.
 	Std fs.FS
-	// CacheDir holds downloaded modules as <CacheDir>/<module>@<version>/.
-	// "" means $SYNOD_CACHE, or else ~/.synod/cache.
-	CacheDir string
 	// Modules maps a module path to a directory that provides it, ahead of
-	// the cache. Tests use it for the examples and for spec snippets.
+	// the vendor folder. Tests use it for the examples and for spec snippets.
 	Modules map[string]string
 	// Display turns an FS path into the path shown in diagnostics. nil means
 	// the FS's own Display method if it has one (OSFS shows paths relative
@@ -124,7 +122,7 @@ type folder struct {
 type loader struct {
 	fsys     FS
 	std      fs.FS
-	cache    string
+	vendor   string // <main module>/vendor, or "" without a synod.mod
 	over     map[string]string
 	overKeys []string // longest first
 	display  func(string) string
@@ -142,7 +140,6 @@ func newLoader(cfg Config) *loader {
 	l := &loader{
 		fsys:     cfg.FS,
 		std:      cfg.Std,
-		cache:    cfg.CacheDir,
 		over:     cfg.Modules,
 		display:  cfg.Display,
 		mods:     map[string]*Module{},
@@ -160,9 +157,6 @@ func newLoader(cfg Config) *loader {
 		} else {
 			l.display = func(p string) string { return p }
 		}
-	}
-	if l.cache == "" {
-		l.cache = DefaultCacheDir()
 	}
 	for k := range l.over {
 		l.overKeys = append(l.overKeys, k)
@@ -226,6 +220,11 @@ func (l *loader) run(args []string) *Graph {
 	var roots []*Module
 	for _, t := range ts {
 		roots = append(roots, t.mod)
+		// Only the vendor folder of the main module (the first target's)
+		// is read; a dependency's own vendor folder is ignored.
+		if l.vendor == "" && t.mod.Path != "" {
+			l.vendor = join(t.mod.Dir, "vendor")
+		}
 	}
 	for _, k := range l.overKeys {
 		if m := l.localModule(l.over[k], k); m != nil {
@@ -321,7 +320,7 @@ func (l *loader) moduleFor(dir string) *Module {
 }
 
 // moduleAt reads the synod.mod of dir (once). When the file is missing the
-// module has defPath, which a cached module takes from its directory name.
+// module has defPath, which a vendored module takes from its directory name.
 func (l *loader) moduleAt(dir, defPath, version string) *Module {
 	if m := l.mods[dir]; m != nil {
 		return m
@@ -351,7 +350,7 @@ func (l *loader) localModule(dir, modPath string) *Module {
 
 // buildList computes the highest required version of every module reachable
 // through require lines (minimal version selection), reading the synod.mod of
-// every required version that is in the cache.
+// every required version that is in vendor/.
 func (l *loader) buildList(roots []*Module) {
 	visited := map[string]bool{}
 	var visit func(reqs map[string]string)
@@ -374,10 +373,10 @@ func (l *loader) buildList(roots []*Module) {
 				continue
 			}
 			visited[key] = true
-			if l.cache == "" {
+			if l.vendor == "" {
 				continue
 			}
-			if src, err := l.fsys.ReadFile(join(join(l.cache, key), "synod.mod")); err == nil {
+			if src, err := l.fsys.ReadFile(join(join(l.vendor, key), "synod.mod")); err == nil {
 				pm, _ := parseMod("", src)
 				visit(pm.Requires)
 			}
@@ -659,7 +658,7 @@ func (l *loader) resolve(from *Package, imp *Import) *Package {
 		return fail(`"`+p+`" asks for `+imp.Version+` but synod.mod selects `+mod.Version, "")
 	}
 	if mod.Dir == "" {
-		return fail(`module "`+mod.Path+"@"+mod.Version+`" is not in the module cache`,
+		return fail(`module "`+mod.Path+"@"+mod.Version+`" is not in vendor/`,
 			`run "synod get `+mod.Path+"@"+mod.Version+`"`)
 	}
 	dir := mod.Dir
@@ -682,8 +681,8 @@ func (l *loader) resolve(from *Package, imp *Import) *Package {
 
 // moduleOf finds the module that provides import path p for a package of
 // from, and the folder of p below the module root. The module's own path
-// comes first, then the overrides, then the build list. A module from the
-// cache that is missing gets an empty Dir.
+// comes first, then the overrides, then the build list. A vendored
+// module that is missing gets an empty Dir.
 func (l *loader) moduleOf(from *Package, p string) (*Module, string, bool) {
 	rel := func(mp string) string { return strings.TrimPrefix(strings.TrimPrefix(p, mp), "/") }
 	if m := from.Module; !m.Std && m.Path != "" && hasPathPrefix(p, m.Path) {
@@ -707,8 +706,8 @@ func (l *loader) moduleOf(from *Package, p string) (*Module, string, bool) {
 	}
 	v := l.selected[best]
 	dir := ""
-	if l.cache != "" {
-		dir = join(l.cache, best+"@"+v)
+	if l.vendor != "" {
+		dir = join(l.vendor, best+"@"+v)
 		if !isDir(l.fsys, dir) {
 			dir = ""
 		}

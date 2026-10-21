@@ -6,7 +6,7 @@ package example.com/t/a name=a dir=a module=example.com/t
 targets example.com/t/a
 module "example.com/t" dir=. version= synod=0.2 requires=2
 diagnostics 2
-a/a.synod:2:5: error[unknown-import]: module "github.com/other/gone@v0.1.0" is not in the module cache
+a/a.synod:2:5: error[unknown-import]: module "github.com/other/gone@v0.1.0" is not in vendor/
   hint: run "synod get github.com/other/gone@v0.1.0"
 a/a.synod:3:5: error[unknown-import]: no module provides "github.com/other/unrequired"
   hint: add "require <module> <version>" to synod.mod

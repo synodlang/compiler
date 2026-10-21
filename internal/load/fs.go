@@ -143,7 +143,7 @@ func isSynodName(name string) bool {
 }
 
 // Discover lists, in order, every folder at or below root that holds source
-// files, as slash paths. Folders named ".x", "_x" or "testdata" are skipped,
+// files, as slash paths. Folders named ".x", "_x", "testdata" or "vendor" are skipped,
 // and so is a folder with its own synod.mod below root (a nested module).
 func Discover(fsys FS, root string) ([]string, error) {
 	var out []string
@@ -164,7 +164,7 @@ func Discover(fsys FS, root string) ([]string, error) {
 		}
 		for _, e := range ents {
 			n := e.Name()
-			if !e.IsDir() || strings.HasPrefix(n, ".") || strings.HasPrefix(n, "_") || n == "testdata" {
+			if !e.IsDir() || strings.HasPrefix(n, ".") || strings.HasPrefix(n, "_") || n == "testdata" || n == "vendor" {
 				continue
 			}
 			sub := join(dir, n)

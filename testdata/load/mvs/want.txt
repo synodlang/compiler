@@ -1,8 +1,8 @@
-package github.com/other/log name=log dir=$cache/github.com/other/log@v1.1.0 module=github.com/other/log@v1.1.0
-  file $cache/github.com/other/log@v1.1.0/log.synod
+package github.com/other/log name=log dir=vendor/github.com/other/log@v1.1.0 module=github.com/other/log@v1.1.0
+  file vendor/github.com/other/log@v1.1.0/log.synod
   deps 
-package github.com/other/raft name=raft dir=$cache/github.com/other/raft@v1.2.0 module=github.com/other/raft@v1.2.0
-  file $cache/github.com/other/raft@v1.2.0/raft.synod
+package github.com/other/raft name=raft dir=vendor/github.com/other/raft@v1.2.0 module=github.com/other/raft@v1.2.0
+  file vendor/github.com/other/raft@v1.2.0/raft.synod
   import github.com/other/log at 2:5 -> github.com/other/log
   deps github.com/other/log
 package example.com/t/a name=a dir=a module=example.com/t
@@ -12,6 +12,6 @@ package example.com/t/a name=a dir=a module=example.com/t
   deps github.com/other/log github.com/other/raft
 targets example.com/t/a
 module "example.com/t" dir=. version= synod=0.2 requires=2
-module "github.com/other/log" dir=$cache/github.com/other/log@v1.1.0 version=v1.1.0 synod=0.2 requires=0
-module "github.com/other/raft" dir=$cache/github.com/other/raft@v1.2.0 version=v1.2.0 synod=0.2 requires=1
+module "github.com/other/log" dir=vendor/github.com/other/log@v1.1.0 version=v1.1.0 synod=0.2 requires=0
+module "github.com/other/raft" dir=vendor/github.com/other/raft@v1.2.0 version=v1.2.0 synod=0.2 requires=1
 diagnostics 0

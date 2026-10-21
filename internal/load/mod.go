@@ -17,7 +17,7 @@ const StdModule = "github.com/synodlang/std"
 type Module struct {
 	Path     string            // module path; "" for a folder without synod.mod
 	Dir      string            // slash path of the module root; "$std" for std
-	Version  string            // "v1.2.0" for a cached module, else ""
+	Version  string            // "v1.2.0" for a vendored module, else ""
 	Synod    string            // language version, "0.2"
 	Requires map[string]string // module path → version
 	Std      bool

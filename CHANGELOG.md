@@ -12,8 +12,8 @@ section is the text of its GitHub release page.
 - The standard library, embedded in the binary: every phrase of the std
   catalog, with native declarations and the phrases written in Synod.
 - Module loader: `synod.mod`, package graph, main files next to their
-  library, `std/` imports, remote modules from the cache
-  (`$SYNOD_CACHE` or `~/.synod/cache`), import cycles.
+  library, `std/` imports, remote modules from the
+  module's `vendor/` folder, import cycles.
 - Fixes that need the package loaded, for `synod fmt`: record settings
   order, name case, and a dropped own-package qualifier.
 - `synod check` now checks whole programs, not just their form. It finds

@@ -58,17 +58,10 @@ func TestParseMod(t *testing.T) {
 	}
 }
 
-func TestDefaultCacheDir(t *testing.T) {
-	t.Setenv("SYNOD_CACHE", "/x/cache")
-	if got := DefaultCacheDir(); got != "/x/cache" {
-		t.Errorf("DefaultCacheDir = %q", got)
-	}
-}
-
 // A nil std rejects every std import without panicking.
 func TestNoStd(t *testing.T) {
 	fsys := MapFS{"/m/synod.mod": "module e.com/m\nsynod 0.2\n", "/m/a/a.synod": "# package a\nuse std/net\n"}
-	_, ds := Load(Config{FS: fsys, CacheDir: "/c"}, []string{"/m/a"})
+	_, ds := Load(Config{FS: fsys}, []string{"/m/a"})
 	if len(ds) != 1 || ds[0].Code != "unknown-import" {
 		t.Errorf("%v", ds)
 	}
