@@ -1,34 +1,48 @@
 p/p.synod:9:7: error[shadowing]: "net" hides the package "net" at p/p.synod:2
   |
+2 | use std/net
+  | ----------- the package "net" is declared here
+...
 9 |   set net to 0
-  |       ^
+  |       ^^^
   |
   = help: rename it
 
 p/p.synod:12:8: error[shadowing]: "sim" hides the package "sim" at p/p.synod:3
    |
+ 3 | use std/sim
+   | ----------- the package "sim" is declared here
+...
 12 | define sim [a: number]
-   |        ^
+   |        ^^^
    |
    = help: rename it
 
 p/p.synod:16:8: error[shadowing]: "peer" hides the binding "peer" at p/p.synod:15
    |
+15 | when [n: Node] (net.Received tick from peer)
+   |                                        ---- the binding "peer" is declared here
 16 |   each peer in {1}
-   |        ^
+   |        ^^^^
    |
    = help: rename it
 
 p/p.synod:18:10: error[shadowing]: "peer" hides the each name "peer" at p/p.synod:16
    |
+16 |   each peer in {1}
+   |        ---- the each name "peer" is declared here
+17 |     set n.x to peer
 18 |     each peer in {2}
-   |          ^
+   |          ^^^^
    |
    = help: rename it
 
 p/p.synod:25:37: error[shadowing]: "tick" hides the record type "tick" at p/p.synod:5
    |
+ 5 | tick has
+   | -------- the record type "tick" is declared here
+...
 25 | when [n: Node] (net.Received m from tick)
-   |                                     ^
+   |                                     ^^^^
    |
    = help: rename it

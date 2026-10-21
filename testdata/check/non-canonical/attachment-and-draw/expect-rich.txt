@@ -1,6 +1,11 @@
 p/p.synod:6:27: error[non-canonical]: "Card" must start lower-case: only exported names start upper-case
   |
 6 |   draw (look.Circle 3) as Card for n
-  |                           ^
+  |                           ^^^^
   |
-  = help: rename it
+  = note: an attachment name is global: synod fmt does not rename it
+help: rename it
+  |
+6 |   draw (look.Circle 3) as card for n
+  |                           ~
+  |

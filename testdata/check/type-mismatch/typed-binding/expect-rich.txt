@@ -1,4 +1,4 @@
 p/p.synod:10:30: error[type-mismatch]: "[m: q.Node]" has a node type, but the hole "m" has type msg
    |
 10 | when [n: Node] (net.Received [m: q.Node] from peer)
-   |                              ^
+   |                              ^^^^^^^^^^^

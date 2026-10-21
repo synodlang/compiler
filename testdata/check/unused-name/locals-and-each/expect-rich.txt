@@ -1,12 +1,12 @@
 p/p.synod:7:7: error[unused-name]: "unused" is never used
   |
 7 |   set unused to 1
-  |       ^
+  |       ^^^^^^
 
 p/p.synod:8:7: error[unused-name]: "twice" is never used
   |
 8 |   set twice to 1
-  |       ^
+  |       ^^^^^
 
 p/p.synod:10:8: error[unused-name]: "i" is never used
    |

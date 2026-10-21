@@ -3,6 +3,7 @@ package resolve
 import (
 	"io/fs"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/synodlang/compiler/internal/format"
@@ -132,27 +133,79 @@ func (b *body) visibleNames() []string {
 	return out
 }
 
-// unknownName reports a name that means nothing.
-func (b *body) unknownName(pos source.Pos, text, first string) {
+// hint is the hint of an unknown-phrase diagnostic with its structured
+// parts: text is the short-form hint, verbatim; the rest feeds the rich
+// form.
+type hint struct {
+	text string
+	// help is the text of the help that carries edits; text when empty.
+	help  string
+	edits []source.Edit
+	// labels are secondary labels, notes are statements of fact.
+	labels []label
+	notes  []string
+}
+
+// label is a secondary label in a file.
+type label struct {
+	f    *File
+	sp   source.Span
+	text string
+}
+
+// extras turns the hint into the extras of a diagnostic.
+func (h hint) extras() []source.Extra {
+	var out []source.Extra
+	for _, l := range h.labels {
+		out = append(out, l.f.also(l.sp, l.text))
+	}
+	switch {
+	case len(h.edits) > 0:
+		text := h.help
+		if text == "" {
+			text = h.text
+		}
+		out = append(out, source.HelpEdit(text, h.edits...))
+	case h.help != "":
+		out = append(out, source.HelpText(h.help))
+	case h.text != "" && len(h.notes) > 0:
+		out = append(out, source.HelpText(h.text))
+	}
+	for _, n := range h.notes {
+		out = append(out, source.Note(n))
+	}
+	return out
+}
+
+// unknownName reports a name that means nothing. it is the word or member.
+func (b *body) unknownName(it parse.Item, text, first string) {
+	whole := sp(it)
+	firstSp := whole
+	if m, ok := it.(*parse.Member); ok {
+		firstSp = parse.PartSpan(m, 0)
+	}
 	if first != text || strings.Contains(text, ".") {
 		// a member whose first part is unknown
 		if b.r.isStd(first) && b.f.byQual[first] == nil {
-			b.r.err(b.f, pos, source.UnknownPhrase, `"`+first+`" is not imported`, `add "use std/`+first+`"`)
+			b.r.err(b.f, firstSp, source.UnknownPhrase, `"`+first+`" is not imported`, `add "use std/`+first+`"`,
+				b.f.notImported(first))
 			return
 		}
 	}
-	hint := ""
+	h := hint{}
 	if c := closest(first, b.visibleNames()); c != "" {
-		hint = `did you mean "` + strings.Replace(text, first, c, 1) + `"?`
+		h.text = `did you mean "` + strings.Replace(text, first, c, 1) + `"?`
+		h.edits = []source.Edit{source.EditAt(firstSp, c)}
 	}
-	b.r.err(b.f, pos, source.UnknownPhrase, `no phrase matches "`+text+`"`, hint)
+	b.r.err(b.f, whole, source.UnknownPhrase, `no phrase matches "`+text+`"`, h.text, h.extras()...)
 }
 
-// closestMember suggests the member of a package nearest to head.
-func (b *body) closestMember(imp *Import, own bool, head string) string {
+// closestMember suggests the member of a package nearest to head: the hint,
+// and the name to write.
+func (b *body) closestMember(imp *Import, own bool, head string) (string, string) {
 	pk := b.qualPkg(imp, own)
 	if pk == nil {
-		return ""
+		return "", ""
 	}
 	q := pk.Name
 	if imp != nil {
@@ -168,9 +221,9 @@ func (b *body) closestMember(imp *Import, own bool, head string) string {
 	}
 	sort.Strings(names)
 	if c := closest(head, names); c != "" {
-		return `did you mean "` + q + "." + c + `"?`
+		return `did you mean "` + q + "." + c + `"?`, c
 	}
-	return ""
+	return "", ""
 }
 
 // ---- unknown phrases ----
@@ -179,13 +232,16 @@ func (b *body) noMatch(s *parse.Sentence, items []parse.Item, ln *parse.Line) {
 	text := printSentence(s)
 	if m, ok := items[0].(*parse.Member); ok && !b.isValue(m.Parts[0]) && b.f.byQual[m.Parts[0]] == nil &&
 		m.Parts[0] != b.r.pkg.Name && b.r.isStd(m.Parts[0]) {
-		b.r.err(b.f, m.P, source.UnknownPhrase, `"`+m.Parts[0]+`" is not imported`, `add "use std/`+m.Parts[0]+`"`)
+		b.r.err(b.f, parse.PartSpan(m, 0), source.UnknownPhrase, `"`+m.Parts[0]+`" is not imported`, `add "use std/`+m.Parts[0]+`"`,
+			b.f.notImported(m.Parts[0]))
 		for _, g := range s.Groups {
 			b.touch(g)
 		}
 		return
 	}
-	b.r.err(b.f, items[0].Pos(), source.UnknownPhrase, `no phrase matches "`+text+`"`, b.sentenceHint(items, ln))
+	h := b.sentenceHint(items, ln)
+	b.r.err(b.f, parse.SentenceSpan(s), source.UnknownPhrase, `no phrase matches "`+text+`"`, h.text,
+		append([]source.Extra{source.WithLabel("no phrase takes these items")}, h.extras()...)...)
 	for _, g := range s.Groups {
 		b.touch(g)
 	}
@@ -194,7 +250,7 @@ func (b *body) noMatch(s *parse.Sentence, items []parse.Item, ln *parse.Line) {
 	}
 }
 
-func (b *body) eventHint(ev []parse.Item) string {
+func (b *body) eventHint(ev []parse.Item) hint {
 	var cands []*form
 	var quals []string
 	for _, imp := range b.f.Imports {
@@ -213,14 +269,17 @@ func (b *body) eventHint(ev []parse.Item) string {
 	return b.nearest(ev, cands, quals)
 }
 
-func (b *body) sentenceHint(items []parse.Item, ln *parse.Line) string {
-	if _, ok := items[0].(*parse.Paren); ok && ln != nil {
-		return "remove the parentheses"
+func (b *body) sentenceHint(items []parse.Item, ln *parse.Line) hint {
+	if p, ok := items[0].(*parse.Paren); ok && ln != nil {
+		open := source.Span{Start: p.P, End: source.Pos{Line: p.P.Line, Col: p.P.Col + 1}}
+		cl := source.Span{Start: source.Pos{Line: p.E.Line, Col: p.E.Col - 1}, End: p.E}
+		return hint{text: "remove the parentheses",
+			edits: []source.Edit{source.EditAt(open, ""), source.EditAt(cl, "")}}
 	}
 	if parse.IsWord(items[0], "else") && len(items) > 1 && parse.IsWord(items[1], "if") {
-		return "nest the if inside else"
+		return hint{text: "nest the if inside else"}
 	}
-	if h := b.parenHint(items); h != "" {
+	if h, ok := b.parenHint(items); ok {
 		return h
 	}
 	// Candidates: language forms, current package phrases, exported
@@ -258,17 +317,19 @@ func (b *body) sentenceHint(items []parse.Item, ln *parse.Line) string {
 	return b.nearest(items, cands, quals)
 }
 
-// skeleton returns the tokens a sentence is compared by: its first item and
-// the bare words that are not names.
-func (b *body) sentenceSkeleton(items []parse.Item) (toks []string, head string) {
+// sentenceSkeleton returns the tokens a sentence is compared by: its first
+// item and the bare words that are not names, with the span of each.
+func (b *body) sentenceSkeleton(items []parse.Item) (toks []string, head string, spans []source.Span) {
 	head = printItem(items[0])
 	toks = append(toks, head)
+	spans = append(spans, sp(items[0]))
 	for _, it := range items[1:] {
 		if w, ok := it.(*parse.Word); ok && !b.isValue(w.Name) && b.f.byQual[w.Name] == nil {
 			toks = append(toks, w.Name)
+			spans = append(spans, sp(w))
 		}
 	}
-	return toks, head
+	return toks, head, spans
 }
 
 func formSkeleton(f *form, qual string) []string {
@@ -292,16 +353,18 @@ func formSkeleton(f *form, qual string) []string {
 	return toks
 }
 
-// nearest finds the pattern closest to the sentence and renders the hint.
-func (b *body) nearest(items []parse.Item, cands []*form, quals []string) string {
-	sk, head := b.sentenceSkeleton(items)
+// nearest finds the pattern closest to the sentence and builds the hint. It
+// proposes an edit only when exactly one token of the sentence differs from
+// the pattern.
+func (b *body) nearest(items []parse.Item, cands []*form, quals []string) hint {
+	sk, head, spans := b.sentenceSkeleton(items)
 	headTail := head
 	if i := strings.LastIndexByte(head, '.'); i >= 0 {
 		headTail = head[i+1:]
 	}
 	qualified := strings.Contains(head, ".")
 	bestText, bestD := "", 0.0
-	found := false
+	best := -1
 	for i, f := range cands {
 		ps := formSkeleton(f, quals[i])
 		if len(ps) == 0 {
@@ -329,29 +392,54 @@ func (b *body) nearest(items []parse.Item, cands []*form, quals []string) string
 		if f.kind == fkPhrase && f.ph.Receiver != nil {
 			text = f.ph.Describe(quals[i])
 		}
-		if !found || d < bestD || d == bestD && text < bestText {
-			found, bestD, bestText = true, d, text
+		if best < 0 || d < bestD || d == bestD && text < bestText {
+			best, bestD, bestText = i, d, text
 		}
 	}
-	if !found {
-		return ""
+	if best < 0 {
+		return hint{}
 	}
-	return `did you mean "` + bestText + `"?`
+	h := hint{text: `did you mean "` + bestText + `"?`}
+	f, q := cands[best], quals[best]
+	ps := formSkeleton(f, q)
+	if len(ps) == len(sk) && !(f.kind == fkPhrase && f.ph.Receiver != nil) {
+		diff, n := 0, 0
+		for i := range ps {
+			if ps[i] != sk[i] {
+				diff, n = i, n+1
+			}
+		}
+		ok := n == 1
+		if ok && diff == 0 {
+			if m, isMember := items[0].(*parse.Member); isMember {
+				ok = strings.HasPrefix(ps[0], m.Parts[0]+".")
+			}
+		}
+		if ok {
+			h.edits = []source.Edit{source.EditAt(spans[diff], ps[diff])}
+		}
+	}
+	if f.kind == fkPhrase {
+		ph := f.ph
+		switch {
+		case ph.Pkg == b.r.pkg:
+			h.labels = append(h.labels, label{ph.File, ph.Sp, "defined here"})
+		case ph.Pkg.IsStd:
+			h.notes = append(h.notes, `"`+q+"."+ph.Head+`" is in `+ph.Pkg.Path)
+		}
+	}
+	return h
 }
 
 // parenHint looks for a way to read the sentence as a form whose holes take
-// parenthesized runs of items.
-func (b *body) parenHint(items []parse.Item) string {
+// parenthesized runs of items. The hint carries one label and one pair of
+// insertions per run.
+func (b *body) parenHint(items []parse.Item) (hint, bool) {
 	var forms []*form
 	for _, c := range b.candidates(items) {
 		if len(c.f.items) < len(items) {
 			forms = append(forms, c.f)
 		}
-	}
-	// Operator forms at the front: a sentence like "a is b" inside a larger
-	// one is handled through the enclosing form.
-	type sol struct {
-		runs []int
 	}
 	var best []int
 	bestScore := [3]int{-1, 0, 0}
@@ -409,20 +497,44 @@ func (b *body) parenHint(items []parse.Item) string {
 		}
 	}
 	if best == nil || bestScore[0] != 1 {
-		return ""
+		return hint{}, false
 	}
 	var parts []string
+	var h hint
+	noun := ""
 	si := 0
 	for _, n := range best {
 		run := items[si : si+n]
 		if n >= 2 {
 			parts = append(parts, "("+printItems(run)+")")
+			rsp := parse.SpanOfItems(run)
+			kind := "value"
+			text := strconv.Itoa(n) + " items here; wrap them in parentheses"
+			if si > 0 {
+				prev := printItem(items[si-1])
+				if parse.IsWord(items[si-1], "if") {
+					kind = "condition"
+				}
+				text = strconv.Itoa(n) + ` items here; "` + prev + `" takes one ` + kind
+			}
+			if noun == "" || noun == kind {
+				noun = kind
+			} else {
+				noun = "value"
+			}
+			h.labels = append(h.labels, label{b.f, rsp, text})
+			h.edits = append(h.edits, parenEdits(rsp)...)
 		} else {
 			parts = append(parts, printItem(run[0]))
 		}
 		si += n
 	}
-	return `did you mean "` + strings.Join(parts, " ") + `"?`
+	h.text = `did you mean "` + strings.Join(parts, " ") + `"?`
+	h.help = "parenthesize the " + noun
+	if len(h.labels) > 1 {
+		h.help += "s"
+	}
+	return h, true
 }
 
 // plausible reports whether a run of items is a sentence of some form.

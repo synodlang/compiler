@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/synodlang/compiler/internal/format"
 	"github.com/synodlang/compiler/internal/load"
@@ -18,6 +19,7 @@ type decl struct {
 	what string // "phrase", "record type", "node field", "node type"
 	file *File
 	pos  source.Pos
+	sp   source.Span
 }
 
 // claim is a name claimed in the package namespace; claims are checked in
@@ -29,6 +31,7 @@ type claim struct {
 	fi   int
 	file *File
 	pos  source.Pos
+	sp   source.Span
 	// reject is called on a duplicate.
 	reject func()
 	// builtin marks a record type named like a built-in type.
@@ -128,14 +131,16 @@ func dedupFixes(fx []format.Fix) []format.Fix {
 	return out
 }
 
-// err records a diagnostic, once per position and code.
-func (r *resolver) err(f *File, pos source.Pos, code source.Code, msg, hint string) {
+// err records a diagnostic, once per position and code. The primary span is
+// sp; more adds the label, secondary labels, help and notes.
+func (r *resolver) err(f *File, sp source.Span, code source.Code, msg, hint string, more ...source.Extra) {
+	pos := sp.Start
 	key := f.Path + ":" + strconv.Itoa(pos.Line) + ":" + strconv.Itoa(pos.Col) + ":" + string(code)
 	if r.seen[key] {
 		return
 	}
 	r.seen[key] = true
-	r.diags = append(r.diags, source.New(f.Load.Src, pos, code, msg, hint))
+	r.diags = append(r.diags, source.NewSpan(f.Load.Src, sp, code, msg, hint, more...))
 }
 
 func (r *resolver) addFix(f *File, fx format.Fix) {
@@ -167,7 +172,7 @@ func (r *resolver) imports() {
 		if f == nil {
 			continue
 		}
-		imp := &Import{File: f, Imp: li, Qual: li.Alias, Pos: li.PathPos}
+		imp := &Import{File: f, Imp: li, Qual: li.Alias, Pos: li.PathPos, Sp: li.PathSpan}
 		if imp.Qual == "" {
 			imp.Qual = lastSegment(li.Path)
 		}
@@ -182,7 +187,9 @@ func (r *resolver) imports() {
 		for _, imp := range f.Imports {
 			li := imp.Imp
 			if prev := paths[li.Path]; prev != nil {
-				r.err(f, imp.Pos, source.DuplicateName, `"`+li.Path+`" is already imported`, "")
+				r.err(f, imp.Sp, source.DuplicateName, `"`+li.Path+`" is already imported`, "",
+					f.also(prev.Sp, "first imported here"),
+					source.HelpEdit("remove this line", deleteLine(li.LineSpan.Start.Line)))
 				imp.Used = true // one error is enough
 			} else {
 				paths[li.Path] = imp
@@ -190,20 +197,21 @@ func (r *resolver) imports() {
 			if li.Alias != "" {
 				switch {
 				case reserved[li.Alias]:
-					r.err(f, li.AliasPos, source.ReservedWord, `"`+li.Alias+`" is a reserved word and cannot be a package name`, "")
+					r.err(f, aliasWord(li), source.ReservedWord, `"`+li.Alias+`" is a reserved word and cannot be a package name`, "")
 				}
 			}
 			if prev := f.byQual[imp.Qual]; prev != nil && prev.Imp.Path != li.Path {
-				r.err(f, firstPos(li), source.DuplicateName,
+				r.err(f, li.PathSpan, source.DuplicateName,
 					`qualifier "`+imp.Qual+`" is already used by "`+prev.Imp.Path+`"`,
-					`rename one with "use `+li.Path+` as <name>"`)
+					`rename one with "use `+li.Path+` as <name>"`,
+					f.also(prev.Sp, `"`+imp.Qual+`" is first used here`))
 				imp.Used = true // one error is enough
 				continue
 			} else if prev != nil {
 				continue
 			}
 			if imp.Qual == p.Name && !p.IsMain && li.Alias == "" {
-				r.err(f, firstPos(li), source.DuplicateName,
+				r.err(f, li.PathSpan, source.DuplicateName,
 					`qualifier "`+imp.Qual+`" is already the name of this package`,
 					`rename it with "use `+li.Path+` as <name>"`)
 			}
@@ -223,16 +231,20 @@ func (r *resolver) imports() {
 				}
 			}
 			if !clash && !reserved[li.Alias] {
-				r.err(f, li.AliasPos, source.UnneededAlias,
+				r.err(f, aliasWord(li), source.UnneededAlias,
 					`"as `+li.Alias+`" is only for imports that share a last segment`,
-					`write "use `+li.Path+`"`)
+					`write "use `+li.Path+`"`,
+					source.HelpEdit(`write "use `+li.Path+`"`,
+						source.EditAt(source.Span{Start: li.PathSpan.End, End: li.AliasSpan.End}, "")))
 			}
 		}
 	}
 }
 
-// firstPos is the position to report an import at: its path.
-func firstPos(li *load.Import) source.Pos { return li.PathPos }
+// aliasWord is the span of the alias itself, without the word "as".
+func aliasWord(li *load.Import) source.Span {
+	return source.Span{Start: li.AliasPos, End: li.AliasSpan.End}
+}
 
 // finishImports reports unused imports and upper-case aliases.
 func (r *resolver) finishImports() {
@@ -246,7 +258,8 @@ func (r *resolver) finishImports() {
 		if imp.Pkg.Observers {
 			continue
 		}
-		r.err(imp.File, imp.Pos, source.UnusedImport, `"`+imp.Imp.Path+`" is imported but not used`, "")
+		r.err(imp.File, imp.Sp, source.UnusedImport, `"`+imp.Imp.Path+`" is imported but not used`, "",
+			source.HelpEdit("remove the line", deleteLine(imp.Imp.LineSpan.Start.Line)))
 	}
 }
 
@@ -292,7 +305,7 @@ func (r *resolver) declRoot(f *File, pass int) {
 			}
 		default:
 			if pass == 1 {
-				r.err(f, g[0].Pos(), source.Context, "only declarations stand at file root",
+				r.err(f, parse.LineSpan(l), source.Context, "only declarations stand at file root",
 					"a file holds use, has, define, when and always")
 			}
 		}
@@ -320,32 +333,35 @@ type hasInfo struct {
 func (r *resolver) declHas(f *File, l *parse.Line) {
 	g := l.Sentence.Groups[0]
 	w := g[0].(*parse.Word)
+	hasSp := parse.SpanOfItems(g)
 	var rec *Record
 	switch {
 	case reserved[w.Name]:
-		r.err(f, w.P, source.ReservedWord, `"`+w.Name+`" is a reserved word and cannot be a record type`, "")
+		r.err(f, sp(w), source.ReservedWord, `"`+w.Name+`" is a reserved word and cannot be a record type`, "")
 		return
 	case w.Name == "Node":
 		if r.pkg.IsMain {
-			r.err(f, w.P, source.BadReceiver, "a main file has no Node has", "")
+			r.err(f, hasSp, source.BadReceiver, "a main file has no Node has", "")
 			return
 		}
 		if r.nodeHas != nil {
-			r.err(f, w.P, source.DuplicateName,
-				`a second "Node has"; the first is at `+at(r.nodeHas.file, r.nodeHas.pos), "")
+			r.err(f, hasSp, source.DuplicateName,
+				`a second "Node has"; the first is at `+at(r.nodeHas.file, r.nodeHas.pos), "",
+				r.nodeHas.file.also(r.nodeHas.sp, `first "Node has" here`))
 			return
 		}
-		r.nodeHas = &decl{"node type", f, w.P}
+		r.nodeHas = &decl{"node type", f, w.P, hasSp}
 		rec = r.pkg.Node
-		rec.File, rec.Pos = f, w.P
+		rec.File, rec.Pos, rec.Sp = f, w.P, hasSp
 	default:
-		rec = &Record{Pkg: r.pkg, File: f, Name: w.Name, Exported: Exported(w.Name), Pos: w.P}
+		rec = &Record{Pkg: r.pkg, File: f, Name: w.Name, Exported: Exported(w.Name), Pos: w.P, Sp: hasSp}
 		if builtinTypes[w.Name] {
-			r.err(f, w.P, source.DuplicateName, `"`+w.Name+`" is a built-in type`, "")
+			r.err(f, sp(w), source.DuplicateName, `"`+w.Name+`" is a built-in type`, "",
+				source.Note(builtinTypesNote))
 			return
 		}
 		fi := r.fileIndex(f)
-		r.claims = append(r.claims, claim{key: w.Name, disp: w.Name, what: "record type", fi: fi, file: f, pos: w.P,
+		r.claims = append(r.claims, claim{key: w.Name, disp: w.Name, what: "record type", fi: fi, file: f, pos: w.P, sp: hasSp,
 			reject: func() { rec.Name = "" }})
 		r.pkg.Records = append(r.pkg.Records, rec)
 		r.pkg.records[w.Name] = rec
@@ -357,34 +373,29 @@ func (r *resolver) declHas(f *File, l *parse.Line) {
 	for _, bl := range l.Block.Lines {
 		fg := bl.Sentence.Groups[0]
 		if len(fg) != 4 || !parse.IsWord(fg[0], "set") || !parse.IsWord(fg[2], "to") || bl.Block != nil {
-			r.err(f, fg[0].Pos(), source.Context, `a has block holds only "set <field> to <value>" lines`, "")
+			r.err(f, parse.LineSpan(bl), source.Context, `a has block holds only "set <field> to <value>" lines`, "")
 			continue
 		}
 		fw, ok := fg[1].(*parse.Word)
 		if !ok {
-			r.err(f, fg[1].Pos(), source.BadPlace, `"`+printItem(fg[1])+`" is not a `+fieldWhat(rec)+` name`, "")
+			r.err(f, sp(fg[1]), source.BadPlace, `"`+printItem(fg[1])+`" is not a `+fieldWhat(rec)+` name`, "")
 			continue
 		}
 		if reserved[fw.Name] {
-			r.err(f, fw.P, source.ReservedWord, `"`+fw.Name+`" is a reserved word and cannot be a field`, "")
+			r.err(f, sp(fw), source.ReservedWord, `"`+fw.Name+`" is a reserved word and cannot be a field`, "")
 			continue
 		}
-		if rec.IsNode {
-			if rec.Lookup(fw.Name) != nil {
-				first := rec.Lookup(fw.Name)
-				r.err(f, fw.P, source.DuplicateName, `"`+fw.Name+`" is already defined at `+at(first.File, first.Pos), "")
-				continue
-			}
-		} else if first := rec.Lookup(fw.Name); first != nil {
-			r.err(f, fw.P, source.DuplicateName, `"`+fw.Name+`" is already defined at `+at(first.File, first.Pos), "")
+		if first := rec.Lookup(fw.Name); first != nil {
+			r.err(f, sp(fw), source.DuplicateName, `"`+fw.Name+`" is already defined at `+at(first.File, first.Pos), "",
+				first.File.also(first.Sp, "first defined here"))
 			continue
 		}
-		fl := &Field{Owner: rec, Name: fw.Name, Exported: Exported(fw.Name), Index: len(rec.Fields), Pos: fw.P, File: f}
+		fl := &Field{Owner: rec, Name: fw.Name, Exported: Exported(fw.Name), Index: len(rec.Fields), Pos: fw.P, Sp: sp(fw), File: f}
 		rec.Fields = append(rec.Fields, fl)
 		r.mark(f, fw.P, RoleField, &Def{File: f.Path, Pos: fw.P})
 		if rec.IsNode {
 			fi := r.fileIndex(f)
-			r.claims = append(r.claims, claim{key: fw.Name, disp: fw.Name, what: "node field", fi: fi, file: f, pos: fw.P,
+			r.claims = append(r.claims, claim{key: fw.Name, disp: fw.Name, what: "node field", fi: fi, file: f, pos: fw.P, sp: sp(fw),
 				reject: func() { r.pkg.fields[fl.Name] = nil; delete(r.pkg.fields, fl.Name) }})
 			r.pkg.fields[fw.Name] = fl
 		}
@@ -425,12 +436,13 @@ func (r *resolver) checkClaims() {
 	first := map[string]claim{}
 	for _, c := range cs {
 		if c.key == "Node" && !r.pkg.IsMain {
-			r.err(c.file, c.pos, source.DuplicateName, `"Node" is the name of the node type of every package`, "")
+			r.err(c.file, c.sp, source.DuplicateName, `"Node" is the name of the node type of every package`, "")
 			c.reject()
 			continue
 		}
 		if prev, ok := first[c.key]; ok {
-			r.err(c.file, c.pos, source.DuplicateName, `"`+c.disp+`" is already defined at `+at(prev.file, prev.pos), "")
+			r.err(c.file, c.sp, source.DuplicateName, `"`+c.disp+`" is already defined at `+at(prev.file, prev.pos), "",
+				prev.file.also(prev.sp, "first defined here"))
 			c.reject()
 			continue
 		}
@@ -465,12 +477,14 @@ func (r *resolver) checkQualifierClashes() {
 		for _, q := range sortedKeys(f.byQual) {
 			imp := f.byQual[q]
 			if fl := p.fields[q]; fl != nil {
-				r.err(fl.File, fl.Pos, source.Shadowing,
-					`"`+q+`" hides the package "`+q+`" at `+at(f, imp.Pos), "rename it")
+				r.err(fl.File, fl.Sp, source.Shadowing,
+					`"`+q+`" hides the package "`+q+`" at `+at(f, imp.Pos), "rename it",
+					f.also(imp.Imp.LineSpan, `the package "`+q+`" is declared here`))
 			}
 			for _, ph := range p.heads[q] {
-				r.err(ph.File, ph.Items[0].Pos, source.Shadowing,
-					`"`+q+`" hides the package "`+q+`" at `+at(f, imp.Pos), "rename it")
+				r.err(ph.File, ph.Items[0].Sp, source.Shadowing,
+					`"`+q+`" hides the package "`+q+`" at `+at(f, imp.Pos), "rename it",
+					f.also(imp.Imp.LineSpan, `the package "`+q+`" is declared here`))
 			}
 		}
 	}
@@ -481,11 +495,13 @@ func (r *resolver) mains() {
 	p := r.pkg
 	if p.IsMain && p.Main == nil && len(p.Files) > 0 {
 		f := p.Files[0]
-		pos := source.Pos{Line: 1, Col: 1}
+		span := source.Span{Start: source.Pos{Line: 1, Col: 1}}
+		span.End = source.Pos{Line: 1, Col: 1 + utf8.RuneCountInString(f.Load.Src.Line(1))}
 		if h := f.Load.Tree.Header; h != nil {
-			pos = h.Pos
+			span = parse.CommentSpan(h)
 		}
-		r.err(f, pos, source.MissingMain, `main file has no "define main"`, "")
+		r.err(f, span, source.MissingMain, `main file has no "define main"`, "",
+			source.HelpText(`add "define main" with an indented block`))
 	}
 }
 
@@ -509,7 +525,7 @@ func (r *resolver) declDefine(f *File, l *parse.Line) {
 	defPos := g[0].Pos()
 	p := r.pkg
 	if len(items) == 1 && parse.IsWord(items[0], "main") {
-		r.declMain(f, l, items[0].Pos())
+		r.declMain(f, l, g)
 		return
 	}
 	var native *parse.Text
@@ -521,10 +537,11 @@ func (r *resolver) declDefine(f *File, l *parse.Line) {
 		}
 	}
 	if len(items) == 0 {
-		r.err(f, defPos, source.BadPattern, "a pattern needs a word", "")
+		r.err(f, sp(g[0]), source.BadPattern, "a pattern needs a word", "")
 		return
 	}
-	ph := &Phrase{Pkg: p, File: f, Pos: defPos, Line: l}
+	defSp := source.Span{Start: defPos, End: items[len(items)-1].End()}
+	ph := &Phrase{Pkg: p, File: f, Pos: defPos, Sp: defSp, Line: l}
 	// The entry "define [n: Node] start".
 	if isStart(items) {
 		r.declStart(f, l, ph, items)
@@ -536,46 +553,50 @@ func (r *resolver) declDefine(f *File, l *parse.Line) {
 		idx = 1
 	}
 	if idx >= len(items) {
-		r.err(f, items[0].Pos(), source.BadPattern, "a pattern needs a word", "")
+		r.err(f, sp(items[0]), source.BadPattern, "a pattern needs a word", "")
 		return
 	}
 	head, ok := items[idx].(*parse.Word)
 	if !ok {
 		if _, isHole := items[idx].(*parse.Hole); isHole {
-			r.err(f, items[idx].Pos(), source.BadPattern, "only the receiver stands before the head", "")
+			r.err(f, sp(items[idx]), source.BadPattern, "only the receiver stands before the head", "")
 		} else {
-			r.err(f, items[idx].Pos(), source.BadPattern, "pattern items are words and holes", "")
+			r.err(f, sp(items[idx]), source.BadPattern, "pattern items are words and holes", "")
 		}
 		return
 	}
 	if reserved[head.Name] {
-		r.err(f, head.P, source.ReservedWord, `"`+head.Name+`" is a reserved word and cannot be a phrase head`, "")
+		r.err(f, sp(head), source.ReservedWord, `"`+head.Name+`" is a reserved word and cannot be a phrase head`, "")
 	}
 	if !reserved[head.Name] {
 		r.mark(f, head.P, RolePhrase, &Def{File: f.Path, Pos: head.P})
 	}
 	ph.Head = head.Name
 	ph.Exported = Exported(head.Name)
-	ph.Items = append(ph.Items, PatItem{Word: head.Name, Pos: head.P})
+	ph.Items = append(ph.Items, PatItem{Word: head.Name, Pos: head.P, Sp: sp(head)})
 	// The head is never directly followed by a comparison operator.
 	if idx+1 < len(items) {
 		if w, ok := items[idx+1].(*parse.Word); ok {
 			var op string
+			opEnd := w.End()
 			switch w.Name {
 			case "is":
 				op = "is"
 			case "less", "more":
 				if idx+2 < len(items) && parse.IsWord(items[idx+2], "than") {
 					op = w.Name + " than"
+					opEnd = items[idx+2].End()
 				}
 			case "at":
 				if idx+2 < len(items) && (parse.IsWord(items[idx+2], "least") || parse.IsWord(items[idx+2], "most")) {
 					op = "at " + items[idx+2].(*parse.Word).Name
+					opEnd = items[idx+2].End()
 				}
 			}
 			if op != "" {
-				r.err(f, w.P, source.BadPattern,
-					`"`+head.Name+" "+op+`" reads as a comparison; a head is never directly followed by "`+op+`"`, "")
+				r.err(f, source.Span{Start: w.P, End: opEnd}, source.BadPattern,
+					`"`+head.Name+" "+op+`" reads as a comparison; a head is never directly followed by "`+op+`"`, "",
+					f.also(sp(head), "this is the head"))
 			}
 		}
 	}
@@ -590,28 +611,28 @@ func (r *resolver) declDefine(f *File, l *parse.Line) {
 			r.mark(f, it.P, RolePhrase, nil)
 			if sawBlock {
 				if pendingWord != "" {
-					r.err(f, it.P, source.BadPattern, `after a block hole only "<word> [b: block]" pairs follow`, "")
+					r.err(f, sp(it), source.BadPattern, `after a block hole only "<word> [b: block]" pairs follow`, "")
 					return
 				}
 				pendingWord = it.Name
 				if Exported(it.Name) {
-					r.err(f, it.P, source.BadPattern, "pattern words after the head start lower-case", "")
+					r.err(f, sp(it), source.BadPattern, "pattern words after the head start lower-case", "")
 				}
 				continue
 			}
 			if Exported(it.Name) {
-				r.err(f, it.P, source.BadPattern, "pattern words after the head start lower-case", "")
+				r.err(f, sp(it), source.BadPattern, "pattern words after the head start lower-case", "")
 			}
-			ph.Items = append(ph.Items, PatItem{Word: it.Name, Pos: it.P})
+			ph.Items = append(ph.Items, PatItem{Word: it.Name, Pos: it.P, Sp: sp(it)})
 			prevHole = nil
 		case *parse.Hole:
 			param := r.param(f, it, ph.Pkg)
 			if param.Kind == ParamBlock {
 				if len(ph.Items) == 1 && !sawBlock && len(ph.Blocks) == 0 {
-					r.err(f, it.P, source.BadPattern, "a word or hole must stand between the head and the first block hole", "")
+					r.err(f, sp(it), source.BadPattern, "a word or hole must stand between the head and the first block hole", "")
 				}
 				if sawBlock && pendingWord == "" {
-					r.err(f, it.P, source.BadPattern, `after a block hole only "<word> [b: block]" pairs follow`, "")
+					r.err(f, sp(it), source.BadPattern, `after a block hole only "<word> [b: block]" pairs follow`, "")
 				}
 				ph.Blocks = append(ph.Blocks, BlockSlot{Word: pendingWord, Param: param})
 				pendingWord = ""
@@ -620,25 +641,31 @@ func (r *resolver) declDefine(f *File, l *parse.Line) {
 				continue
 			}
 			if sawBlock {
-				r.err(f, it.P, source.BadPattern, "block holes come last", "")
+				var more []source.Extra
+				if n := len(ph.Blocks); n > 0 {
+					more = append(more, f.also(ph.Blocks[n-1].Param.HoleSp, "the last block hole is here"))
+				}
+				r.err(f, sp(it), source.BadPattern, "block holes come last", "", more...)
 				return
 			}
 			if prevHole != nil {
-				r.err(f, it.P, source.BadPattern,
-					`holes "`+holeText(prevHole)+`" and "`+holeText(it)+`" are adjacent`, "")
+				r.err(f, sp(it), source.BadPattern,
+					`holes "`+holeText(prevHole)+`" and "`+holeText(it)+`" are adjacent`, "",
+					f.also(sp(prevHole), "adjacent to this hole"),
+					source.HelpText("put a word between them"))
 			}
 			param.Index = inline
 			inline++
 			ph.Params = append(ph.Params, param)
-			ph.Items = append(ph.Items, PatItem{Param: param, Pos: it.P})
+			ph.Items = append(ph.Items, PatItem{Param: param, Pos: it.P, Sp: sp(it)})
 			prevHole = it
 		default:
-			r.err(f, items[i].Pos(), source.BadPattern, "pattern items are words and holes", "")
+			r.err(f, sp(items[i]), source.BadPattern, "pattern items are words and holes", "")
 			return
 		}
 	}
 	if pendingWord != "" {
-		r.err(f, items[len(items)-1].Pos(), source.BadPattern, `after a block hole only "<word> [b: block]" pairs follow`, "")
+		r.err(f, sp(items[len(items)-1]), source.BadPattern, `after a block hole only "<word> [b: block]" pairs follow`, "")
 	}
 	// Names that appear twice, and the receiver.
 	seen := map[string]*Param{}
@@ -650,7 +677,8 @@ func (r *resolver) declDefine(f *File, l *parse.Line) {
 			continue
 		}
 		if prev := seen[prm.Name]; prev != nil {
-			r.err(f, prm.Pos, source.DuplicateName, `"`+prm.Name+`" is already defined at `+at(f, prev.Pos), "")
+			r.err(f, prm.Sp, source.DuplicateName, `"`+prm.Name+`" is already defined at `+at(f, prev.Pos), "",
+				f.also(prev.Sp, "first defined here"))
 		} else {
 			seen[prm.Name] = prm
 		}
@@ -704,11 +732,11 @@ func isStart(items []parse.Item) bool {
 
 // receiver declares the receiver hole of a phrase.
 func (r *resolver) receiver(f *File, h *parse.Hole) *Param {
-	prm := &Param{Name: h.Name.Name, Kind: ParamReceiver, Index: -1, Pos: h.Name.P, Source: typeString(h.Type)}
-	r.nameCheckDecl(f, h.Name.P, h.Name.Name, "hole name")
+	prm := &Param{Name: h.Name.Name, Kind: ParamReceiver, Index: -1, Pos: h.Name.P, Sp: sp(h.Name), HoleSp: sp(h), Source: typeString(h.Type)}
+	r.nameCheckDecl(f, sp(h.Name), h.Name.Name, "hole name")
 	r.mark(f, h.Name.P, RoleName, &Def{File: f.Path, Pos: h.Name.P})
 	if r.pkg.IsMain {
-		r.err(f, h.P, source.BadReceiver, "a main file has no receivers", "")
+		r.err(f, sp(h), source.BadReceiver, "a main file has no receivers", "")
 		prm.Type = types.TInvalid
 		return prm
 	}
@@ -718,7 +746,7 @@ func (r *resolver) receiver(f *File, h *parse.Hole) *Param {
 	case types.NodeOf:
 	default:
 		if !isInvalid(t) {
-			r.err(f, h.P, source.BadReceiver, "a receiver has type Node or p.Node, not "+typeString(h.Type), "")
+			r.err(f, sp(h), source.BadReceiver, "a receiver has type Node or p.Node, not "+typeString(h.Type), "")
 		}
 		prm.Type = types.TInvalid
 	}
@@ -729,8 +757,8 @@ func isInvalid(t types.Type) bool { return types.Equal(t, types.TInvalid) }
 
 // param declares an inline or block hole.
 func (r *resolver) param(f *File, h *parse.Hole, pkg *Package) *Param {
-	prm := &Param{Name: h.Name.Name, Index: -1, Pos: h.Name.P, Source: typeString(h.Type)}
-	r.nameCheckDecl(f, h.Name.P, h.Name.Name, "hole name")
+	prm := &Param{Name: h.Name.Name, Index: -1, Pos: h.Name.P, Sp: sp(h.Name), HoleSp: sp(h), Source: typeString(h.Type)}
+	r.nameCheckDecl(f, sp(h.Name), h.Name.Name, "hole name")
 	r.mark(f, h.Name.P, RoleName, &Def{File: f.Path, Pos: h.Name.P})
 	if nt, ok := h.Type.(*parse.NamedType); ok && nt.Name == "block" {
 		prm.Kind = ParamBlock
@@ -745,17 +773,18 @@ func (r *resolver) param(f *File, h *parse.Hole, pkg *Package) *Param {
 // nameCheckDecl reports a reserved word used as a name and, for names that
 // must start lower-case, schedules nothing here (the body pass handles
 // renames).
-func (r *resolver) nameCheckDecl(f *File, pos source.Pos, name, what string) {
+func (r *resolver) nameCheckDecl(f *File, span source.Span, name, what string) {
 	if reserved[name] {
-		r.err(f, pos, source.ReservedWord, `"`+name+`" is a reserved word and cannot be a `+what, "")
+		r.err(f, span, source.ReservedWord, `"`+name+`" is a reserved word and cannot be a `+what, "")
 	}
 }
 
 // typ resolves a hole type. inColl is set inside list and map; stdOK is
 // unused. Errors are bad-pattern.
 func (r *resolver) typ(f *File, t parse.Type, inColl, key bool) types.Type {
-	bad := func(pos source.Pos, msg, hint string) types.Type {
-		r.err(f, pos, source.BadPattern, msg, hint)
+	tsp := parse.TypeSpan(t)
+	bad := func(msg, hint string, more ...source.Extra) types.Type {
+		r.err(f, tsp, source.BadPattern, msg, hint, more...)
 		return types.TInvalid
 	}
 	switch t := t.(type) {
@@ -771,7 +800,8 @@ func (r *resolver) typ(f *File, t parse.Type, inColl, key bool) types.Type {
 			q, n := name[:i], name[i+1:]
 			if q == r.pkg.Name && !r.pkg.IsMain {
 				if n == "Node" || r.pkg.records[n] != nil {
-					r.err(f, t.P, source.NonCanonical, `"`+name+`" names a type of this package: write "`+n+`"`, "")
+					r.err(f, tsp, source.NonCanonical, `"`+name+`" names a type of this package: write "`+n+`"`, "",
+						source.HelpEdit(`write "`+n+`"`, source.EditAt(tsp, n)))
 					if n == "Node" {
 						return r.pkg.Node.Type()
 					}
@@ -781,10 +811,12 @@ func (r *resolver) typ(f *File, t parse.Type, inColl, key bool) types.Type {
 			imp := f.byQual[q]
 			if imp == nil {
 				hint := ""
+				var more []source.Extra
 				if r.isStd(q) {
 					hint = `add "use std/` + q + `"`
+					more = append(more, f.notImported(q))
 				}
-				return bad(t.P, `unknown type "`+name+`"`, hint)
+				return bad(`unknown type "`+name+`"`, hint, more...)
 			}
 			imp.Used = true
 			imp.typeRefs = true
@@ -793,17 +825,21 @@ func (r *resolver) typ(f *File, t parse.Type, inColl, key bool) types.Type {
 			}
 			if n == "Node" {
 				if imp.Pkg.Node == nil {
-					return bad(t.P, `unknown type "`+name+`"`, "")
+					return bad(`unknown type "`+name+`"`, "")
 				}
 				return imp.Pkg.Node.Type()
 			}
 			rec := imp.Pkg.records[n]
 			if rec == nil {
-				return bad(t.P, `unknown type "`+name+`"`, "")
+				return bad(`unknown type "`+name+`"`, "")
 			}
 			if !rec.Exported {
-				r.err(f, t.P, source.Unexported, `"`+name+`" is not exported by `+imp.Qual,
-					"only names starting upper-case are visible outside "+imp.Qual)
+				var more []source.Extra
+				if !imp.Pkg.IsStd {
+					more = append(more, rec.File.also(rec.Sp, "lower-case: stays inside "+imp.Qual))
+				}
+				r.err(f, tsp, source.Unexported, `"`+name+`" is not exported by `+imp.Qual,
+					"only names starting upper-case are visible outside "+imp.Qual, more...)
 				return types.TInvalid
 			}
 			return rec.Type()
@@ -831,24 +867,24 @@ func (r *resolver) typ(f *File, t parse.Type, inColl, key bool) types.Type {
 			return types.TPackage
 		case "block":
 			if inColl {
-				return bad(t.P, `"block" cannot be nested inside list or map`, "")
+				return bad(`"block" cannot be nested inside list or map`, "")
 			}
 			return types.TBlock
 		case "value":
 			if !r.pkg.IsStd {
-				return bad(t.P, `"value" is a type for std natives only`, "")
+				return bad(`"value" is a type for std natives only`, "")
 			}
 			return types.TValue
 		case "Node":
 			if r.pkg.IsMain {
-				return bad(t.P, `unknown type "Node"`, "a main file has no node type")
+				return bad(`unknown type "Node"`, "a main file has no node type")
 			}
 			return r.pkg.Node.Type()
 		}
 		if rec := r.pkg.records[name]; rec != nil {
 			return rec.Type()
 		}
-		return bad(t.P, `unknown type "`+name+`"`, "")
+		return bad(`unknown type "`+name+`"`, "")
 	}
 	return types.TInvalid
 }
@@ -895,9 +931,9 @@ func (r *resolver) finishPhrase(f *File, l *parse.Line, ph *Phrase, native *pars
 	case native != nil:
 		id := strings.Trim(native.Raw, `"`)
 		if !p.IsStd {
-			r.err(f, nativeWord.P, source.NativeOutsideStd, `"native" is only allowed in std packages`, "")
+			r.err(f, source.Span{Start: nativeWord.P, End: native.End()}, source.NativeOutsideStd, `"native" is only allowed in std packages`, "")
 		} else if sig := stdlib.Natives[id]; sig == nil {
-			r.err(f, native.P, source.BadPattern, `unknown native id "`+id+`"`, "")
+			r.err(f, sp(native), source.BadPattern, `unknown native id "`+id+`"`, "")
 		} else {
 			ph.Native, ph.Sig = id, sig
 			ph.Contexts = sig.Contexts
@@ -910,10 +946,10 @@ func (r *resolver) finishPhrase(f *File, l *parse.Line, ph *Phrase, native *pars
 			ph.Native = id
 		}
 		if l.Block != nil {
-			r.err(f, l.Block.Lines[0].Pos, source.BadPattern, "a native definition has no block", "")
+			r.err(f, parse.LineSpan(l.Block.Lines[0]), source.BadPattern, "a native definition has no block", "")
 		}
 	case l.Block == nil:
-		r.err(f, ph.Pos, source.BadPattern, `a definition needs an indented block or native "<id>"`, "")
+		r.err(f, parse.LineSpan(l), source.BadPattern, `a definition needs an indented block or native "<id>"`, "")
 	default:
 		ph.IsValue = hasResult(l.Block)
 		if p.IsStd {
@@ -925,7 +961,7 @@ func (r *resolver) finishPhrase(f *File, l *parse.Line, ph *Phrase, native *pars
 	p.Phrases = append(p.Phrases, ph)
 	r.byLine[l] = ph
 	fi := r.fileIndex(f)
-	r.claims = append(r.claims, claim{key: ph.Skeleton, disp: ph.Name, what: "phrase", fi: fi, file: f, pos: ph.Pos,
+	r.claims = append(r.claims, claim{key: ph.Skeleton, disp: ph.Name, what: "phrase", fi: fi, file: f, pos: ph.Pos, sp: ph.Sp,
 		reject: func() { ph.dup = true }})
 }
 
@@ -951,21 +987,27 @@ func hasResult(b *parse.Block) bool {
 	return false
 }
 
-func (r *resolver) declMain(f *File, l *parse.Line, pos source.Pos) {
+func (r *resolver) declMain(f *File, l *parse.Line, g []parse.Item) {
 	p := r.pkg
+	mainSp := parse.SpanOfItems(g)
 	switch {
 	case !p.IsMain:
-		r.err(f, l.Pos, source.ExtraMain, `"define main" stands only in a main file`, "")
+		var more []source.Extra
+		if h := f.Load.Tree.Header; h != nil {
+			more = append(more, f.also(parse.CommentSpan(h), "this is a library file"))
+		}
+		r.err(f, mainSp, source.ExtraMain, `"define main" stands only in a main file`, "", more...)
 		return
 	case r.mainAt != nil:
-		r.err(f, l.Pos, source.ExtraMain, `a second "define main"`, "")
+		r.err(f, mainSp, source.ExtraMain, `a second "define main"`, "",
+			r.mainAt.file.also(r.mainAt.sp, `first "define main" here`))
 		return
 	case l.Block == nil:
-		r.err(f, l.Pos, source.BadPattern, "define main needs an indented block", "")
+		r.err(f, parse.LineSpan(l), source.BadPattern, "define main needs an indented block", "")
 		return
 	}
-	r.mainAt = &decl{"main", f, l.Pos}
-	ph := &Phrase{Pkg: p, File: f, Pos: l.Pos, Kind: PhraseMain, Head: "main", Skeleton: "main", Name: "main", Line: l,
+	r.mainAt = &decl{"main", f, l.Pos, mainSp}
+	ph := &Phrase{Pkg: p, File: f, Pos: l.Pos, Sp: mainSp, Kind: PhraseMain, Head: "main", Skeleton: "main", Name: "main", Line: l,
 		Contexts: stdlib.Any, Zero: true}
 	p.Main = ph
 	p.Phrases = append(p.Phrases, ph)
@@ -979,41 +1021,42 @@ func (r *resolver) declStart(f *File, l *parse.Line, ph *Phrase, items []parse.I
 	ph.Head, ph.Skeleton, ph.Name = "start", "start", "start"
 	ph.Contexts = stdlib.Any
 	ph.Zero = true
-	ph.Items = []PatItem{{Word: "start", Pos: startW.P}}
+	ph.Items = []PatItem{{Word: "start", Pos: startW.P, Sp: sp(startW)}}
 	if p.IsMain {
-		pos := startW.P
+		span := sp(startW)
 		if len(items) == 2 {
-			pos = items[0].Pos()
+			span = spanTo(sp(items[0]), sp(startW))
 		}
-		r.err(f, pos, source.BadReceiver, "a main file has no start", "")
+		r.err(f, span, source.BadReceiver, "a main file has no start", "")
 		return
 	}
 	if len(items) == 1 {
-		r.err(f, startW.P, source.BadReceiver, "the receiver of start is [n: Node]", "")
+		r.err(f, sp(startW), source.BadReceiver, "the receiver of start is [n: Node]", "")
 		return
 	}
 	h := items[0].(*parse.Hole)
 	nt, ok := h.Type.(*parse.NamedType)
-	prm := &Param{Name: h.Name.Name, Kind: ParamReceiver, Index: -1, Pos: h.Name.P, Source: typeString(h.Type)}
-	r.nameCheckDecl(f, h.Name.P, h.Name.Name, "hole name")
+	prm := &Param{Name: h.Name.Name, Kind: ParamReceiver, Index: -1, Pos: h.Name.P, Sp: sp(h.Name), HoleSp: sp(h), Source: typeString(h.Type)}
+	r.nameCheckDecl(f, sp(h.Name), h.Name.Name, "hole name")
 	r.mark(f, h.Name.P, RoleName, &Def{File: f.Path, Pos: h.Name.P})
 	if !ok || nt.Name != "Node" {
-		r.err(f, h.P, source.BadReceiver, "the receiver of start is [n: Node]", "")
+		r.err(f, sp(h), source.BadReceiver, "the receiver of start is [n: Node]", "")
 		prm.Type = types.TInvalid
 	} else {
 		prm.Type = p.Node.Type()
 	}
 	ph.Receiver = prm
 	if l.Block == nil {
-		r.err(f, ph.Pos, source.BadPattern, "define start needs an indented block", "")
+		r.err(f, parse.LineSpan(l), source.BadPattern, "define start needs an indented block", "")
 		return
 	}
 	if r.startAt != nil {
-		r.err(f, startW.P, source.DuplicateName,
-			"a second start; the first is at "+at(r.startAt.file, r.startAt.pos), "")
+		r.err(f, sp(startW), source.DuplicateName,
+			"a second start; the first is at "+at(r.startAt.file, r.startAt.pos), "",
+			r.startAt.file.also(r.startAt.sp, "first start here"))
 		return
 	}
-	r.startAt = &decl{"start", f, ph.Pos}
+	r.startAt = &decl{"start", f, ph.Pos, ph.Sp}
 	p.Start = ph
 	p.Phrases = append(p.Phrases, ph)
 	r.byLine[l] = ph
@@ -1031,8 +1074,10 @@ func (r *resolver) renameAlias(imp *Import) {
 		free = false
 	}
 	if !free {
-		r.err(imp.File, imp.Imp.AliasPos, source.NonCanonical,
-			`"`+a+`" must start lower-case: only exported names start upper-case`, "rename it")
+		r.err(imp.File, aliasWord(imp.Imp), source.NonCanonical,
+			`"`+a+`" must start lower-case: only exported names start upper-case`, "rename it",
+			source.HelpEdit("rename it", lowerEdit(imp.Imp.AliasPos, a)),
+			source.Note(`rename every use of "`+a+`" the same way`))
 		return
 	}
 	r.addFix(imp.File, format.Fix{Pos: imp.Imp.AliasPos, Rename: lower})

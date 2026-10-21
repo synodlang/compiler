@@ -1,1 +1,1 @@
-{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":4,"col":5,"end":{"line":4,"col":5},"severity":"error","code":"unused-import","message":"\"example.com/t/quiet\" is imported but not used"}]}
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":4,"col":5,"end":{"line":4,"col":24},"severity":"error","code":"unused-import","message":"\"example.com/t/quiet\" is imported but not used","help":[{"text":"remove the line","edits":[{"line":4,"col":1,"end":{"line":5,"col":1},"new":""}]}]}]}

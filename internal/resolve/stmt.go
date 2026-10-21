@@ -2,6 +2,7 @@ package resolve
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/synodlang/compiler/internal/parse"
 	"github.com/synodlang/compiler/internal/source"
@@ -33,7 +34,7 @@ func (r *resolver) bodyDefine(f *File, l *parse.Line) {
 		b.declParam(bs.Param)
 	}
 	if l.Block != nil && ph.Native == "" {
-		ph.Body = &Block{At: At{l.Block.Lines[0].Pos}, Stmts: b.stmts(l.Block)}
+		ph.Body = &Block{At: atS(blockSpan(l.Block)), Stmts: b.stmts(l.Block)}
 	}
 	ph.Locals = b.locals
 	b.pop()
@@ -73,10 +74,12 @@ func (r *resolver) bodyAlways(f *File, l *parse.Line) {
 	if len(g) != 2 || l.Block != nil {
 		text := printSentence(l.Sentence)
 		hint := ""
+		var more []source.Extra
 		if len(g) > 2 {
 			hint = `did you mean "always (` + printItems(g[1:]) + `)"?`
+			more = append(more, source.HelpEdit("parenthesize the condition", parenEdits(parse.SpanOfItems(g[1:]))...))
 		}
-		r.err(f, g[0].Pos(), source.UnknownPhrase, `no phrase matches "`+text+`"`, hint)
+		r.err(f, parse.LineSpan(l), source.UnknownPhrase, `no phrase matches "`+text+`"`, hint, more...)
 		b.touch(g)
 		return
 	}
@@ -98,24 +101,32 @@ func (b *body) stmts(blk *parse.Block) []Stmt {
 }
 
 // block resolves a block in a new scope. boundary is "after" or "a block
-// argument" for blocks that run later on a copy of the locals.
-func (b *body) block(blk *parse.Block, boundary string) *Block {
-	b.push(boundary)
+// argument" for blocks that run later on a copy of the locals; at is the span
+// of the line that opens such a block.
+func (b *body) block(blk *parse.Block, boundary string, at source.Span) *Block {
+	b.push(boundary, at)
 	if boundary != "" {
 		b.noResult++
+		b.bounds = append(b.bounds, bound{boundary, at})
 	}
-	out := &Block{At: At{blk.Lines[0].Pos}, Stmts: b.stmts(blk)}
+	out := &Block{At: atS(blockSpan(blk)), Stmts: b.stmts(blk)}
 	if boundary != "" {
 		b.noResult--
+		b.bounds = b.bounds[:len(b.bounds)-1]
 	}
 	b.pop()
 	return out
 }
 
+// blockSpan runs from the first line of blk to the end of its last line.
+func blockSpan(blk *parse.Block) source.Span {
+	return spanTo(parse.LineSpan(blk.Lines[0]), parse.LineSpan(blk.Lines[len(blk.Lines)-1]))
+}
+
 func (b *body) stmt(ln *parse.Line) Stmt {
 	s := ln.Sentence
 	items := s.Groups[0]
-	pos := ln.Pos
+	lsp := parse.LineSpan(ln)
 	if w, ok := items[0].(*parse.Word); ok {
 		switch {
 		case w.Name == "use" || w.Name == "define" || w.Name == "when" || w.Name == "always",
@@ -124,15 +135,15 @@ func (b *body) stmt(ln *parse.Line) Stmt {
 			if name != "use" && name != "define" && name != "when" && name != "always" {
 				name = "has"
 			}
-			b.r.err(b.f, w.P, source.Context, `"`+name+`" stands only at file root`, "")
-			return &BadStmt{At{pos}}
+			b.r.err(b.f, lsp, source.Context, `"`+name+`" stands only at file root`, "")
+			return &BadStmt{atS(lsp)}
 		case w.Name == "each":
 			return b.eachStmt(ln)
 		case len(items) == 1 && ln.Block == nil:
 			if sym, _ := b.lookup(w.Name); sym != nil {
 				if prm, ok := sym.(*Param); ok && prm.Kind == ParamBlock {
 					useSym(prm, w.P)
-					return &RunBlock{At: At{pos}, Param: prm}
+					return &RunBlock{At: atS(lsp), Param: prm}
 				}
 			}
 		}
@@ -143,16 +154,16 @@ func (b *body) stmt(ln *parse.Line) Stmt {
 		return r.S
 	case r.E != nil:
 		if c, ok := r.E.(*Call); ok {
-			return &CallStmt{At: At{pos}, Call: c}
+			return &CallStmt{At: atS(lsp), Call: c}
 		}
-		return &ExprStmt{At: At{pos}, X: r.E}
+		return &ExprStmt{At: atS(lsp), X: r.E}
 	}
-	return &BadStmt{At{pos}}
+	return &BadStmt{atS(lsp)}
 }
 
 func (b *body) eachStmt(ln *parse.Line) Stmt {
 	s := ln.Sentence
-	pos := ln.Pos
+	lsp := parse.LineSpan(ln)
 	var names []*parse.Word
 	var over parse.Item
 	ok := false
@@ -169,23 +180,25 @@ func (b *body) eachStmt(ln *parse.Line) Stmt {
 		}
 	}
 	if !ok || ln.Block == nil || len(ln.Conts) > 0 {
-		b.r.err(b.f, pos, source.UnknownPhrase, `no phrase matches "`+printSentence(s)+`"`,
+		b.r.err(b.f, lsp, source.UnknownPhrase, `no phrase matches "`+printSentence(s)+`"`,
 			`write "each <name> in <collection>" or "each <index>, <item> in <collection>" with an indented block`)
 		b.touch(s.Groups[0])
-		return &BadStmt{At{pos}}
+		return &BadStmt{atS(lsp)}
 	}
-	st := &Each{At: At{pos}, Over: b.arg(over, nil)}
-	b.push("")
-	st.A = b.declLocal(names[0].Name, names[0].P, LocalEach)
+	st := &Each{At: atS(lsp), Over: b.arg(over, nil)}
+	b.push("", source.Span{})
+	st.A = b.declLocal(names[0].Name, sp(names[0]), LocalEach)
 	if len(names) == 2 {
-		st.B = b.declLocal(names[1].Name, names[1].P, LocalEach)
+		st.B = b.declLocal(names[1].Name, sp(names[1]), LocalEach)
 		st.A.eachIdx, st.A.eachOther = 0, names[1].Name
 		st.B.eachIdx, st.B.eachOther = 1, names[0].Name
+		both := spanTo(sp(names[0]), sp(names[1]))
+		st.A.Names, st.B.Names = both, both
 	}
 	for _, n := range names {
 		b.r.mark(b.f, n.P, RoleName, &Def{File: b.f.Path, Pos: n.P})
 	}
-	body := &Block{At: At{ln.Block.Lines[0].Pos}, Stmts: b.stmts(ln.Block)}
+	body := &Block{At: atS(blockSpan(ln.Block)), Stmts: b.stmts(ln.Block)}
 	st.Body = body
 	b.pop()
 	return st
@@ -193,23 +206,24 @@ func (b *body) eachStmt(ln *parse.Line) Stmt {
 
 // bindSet resolves "set place to value" and "set item key of place to value".
 func (b *body) bindSet(text string, items []parse.Item, itemForm []parse.Item) res {
-	pos := items[0].Pos()
+	ssp := parse.SpanOfItems(items)
 	if itemForm != nil {
 		val := b.arg(items[6], nil)
 		key := b.arg(items[2], nil)
 		base := b.itemBase(items[4])
 		if base == nil {
-			return res{S: &BadStmt{At{pos}}}
+			return res{S: &BadStmt{atS(ssp)}}
 		}
-		return res{S: &Set{At: At{pos}, Place: &ItemPlace{At: At{items[1].Pos()}, Base: base, Key: key}, Value: val}}
+		isp := source.Span{Start: items[1].Pos(), End: items[4].End()}
+		return res{S: &Set{At: atS(ssp), Place: &ItemPlace{At: atS(isp), Base: base, Key: key}, Value: val}}
 	}
 	val := b.arg(items[3], nil)
 	pl, nl := b.place(items[1])
-	return res{S: &Set{At: At{pos}, Place: pl, Value: val, NewLocal: nl}}
+	return res{S: &Set{At: atS(ssp), Place: pl, Value: val, NewLocal: nl}}
 }
 
-func (b *body) badPlace(pos source.Pos, name, what string) {
-	b.r.err(b.f, pos, source.BadPlace, `cannot set "`+name+`": it is `+what, "")
+func (b *body) badPlace(span source.Span, name, what string, more ...source.Extra) {
+	b.r.err(b.f, span, source.BadPlace, `cannot set "`+name+`": it is `+what, "", more...)
 }
 
 func article(kind string) string {
@@ -220,28 +234,33 @@ func article(kind string) string {
 	return "a " + kind
 }
 
-// checkSettable reports a symbol that cannot be set.
-func (b *body) checkSettable(sym Symbol, crossed string, pos source.Pos, name string) bool {
+// checkSettable reports a symbol that cannot be set. bsp is the span of the
+// line that opens the after block or block argument that crossed says.
+func (b *body) checkSettable(sym Symbol, crossed string, bsp, span source.Span, name string) bool {
+	declared := func(text string) source.Extra { return b.f.also(symSpan(sym), text) }
 	switch x := sym.(type) {
 	case *Local:
 		if x.Kind == LocalEach {
-			b.badPlace(pos, name, "an each name")
+			b.badPlace(span, name, "an each name", declared("an each name here"))
 			return false
 		}
 		if crossed != "" {
 			x.Tainted = true // the set is lost, and with it what it says of the type
-			b.r.err(b.f, pos, source.BadPlace, `"`+name+`" is captured by `+crossed+`; it cannot be set here`, "")
+			word := strings.TrimPrefix(crossed, "a ")
+			b.r.err(b.f, span, source.BadPlace, `"`+name+`" is captured by `+crossed+`; it cannot be set here`, "",
+				b.f.also(bsp, "captured by this "+word),
+				declared(`"`+name+`" is declared here`))
 			return false
 		}
 		return true
 	case *Param:
 		if x.Kind == ParamReceiver {
-			b.badPlace(pos, name, "a receiver")
+			b.badPlace(span, name, "a receiver", declared("a receiver here"))
 		} else {
-			b.badPlace(pos, name, "a hole parameter")
+			b.badPlace(span, name, "a hole parameter", declared("a hole parameter here"))
 		}
 	case *Binding:
-		b.badPlace(pos, name, "a when binding")
+		b.badPlace(span, name, "a when binding", declared("a when binding here"))
 	}
 	return false
 }
@@ -250,21 +269,21 @@ func (b *body) checkSettable(sym Symbol, crossed string, pos source.Pos, name st
 func (b *body) itemBase(it parse.Item) Place {
 	switch v := it.(type) {
 	case *parse.Word:
-		sym, crossed := b.lookup(v.Name)
+		sym, crossed, bsp := b.lookupB(v.Name)
 		if sym == nil {
-			b.unknownName(v.P, v.Name, v.Name)
+			b.unknownName(v, v.Name, v.Name)
 			return nil
 		}
 		useSym(sym, v.P)
 		b.markSym(v.P, sym)
-		if !b.checkSettable(sym, crossed, v.P, v.Name) {
+		if !b.checkSettable(sym, crossed, bsp, sp(v), v.Name) {
 			return nil
 		}
-		return &LocalPlace{At: At{v.P}, Local: sym.(*Local)}
+		return &LocalPlace{At: atS(sp(v)), Local: sym.(*Local)}
 	case *parse.Member:
 		return b.memberPlace(v)
 	}
-	b.r.err(b.f, it.Pos(), source.BadPlace, `cannot set "`+printItem(it)+`": it is not a place`, "")
+	b.r.err(b.f, sp(it), source.BadPlace, `cannot set "`+printItem(it)+`": it is not a place`, "")
 	return nil
 }
 
@@ -274,20 +293,20 @@ func (b *body) memberPlace(m *parse.Member) Place {
 			if imp != nil {
 				imp.refs = append(imp.refs, m.P)
 			}
-			b.badPlace(m.P, printItem(m), "a phrase")
+			b.badPlace(sp(m), printItem(m), "a phrase")
 			return nil
 		}
 	}
 	e := b.memberExpr(m, nil)
 	switch x := e.(type) {
 	case *Select:
-		return &SelectPlace{At: At{m.P}, Select: x}
+		return &SelectPlace{At: atS(sp(m)), Select: x}
 	case *Bad:
 		return nil
 	case *Call:
-		b.badPlace(m.P, x.Text, "a phrase")
+		b.badPlace(sp(m), x.Text, "a phrase")
 	default:
-		b.badPlace(m.P, printItem(m), "not a place")
+		b.badPlace(sp(m), printItem(m), "not a place")
 	}
 	return nil
 }
@@ -297,33 +316,33 @@ func (b *body) memberPlace(m *parse.Member) Place {
 func (b *body) place(it parse.Item) (Place, *Local) {
 	switch v := it.(type) {
 	case *parse.Word:
-		if sym, crossed := b.lookup(v.Name); sym != nil {
+		if sym, crossed, bsp := b.lookupB(v.Name); sym != nil {
 			useSetRef(sym, v.P)
 			b.markSym(v.P, sym)
-			if !b.checkSettable(sym, crossed, v.P, v.Name) {
-				return &BadPlace{At{v.P}}, nil
+			if !b.checkSettable(sym, crossed, bsp, sp(v), v.Name) {
+				return &BadPlace{atS(sp(v))}, nil
 			}
-			return &LocalPlace{At: At{v.P}, Local: sym.(*Local)}, nil
+			return &LocalPlace{At: atS(sp(v)), Local: sym.(*Local)}, nil
 		}
 		if b.zeroPhrase(v.Name) != nil {
-			b.badPlace(v.P, v.Name, "a phrase")
-			return &BadPlace{At{v.P}}, nil
+			b.badPlace(sp(v), v.Name, "a phrase")
+			return &BadPlace{atS(sp(v))}, nil
 		}
 		if imp, own := b.qualifier(v.Name); imp != nil || own {
-			b.badPlace(v.P, v.Name, "a package")
-			return &BadPlace{At{v.P}}, nil
+			b.badPlace(sp(v), v.Name, "a package")
+			return &BadPlace{atS(sp(v))}, nil
 		}
-		l := b.declLocal(v.Name, v.P, LocalSet)
+		l := b.declLocal(v.Name, sp(v), LocalSet)
 		b.r.mark(b.f, v.P, RoleName, &Def{File: b.f.Path, Pos: v.P})
-		return &LocalPlace{At: At{v.P}, Local: l}, l
+		return &LocalPlace{At: atS(sp(v)), Local: l}, l
 	case *parse.Member:
 		if p := b.memberPlace(v); p != nil {
 			return p, nil
 		}
-		return &BadPlace{At{v.P}}, nil
+		return &BadPlace{atS(sp(v))}, nil
 	}
-	b.r.err(b.f, it.Pos(), source.BadPlace, `cannot set "`+printItem(it)+`": it is not a place`, "")
-	return &BadPlace{At{it.Pos()}}, nil
+	b.r.err(b.f, sp(it), source.BadPlace, `cannot set "`+printItem(it)+`": it is not a place`, "")
+	return &BadPlace{atS(sp(it))}, nil
 }
 
 // useSetRef records a position of a symbol without counting a use.

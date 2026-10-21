@@ -1,1 +1,1 @@
-{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"q/main.synod","line":7,"col":1,"end":{"line":7,"col":1},"severity":"error","code":"extra-main","message":"a second \"define main\""}]}
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"q/main.synod","line":7,"col":1,"end":{"line":7,"col":12},"severity":"error","code":"extra-main","message":"a second \"define main\"","labels":[{"file":"q/main.synod","line":4,"col":1,"end":{"line":4,"col":12},"text":"first \"define main\" here"}]}]}

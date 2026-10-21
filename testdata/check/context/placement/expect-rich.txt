@@ -1,60 +1,64 @@
 p/main.synod:3:3: error[context]: "result" stands only in a phrase definition
   |
 3 |   result 5
-  |   ^
+  |   ^^^^^^^^
 
 p/p.synod:8:1: error[context]: only declarations stand at file root
   |
 8 | set count to 1
-  | ^
+  | ^^^^^^^^^^^^^^
   |
   = help: a file holds use, has, define, when and always
 
 p/p.synod:12:14: error[context]: initial values are constants
    |
 12 |   set bad to time.Now
-   |              ^
+   |              ^^^^^^^^
    |
    = help: use a literal, {}, a list, a message or sim.Nobody
 
 p/p.synod:13:38: error[context]: initial values are constants
    |
 13 |   set bad2 to (message Ping with seq Five)
-   |                                      ^
+   |                                      ^^^^
    |
    = help: use a literal, {}, a list, a message or sim.Nobody
 
 p/p.synod:14:3: error[context]: a has block holds only "set <field> to <value>" lines
    |
 14 |   look
-   |   ^
+   |   ^^^^
 
 p/p.synod:21:5: error[context]: "result" cannot stand in an after block or a block argument
    |
+20 |   after 1s
+   |   -------- inside this after
 21 |     result 3
-   |     ^
+   |     ^^^^^^^^
 
 p/p.synod:23:5: error[context]: "result" cannot stand in an after block or a block argument
    |
+22 |   time.Every 1s
+   |   ------------- inside this block argument
 23 |     result 4
-   |     ^
+   |     ^^^^^^^^
 
 p/p.synod:27:3: error[context]: "result" stands only in a phrase definition
    |
 27 |   result 1
-   |   ^
+   |   ^^^^^^^^
 
 p/p.synod:29:5: error[context]: "result" stands only in a phrase definition
    |
 29 |     result 2
-   |     ^
+   |     ^^^^^^^^
 
 p/p.synod:31:5: error[context]: "result" stands only in a phrase definition
    |
 31 |     result 3
-   |     ^
+   |     ^^^^^^^^
 
 p/p.synod:34:3: error[context]: "result" stands only in a phrase definition
    |
 34 |   result 4
-   |   ^
+   |   ^^^^^^^^

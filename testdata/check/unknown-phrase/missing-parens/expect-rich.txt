@@ -1,27 +1,47 @@
 p/p.synod:9:3: error[unknown-phrase]: no phrase matches "set n.x to n.x plus 1"
   |
 9 |   set n.x to n.x plus 1
-  |   ^
+  |   ^^^^^^^^^^^^^^^^^^^^^ no phrase takes these items
+  |              ---------- 3 items here; "to" takes one value
   |
-  = help: did you mean "set n.x to (n.x plus 1)"?
+help: parenthesize the value
+  |
+9 |   set n.x to (n.x plus 1)
+  |              +          +
+  |
 
 p/p.synod:10:3: error[unknown-phrase]: no phrase matches "if n.x is 3"
    |
 10 |   if n.x is 3
-   |   ^
+   |   ^^^^^^^^^^^ no phrase takes these items
+   |      -------- 3 items here; "if" takes one condition
    |
-   = help: did you mean "if (n.x is 3)"?
+help: parenthesize the condition
+   |
+10 |   if (n.x is 3)
+   |      +        +
+   |
 
 p/p.synod:12:15: error[unknown-phrase]: no phrase matches "lists.Size n.l plus 1"
    |
 12 |   set n.x to (lists.Size n.l plus 1)
-   |               ^
+   |               ^^^^^^^^^^^^^^^^^^^^^ no phrase takes these items
+   |                          ---------- 3 items here; "lists.Size" takes one value
    |
-   = help: did you mean "lists.Size (n.l plus 1)"?
+help: parenthesize the value
+   |
+12 |   set n.x to (lists.Size (n.l plus 1))
+   |                          +          +
+   |
 
 p/p.synod:15:3: error[unknown-phrase]: no phrase matches "result n.x plus 1"
    |
 15 |   result n.x plus 1
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^ no phrase takes these items
+   |          ---------- 3 items here; "result" takes one value
    |
-   = help: did you mean "result (n.x plus 1)"?
+help: parenthesize the value
+   |
+15 |   result (n.x plus 1)
+   |          +          +
+   |

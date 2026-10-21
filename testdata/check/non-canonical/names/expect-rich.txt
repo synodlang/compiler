@@ -23,6 +23,11 @@ help: write the canonical line (synod fmt does this)
 taken/taken.synod:3:7: error[non-canonical]: "Best" must start lower-case: only exported names start upper-case
   |
 3 |   set Best to n
-  |       ^
+  |       ^^^^
   |
-  = help: rename it
+  = note: rename every use of "Best" the same way
+help: rename it
+  |
+3 |   set best to n
+  |       ~
+  |

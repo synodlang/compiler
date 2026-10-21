@@ -1,21 +1,25 @@
 p/p.synod:11:3: error[unknown-phrase]: no phrase matches "else if (n.x is 2)"
    |
 11 |   else if (n.x is 2)
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^^ no phrase takes these items
    |
    = help: nest the if inside else
 
 p/p.synod:13:3: error[unknown-phrase]: no phrase matches "(set n.x to 1)"
    |
 13 |   (set n.x to 1)
-   |   ^
+   |   ^^^^^^^^^^^^^^ no phrase takes these items
    |
-   = help: remove the parentheses
+help: remove the parentheses
+   |
+13 -   (set n.x to 1)
+13 +   set n.x to 1
+   |
 
 p/p.synod:14:3: error[unknown-phrase]: no phrase matches "Frob n.x"
    |
 14 |   Frob n.x
-   |   ^
+   |   ^^^^^^^^ no phrase takes these items
 
 p/p.synod:15:5: error[unknown-phrase]: "Node" has no field "Nothing"
    |
@@ -25,9 +29,9 @@ p/p.synod:15:5: error[unknown-phrase]: "Node" has no field "Nothing"
 p/p.synod:17:7: error[unknown-phrase]: no event phrase matches "net.Recieved m from a"
    |
 17 | when (net.Recieved m from a)
-   |       ^
+   |       ^^^^^^^^^^^^^^^^^^^^^
 
 p/p.synod:20:7: error[unknown-phrase]: no event phrase matches "sim.Added n m"
    |
 20 | when (sim.Added n m)
-   |       ^
+   |       ^^^^^^^^^^^^^

@@ -1,12 +1,18 @@
 p/p.synod:11:8: error[shadowing]: "total" hides the local "total" at p/p.synod:9
    |
+ 9 |   set total to 1
+   |       ----- the local "total" is declared here
+10 |   set sum to 0
 11 |   each total in {1, 2}
-   |        ^
+   |        ^^^^^
    |
    = help: rename it
 
 p/p.synod:13:8: error[shadowing]: "k" hides the hole "k" at p/p.synod:8
    |
+ 8 | define Take [k: number]
+   |              - the hole "k" is declared here
+...
 13 |   each k in {1}
    |        ^
    |
@@ -14,14 +20,20 @@ p/p.synod:13:8: error[shadowing]: "k" hides the hole "k" at p/p.synod:8
 
 p/p.synod:15:8: error[shadowing]: "one" hides the phrase "one" at p/p.synod:5
    |
+ 5 | define one
+   | ---------- the phrase "one" is declared here
+...
 15 |   each one in {1}
-   |        ^
+   |        ^^^
    |
    = help: rename it
 
 p/p.synod:17:7: error[shadowing]: "tick" hides the record type "tick" at p/p.synod:2
    |
+ 2 | tick has
+   | -------- the record type "tick" is declared here
+...
 17 |   set tick to 3
-   |       ^
+   |       ^^^^
    |
    = help: rename it

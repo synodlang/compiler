@@ -1,1 +1,1 @@
-{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":2,"col":13,"end":{"line":2,"col":13},"severity":"error","code":"native-outside-std","message":"\"native\" is only allowed in std packages"}]}
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":2,"col":13,"end":{"line":2,"col":30},"severity":"error","code":"native-outside-std","message":"\"native\" is only allowed in std packages"}]}

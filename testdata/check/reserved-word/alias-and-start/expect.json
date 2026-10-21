@@ -1,1 +1,1 @@
-{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":2,"col":24,"end":{"line":2,"col":24},"severity":"error","code":"reserved-word","message":"\"set\" is a reserved word and cannot be a package name"}]}
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"p/p.synod","line":2,"col":24,"end":{"line":2,"col":27},"severity":"error","code":"reserved-word","message":"\"set\" is a reserved word and cannot be a package name"}]}

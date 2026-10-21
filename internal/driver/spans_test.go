@@ -11,7 +11,10 @@ import (
 	"unicode/utf8"
 
 	"github.com/synodlang/compiler/internal/format"
+	"github.com/synodlang/compiler/internal/load"
+	"github.com/synodlang/compiler/internal/resolve"
 	"github.com/synodlang/compiler/internal/source"
+	"github.com/synodlang/compiler/internal/stdlib"
 )
 
 // goldenCase is one case of testdata/check, checked.
@@ -19,6 +22,9 @@ type goldenCase struct {
 	name string
 	dir  string
 	res  Result
+	// pre are the diagnostics of the stages before the checker: the loader,
+	// the resolver and the canonical-form check.
+	pre []source.Diagnostic
 }
 
 // goldenCases checks every case of testdata/check.
@@ -41,11 +47,55 @@ func goldenCases(t *testing.T) []goldenCase {
 		for _, cs := range cases {
 			if cs.IsDir() {
 				dir := filepath.Join(root, c.Name(), cs.Name())
-				out = append(out, goldenCase{c.Name() + "/" + cs.Name(), dir, checkDir(t, dir, false)})
+				out = append(out, goldenCase{c.Name() + "/" + cs.Name(), dir, checkDir(t, dir, false), preCheck(t, dir)})
 			}
 		}
 	}
 	return out
+}
+
+// preCheck runs the stages before the checker on the packages of dir and
+// returns their diagnostics, sorted and free of duplicates.
+func preCheck(t *testing.T, dir string) []source.Diagnostic {
+	t.Helper()
+	abs, err := filepath.Abs(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	abs = slash(abs)
+	fsys := load.OSFS{}
+	targets, err := load.Discover(fsys, abs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := load.Config{FS: fsys, Std: stdlib.Root(), Display: func(p string) string {
+		if len(p) > len(abs) && p[:len(abs)] == abs {
+			return p[len(abs)+1:]
+		}
+		return p
+	}}
+	g, diags := load.Load(cfg, targets)
+	byPath := map[string]*resolve.Package{}
+	for _, lp := range g.Packages {
+		if lp.Broken {
+			continue
+		}
+		deps := map[string]*resolve.Package{}
+		for _, d := range lp.Deps {
+			if rp := byPath[d.Path]; rp != nil {
+				deps[d.Path] = rp
+			}
+		}
+		rp, ds := resolve.Resolve(lp, deps)
+		diags = append(diags, ds...)
+		byPath[lp.Path] = rp
+		for _, f := range rp.Files {
+			if d := format.CheckWith(f.Load.Src, rp.Fixes[f.Load]); d != nil {
+				diags = append(diags, *d)
+			}
+		}
+	}
+	return tidy(diags)
 }
 
 // rawLine returns line n of f as written: no "\n", no BOM, a "\r" kept.
@@ -103,33 +153,11 @@ func emptySpanOK(d source.Diagnostic) bool {
 	return false
 }
 
-// notFrontEnd reports the diagnostics of the codes of this test that other
-// stages produce: the resolver and the checker give them spans in later
-// changes.
-func notFrontEnd(d source.Diagnostic) bool {
-	switch d.Code {
-	case source.Syntax:
-		return strings.HasPrefix(d.Message, "duration ") || strings.HasPrefix(d.Message, "number out of")
-	case source.NonCanonical:
-		return strings.Contains(d.Message, "must start lower-case")
-	case source.ExtraMain:
-		return !strings.HasPrefix(d.Message, "a second main file")
-	}
-	return false
-}
-
-// frontEndCodes are the codes that the lexer, the parser, the formatter and
-// the loader produce.
-var frontEndCodes = map[source.Code]bool{
-	source.Syntax: true, source.Indent: true, source.NonCanonical: true,
-	source.BadHeader: true, source.UnknownImport: true, source.ImportCycle: true,
-	source.ExtraMain: true,
-}
-
 // TestSpans checks the spans, labels and edits of the diagnostics of every
-// golden case: primary spans of the front end are non-empty (with a short
-// allowlist), and every span, label and edit lies within its file; the edits
-// of one help do not overlap.
+// golden case: the primary spans of the stages before the checker (loader,
+// parser, resolver, canonical form) are non-empty, with a short allowlist,
+// and every span, label and edit lies within its file; the edits of one help
+// do not overlap.
 func TestSpans(t *testing.T) {
 	n := 0
 	for _, c := range goldenCases(t) {
@@ -142,12 +170,6 @@ func TestSpans(t *testing.T) {
 			}
 			if p := spanProblem(f, sp); p != "" {
 				t.Errorf("%s: primary span %v: %s", where, sp, p)
-			}
-			if frontEndCodes[d.Code] && !notFrontEnd(d) {
-				n++
-				if sp.End == sp.Start && !emptySpanOK(d) {
-					t.Errorf("%s: empty primary span", where)
-				}
 			}
 			for _, l := range d.Labels {
 				lsp := source.Span{Start: source.Pos{Line: l.Line, Col: l.Col}, End: l.End}
@@ -162,9 +184,18 @@ func TestSpans(t *testing.T) {
 				checkEdits(t, where, f, h.Edits)
 			}
 		}
+		for _, d := range c.pre {
+			if c.res.Sources[d.File] == nil {
+				continue
+			}
+			n++
+			if d.End == (source.Pos{Line: d.Line, Col: d.Col}) && !emptySpanOK(d) {
+				t.Errorf("%s: %s: empty primary span", c.name, d.Header())
+			}
+		}
 	}
-	if n < 20 {
-		t.Errorf("only %d front-end diagnostics checked", n)
+	if n < 100 {
+		t.Errorf("only %d diagnostics of the stages before the checker were checked", n)
 	}
 }
 
@@ -264,36 +295,45 @@ func copyDir(t *testing.T, from, to string) {
 	}
 }
 
-// TestFixesApply applies the help edits of non-canonical, bad-header and
-// unknown-import diagnostics to a copy of their case and checks again: the
-// diagnostic of that code on that line is gone. The edit of "line is not
-// canonical" gives the line that the formatter prints.
+// TestFixesApply applies the help edits of the diagnostics of the stages
+// before the checker to a copy of their case and checks again: the
+// diagnostic is gone (same code and line; same code and message when the
+// edit moves lines). The edit of "line is not canonical" gives the line that
+// the formatter prints.
 func TestFixesApply(t *testing.T) {
-	fixable := map[source.Code]bool{source.NonCanonical: true, source.BadHeader: true, source.UnknownImport: true}
-	applied := map[source.Code]int{}
+	applied := map[string]int{}
 	for _, c := range goldenCases(t) {
-		for _, d := range c.res.Diags {
-			if !fixable[d.Code] || notFrontEnd(d) {
+		for _, d := range c.pre {
+			f := c.res.Sources[d.File]
+			if f == nil {
 				continue
 			}
 			for hi, h := range d.Help {
 				if len(h.Edits) == 0 {
 					continue
 				}
-				f := c.res.Sources[d.File]
 				fixed := applyEdits(f.Src, h.Edits)
 				tmp := t.TempDir()
 				copyDir(t, c.dir, tmp)
 				if err := os.WriteFile(filepath.Join(tmp, filepath.FromSlash(d.File)), fixed, 0o644); err != nil {
 					t.Fatal(err)
 				}
+				moves := false
+				for _, e := range h.Edits {
+					if strings.Contains(e.New, "\n") || e.End.Line > e.Line {
+						moves = true
+					}
+				}
 				again := checkDir(t, tmp, false)
 				for _, d2 := range again.Diags {
-					if d2.File == d.File && d2.Code == d.Code && d2.Line == d.Line {
+					if d2.File != d.File || d2.Code != d.Code {
+						continue
+					}
+					if moves && d2.Message == d.Message || !moves && d2.Line == d.Line {
 						t.Errorf("%s: help %d of %s: still reported: %s", c.name, hi, d.Header(), d2.Header())
 					}
 				}
-				applied[d.Code]++
+				applied[string(d.Code)+": "+kindOfFix(d, h)]++
 				if d.Code == source.NonCanonical && d.Message == "line is not canonical" {
 					want, fd := format.FormatWith(f, c.res.Fixes[d.File])
 					if fd != nil {
@@ -308,9 +348,31 @@ func TestFixesApply(t *testing.T) {
 			}
 		}
 	}
-	for code := range fixable {
-		if applied[code] == 0 {
-			t.Errorf("no fix of %s was applied", code)
+	for _, want := range []string{
+		"non-canonical: line", "bad-header: ", "unknown-import: ",
+		"unknown-phrase: parentheses", "unneeded-alias: ", "unused-import: ", "duplicate-name: import",
+		"non-canonical: lower-case", "bad-receiver: ", "unknown-phrase: use line",
+	} {
+		if applied[want] == 0 {
+			t.Errorf("no fix of kind %q was applied; applied: %v", want, applied)
 		}
 	}
+}
+
+// kindOfFix names the kind of fix of a help, for the coverage check of
+// TestFixesApply.
+func kindOfFix(d source.Diagnostic, h source.Help) string {
+	switch {
+	case d.Code == source.NonCanonical && strings.Contains(d.Message, "must start lower-case"):
+		return "lower-case"
+	case d.Code == source.NonCanonical && d.Message == "line is not canonical":
+		return "line"
+	case d.Code == source.UnknownPhrase && strings.HasPrefix(h.Text, "parenthesize"):
+		return "parentheses"
+	case d.Code == source.UnknownPhrase && strings.HasPrefix(h.Text, "add \"use"):
+		return "use line"
+	case d.Code == source.DuplicateName && strings.Contains(d.Message, "already imported"):
+		return "import"
+	}
+	return ""
 }

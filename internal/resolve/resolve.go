@@ -107,6 +107,8 @@ type Import struct {
 	refs     []source.Pos
 	typeRefs bool
 	Pos      source.Pos // the path
+	// Sp is the span of the path as written, version included.
+	Sp source.Span
 }
 
 // Record is a record type declared with "T has", or the node type of the
@@ -120,6 +122,8 @@ type Record struct {
 	// Fields are in declaration order.
 	Fields []*Field
 	Pos    source.Pos
+	// Sp is the span of the declaring line, "Ping has".
+	Sp source.Span
 }
 
 // Type returns the type of the record's values: NodeOf for a node type.
@@ -139,7 +143,9 @@ type Field struct {
 	Init  Expr
 	Index int
 	Pos   source.Pos
-	File  *File
+	// Sp is the span of the field name in its declaration.
+	Sp   source.Span
+	File *File
 	// Tainted is set when a sentence that failed to resolve names the field
 	// (see Local.Tainted).
 	Tainted bool
@@ -174,6 +180,9 @@ type Param struct {
 	// holes), as stdlib.Sig does; -1 for the receiver and block holes.
 	Index int
 	Pos   source.Pos
+	// Sp is the span of the name in its hole; HoleSp the span of the whole
+	// hole.
+	Sp, HoleSp source.Span
 	// Source is the declared type as written, "list of node".
 	Source string
 	// refs are the positions where the body names the parameter.
@@ -188,6 +197,7 @@ type PatItem struct {
 	Word  string // the literal word; "" for a hole
 	Param *Param // the hole, or nil for a word
 	Pos   source.Pos
+	Sp    source.Span
 }
 
 // BlockSlot is a block hole with the continuation word before it ("" for the
@@ -212,6 +222,8 @@ type Phrase struct {
 	Pkg  *Package
 	File *File
 	Pos  source.Pos
+	// Sp is the span of the pattern from the word "define" to its last item.
+	Sp   source.Span
 	Kind PhraseKind
 	// Head is the first word; Skeleton is the head and the literal words
 	// joined by single spaces ("Learn at"); Name is the skeleton as the spec
@@ -349,6 +361,7 @@ type Binding struct {
 	Name string
 	Kind BindKind
 	Pos  source.Pos
+	Sp   source.Span
 	// Type is the type of the bound value: the hole's type, the record
 	// type, or the node type. It is value for the old and new holes of a
 	// Changed event; then OfField, if set, says that the type is that of the

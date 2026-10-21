@@ -1,4 +1,6 @@
 p/main.synod:1:1: error[missing-main]: main file has no "define main"
   |
 1 | # package main
-  | ^
+  | ^^^^^^^^^^^^^^
+  |
+  = help: add "define main" with an indented block

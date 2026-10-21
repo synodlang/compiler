@@ -1,14 +1,14 @@
 p/p.synod:4:9: error[unused-name]: "inner" is never used
   |
 4 |     set inner to 1
-  |         ^
+  |         ^^^^^
 
 p/p.synod:6:9: error[unused-name]: "other" is never used
   |
 6 |     set other to 2
-  |         ^
+  |         ^^^^^
 
 p/p.synod:8:9: error[unused-name]: "late" is never used
   |
 8 |     set late to 3
-  |         ^
+  |         ^^^^

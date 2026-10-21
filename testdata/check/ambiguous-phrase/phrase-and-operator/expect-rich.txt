@@ -1,6 +1,10 @@
 p/p.synod:9:15: error[ambiguous-phrase]: "Foo plus 1" matches more than one phrase
   |
+5 | define Foo plus [n: number]
+  | --------------------------- matches this phrase
+...
 9 |   set n.x to (Foo plus 1)
-  |               ^
+  |               ^^^^^^^^^^
   |
-  = help: "Foo plus [n: number]" (p/p.synod:5) and the language form "[a] plus [b]"
+  = note: also matches the language form "[a] plus [b]"
+  = help: parenthesize to pick one

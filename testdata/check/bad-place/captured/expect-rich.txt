@@ -1,14 +1,27 @@
 p/p.synod:11:9: error[bad-place]: "total" is captured by after; it cannot be set here
    |
+ 9 |   set total to 0
+   |       ----- "total" is declared here
+10 |   after 1s
+   |   -------- captured by this after
 11 |     set total to 1
-   |         ^
+   |         ^^^^^
 
 p/p.synod:16:9: error[bad-place]: "total" is captured by a block argument; it cannot be set here
    |
+ 9 |   set total to 0
+   |       ----- "total" is declared here
+...
+15 |   Run now
+   |   ------- captured by this block argument
 16 |     set total to 2
-   |         ^
+   |         ^^^^^
 
 p/p.synod:19:19: error[bad-place]: "items" is captured by after; it cannot be set here
    |
+17 |   set items to {}
+   |       ----- "items" is declared here
+18 |   after 1s
+   |   -------- captured by this after
 19 |     set item 0 of items to 1
-   |                   ^
+   |                   ^^^^^

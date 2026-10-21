@@ -49,15 +49,15 @@ func (r *resolver) bodyWhen(f *File, l *parse.Line) {
 			items = items[1:]
 		}
 	}
-	fail := func(pos source.Pos, text, hint string) {
-		r.err(f, pos, source.UnknownPhrase, `no event phrase matches "`+text+`"`, hint)
+	fail := func(span source.Span, text string, h hint) {
+		r.err(f, span, source.UnknownPhrase, `no event phrase matches "`+text+`"`, h.text, h.extras()...)
 		for _, it := range items {
 			b.touch([]parse.Item{it})
 		}
 		b.touchBody(l)
 	}
 	if len(items) == 0 {
-		fail(g[0].Pos(), "when", `write "when (<event phrase>)"`)
+		fail(sp(g[0]), "when", hint{text: `write "when (<event phrase>)"`})
 		return
 	}
 	var ev []parse.Item
@@ -69,7 +69,9 @@ func (r *resolver) bodyWhen(f *File, l *parse.Line) {
 			ev = items
 		}
 	default:
-		fail(items[0].Pos(), printItems(items), `did you mean "when (`+printItems(items)+`)"?`)
+		run := parse.SpanOfItems(items)
+		fail(run, printItems(items), hint{text: `did you mean "when (` + printItems(items) + `)"?`,
+			help: "parenthesize the event phrase", edits: parenEdits(run)})
 		return
 	}
 	text := printItems(ev)
@@ -80,11 +82,12 @@ func (r *resolver) bodyWhen(f *File, l *parse.Line) {
 		}
 	}
 	if len(m) == 0 {
-		fail(ev[0].Pos(), text, b.eventHint(ev))
+		fail(parse.SpanOfItems(ev), text, b.eventHint(ev))
 		return
 	}
 	if len(m) > 1 {
-		r.err(f, ev[0].Pos(), source.AmbiguousPhrase, `"`+text+`" matches more than one phrase`, b.ambiguousHint(m))
+		at, more := b.ambiguousHint(m)
+		r.err(f, parse.SpanOfItems(ev), source.AmbiguousPhrase, `"`+text+`" matches more than one phrase`, at, more...)
 		b.touchBody(l)
 		return
 	}
@@ -97,30 +100,40 @@ func (r *resolver) bodyWhen(f *File, l *parse.Line) {
 			r.addFix(f, formatDrop(mem.P, 0))
 		}
 		if !ph.Exported && !c.own {
-			r.err(f, partPos(mem, 1), source.Unexported, `"`+evName+`" is not exported by `+mem.Parts[0], "")
+			r.err(f, parse.PartSpan(mem, 1), source.Unexported, `"`+evName+`" is not exported by `+mem.Parts[0], "",
+				unexportedDef(ph.Pkg, ph.File, ph.Sp, mem.Parts[0])...)
 		}
 		r.mark(f, partPos(mem, 1), RolePhrase, &Def{File: ph.File.Path, Pos: ph.Pos})
 	}
 	// Receiver rules.
 	switch {
 	case p.IsMain && recvHole != nil:
-		r.err(f, recvHole.P, source.BadReceiver, "a main file has no receivers", "")
+		r.err(f, sp(recvHole), source.BadReceiver, "a main file has no receivers", "")
 	case p.IsMain && ph.Event == stdlib.NodeEvent:
-		r.err(f, g[0].Pos(), source.BadReceiver, "a main file has no node-event when", "")
+		r.err(f, parse.SentenceSpan(l.Sentence), source.BadReceiver, "a main file has no node-event when", "")
 	case ph.Event == stdlib.NodeEvent && recvHole == nil:
-		r.err(f, g[0].Pos(), source.BadReceiver, `"`+evName+`" is a node event: write "when [n: Node] (…)"`, "")
+		edits := []source.Edit{insertAt(g[1].Pos(), "[n: Node] (")}
+		if _, isParen := g[1].(*parse.Paren); isParen && len(g) == 2 {
+			edits = []source.Edit{insertAt(g[1].Pos(), "[n: Node] ")}
+		} else {
+			edits = append(edits, insertAt(g[len(g)-1].End(), ")"))
+		}
+		r.err(f, parse.SentenceSpan(l.Sentence), source.BadReceiver,
+			`"`+evName+`" is a node event: write "when [n: Node] (…)"`, "",
+			source.HelpEdit("add the receiver", edits...))
 	case ph.Event == stdlib.TraceEvent && recvHole != nil:
-		r.err(f, recvHole.P, source.BadReceiver, `"`+evName+`" is a trace event: remove the receiver`, "")
+		r.err(f, sp(recvHole), source.BadReceiver, `"`+evName+`" is a trace event: remove the receiver`, "",
+			source.HelpEdit("remove the receiver", source.EditAt(source.Span{Start: recvHole.P, End: g[2].Pos()}, "")))
 	}
 	if ph.Event == stdlib.TraceEvent {
 		p.Observers = true
 	}
 	if recvHole != nil {
 		nt, ok := recvHole.Type.(*parse.NamedType)
-		bd := &Binding{Name: recvHole.Name.Name, Kind: BindReceiver, Pos: recvHole.Name.P, Hole: -1, Type: types.TInvalid}
+		bd := &Binding{Name: recvHole.Name.Name, Kind: BindReceiver, Pos: recvHole.Name.P, Sp: sp(recvHole.Name), Hole: -1, Type: types.TInvalid}
 		if !ok || nt.Name != "Node" {
 			if !p.IsMain {
-				r.err(f, recvHole.P, source.BadReceiver, "the receiver of a when is [n: Node]", "")
+				r.err(f, sp(recvHole), source.BadReceiver, "the receiver of a when is [n: Node]", "")
 			}
 		} else if p.Node != nil {
 			bd.Type = p.Node.Type()
@@ -153,9 +166,9 @@ func (r *resolver) bodyWhen(f *File, l *parse.Line) {
 		}
 	}
 	if l.Block == nil {
-		r.err(f, l.Pos, source.BadPattern, "a when needs an indented block", "")
+		r.err(f, parse.LineSpan(l), source.BadPattern, "a when needs an indented block", "")
 	} else {
-		h.Body = &Block{At: At{l.Block.Lines[0].Pos}, Stmts: b.stmts(l.Block)}
+		h.Body = &Block{At: atS(blockSpan(l.Block)), Stmts: b.stmts(l.Block)}
 	}
 	h.Bindings = b.bindings
 	h.Locals = b.locals
@@ -179,12 +192,12 @@ func (b *body) matchHole(prm *Param, it parse.Item) Matcher {
 		t := r.typ(b.f, v.Type, false, false)
 		nt, isNode := t.(types.NodeOf)
 		if !types.Equal(prm.Type, types.TNode) {
-			r.err(b.f, v.P, source.TypeMismatch,
+			r.err(b.f, sp(v), source.TypeMismatch,
 				`"`+holeText(v)+`" has a node type, but the hole "`+prm.Name+`" has type `+prm.Source, "")
 		} else if !isNode && !isInvalid(t) {
-			r.err(b.f, v.P, source.BadPattern, "a typed binding names a node type: p.Node", "")
+			r.err(b.f, sp(v), source.BadPattern, "a typed binding names a node type: p.Node", "")
 		}
-		bd := &Binding{Name: v.Name.Name, Kind: BindNodeType, Pos: v.Name.P, Type: t, Hole: prm.Index}
+		bd := &Binding{Name: v.Name.Name, Kind: BindNodeType, Pos: v.Name.P, Sp: sp(v.Name), Type: t, Hole: prm.Index}
 		if isNode {
 			mt.NodePkg = b.pkgByPath(nt.Pkg)
 		}
@@ -196,7 +209,7 @@ func (b *body) matchHole(prm *Param, it parse.Item) Matcher {
 		if isMsg {
 			if rec := p.records[v.Name]; rec != nil {
 				mt.Kind, mt.Record = MatchRecord, rec
-				bd := &Binding{Name: v.Name, Kind: BindRecord, Pos: v.P, Type: rec.Type(), Record: rec, Hole: prm.Index}
+				bd := &Binding{Name: v.Name, Kind: BindRecord, Pos: v.P, Sp: sp(v), Type: rec.Type(), Record: rec, Hole: prm.Index}
 				b.declBinding(bd)
 				mt.Binding = bd
 				r.mark(b.f, v.P, RoleType, &Def{File: rec.File.Path, Pos: rec.Pos})
@@ -224,7 +237,7 @@ func (b *body) matchHole(prm *Param, it parse.Item) Matcher {
 			t = types.TMsg
 		}
 		mt.Kind = MatchBind
-		bd := &Binding{Name: v.Name, Kind: BindHole, Pos: v.P, Type: t, Hole: prm.Index}
+		bd := &Binding{Name: v.Name, Kind: BindHole, Pos: v.P, Sp: sp(v), Type: t, Hole: prm.Index}
 		b.declBinding(bd)
 		mt.Binding = bd
 		b.markSym(v.P, bd)
@@ -242,8 +255,9 @@ func (b *body) matchHole(prm *Param, it parse.Item) Matcher {
 						if own {
 							r.addFix(b.f, formatDrop(v.P, 0))
 						} else if !rec.Exported {
-							r.err(b.f, pos1, source.Unexported, `"`+printItem(v)+`" is not exported by `+v.Parts[0],
-								"only names starting upper-case are visible outside "+v.Parts[0])
+							r.err(b.f, parse.PartSpan(v, 1), source.Unexported, `"`+printItem(v)+`" is not exported by `+v.Parts[0],
+								"only names starting upper-case are visible outside "+v.Parts[0],
+								unexportedDef(pk, rec.File, rec.Sp, v.Parts[0])...)
 						}
 						mt.Kind, mt.Record = MatchRecord, rec
 						name := v.Parts[0] + "." + v.Parts[1]
@@ -262,8 +276,9 @@ func (b *body) matchHole(prm *Param, it parse.Item) Matcher {
 						if own {
 							r.addFix(b.f, formatDrop(v.P, 0))
 						} else if !fl.Exported {
-							r.err(b.f, pos1, source.Unexported, `"`+printItem(v)+`" is not exported by `+v.Parts[0],
-								"only names starting upper-case are visible outside "+v.Parts[0])
+							r.err(b.f, parse.PartSpan(v, 1), source.Unexported, `"`+printItem(v)+`" is not exported by `+v.Parts[0],
+								"only names starting upper-case are visible outside "+v.Parts[0],
+								unexportedDef(pk, fl.File, fl.Sp, v.Parts[0])...)
 						}
 						mt.Kind, mt.Field = MatchField, fl
 						r.mark(b.f, pos1, RoleField, &Def{File: fl.File.Path, Pos: fl.Pos})

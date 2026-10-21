@@ -1,4 +1,4 @@
 p/p.synod:2:24: error[native-outside-std]: "native" is only allowed in std packages
   |
 2 | define Raw [n: number] native "sim.seed"
-  |                        ^
+  |                        ^^^^^^^^^^^^^^^^^

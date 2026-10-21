@@ -1,13 +1,23 @@
 p/p.synod:8:3: error[unknown-phrase]: no phrase matches "net.Sned (message Ping with seq 1) from n to m"
   |
 8 |   net.Sned (message Ping with seq 1) from n to m
-  |   ^
+  |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no phrase takes these items
   |
-  = help: did you mean "net.Send [m: msg] from [a: node] to [b: node]"?
+  = note: "net.Send" is in std/net
+help: did you mean "net.Send [m: msg] from [a: node] to [b: node]"?
+  |
+8 |   net.Send (message Ping with seq 1) from n to m
+  |   ~~~~~~~~
+  |
 
 p/p.synod:11:3: error[unknown-phrase]: no phrase matches "net.Send (message Ping with seq 2) form n to m"
    |
 11 |   net.Send (message Ping with seq 2) form n to m
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no phrase takes these items
    |
-   = help: did you mean "net.Send [m: msg] from [a: node] to [b: node]"?
+   = note: "net.Send" is in std/net
+help: did you mean "net.Send [m: msg] from [a: node] to [b: node]"?
+   |
+11 |   net.Send (message Ping with seq 2) from n to m
+   |                                      ~~~~
+   |

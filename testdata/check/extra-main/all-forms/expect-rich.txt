@@ -1,12 +1,17 @@
 p/main.synod:7:1: error[extra-main]: a second "define main"
   |
+4 | define main
+  | ----------- first "define main" here
+...
 7 | define main
-  | ^
+  | ^^^^^^^^^^^
 
 p/p.synod:2:1: error[extra-main]: "define main" stands only in a main file
   |
+1 | # package p
+  | ----------- this is a library file
 2 | define main
-  | ^
+  | ^^^^^^^^^^^
 
 p/second.synod:1:1: error[extra-main]: a second main file in p; the first is p/main.synod
   |

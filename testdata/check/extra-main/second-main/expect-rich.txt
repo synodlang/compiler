@@ -1,4 +1,7 @@
 q/main.synod:7:1: error[extra-main]: a second "define main"
   |
+4 | define main
+  | ----------- first "define main" here
+...
 7 | define main
-  | ^
+  | ^^^^^^^^^^^

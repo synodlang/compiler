@@ -10,14 +10,27 @@ import (
 // position in the file of the body that holds it. The checker annotates the
 // tree: expressions carry a Ty slot that resolution leaves nil.
 
-// At is the position of a node.
-type At struct{ Pos source.Pos }
+// At is the source extent of a node: Pos is where it starts, End the
+// position just after it (equal to Pos when the extent is not known).
+type At struct{ Pos, End source.Pos }
 
 // Where returns the position.
 func (a At) Where() source.Pos { return a.Pos }
 
+// Span returns the source span of the node.
+func (a At) Span() source.Span { return source.Span{Start: a.Pos, End: a.End} }
+
+// atS is the At of a span.
+func atS(sp source.Span) At { return At{Pos: sp.Start, End: sp.End} }
+
+// atP is the At of a position alone.
+func atP(p source.Pos) At { return At{Pos: p, End: p} }
+
 // Node is a node of the body tree.
-type Node interface{ Where() source.Pos }
+type Node interface {
+	Where() source.Pos
+	Span() source.Span
+}
 
 // Stmt is a statement.
 type Stmt interface {
@@ -82,6 +95,11 @@ type Local struct {
 	Name string
 	Kind LocalKind
 	Pos  source.Pos
+	// Sp is the span of the name where it is declared.
+	Sp source.Span
+	// Names is, for one name of "each a, b in x", the span from the first
+	// name to the end of the second; the zero Span otherwise.
+	Names source.Span
 	// Used reports a read, or use as the base of "set item … of x".
 	Used bool
 	// Attached is set for a draw name with "for": the shape is also
@@ -303,6 +321,7 @@ type ListLit struct {
 type Part struct {
 	Name string
 	Pos  source.Pos
+	Sp   source.Span
 	// Pkg is set when the name is the qualifier of an imported package
 	// ("n.gossip.Known": the part "gossip"). It is only ever Path[0].
 	Pkg *Package
@@ -344,6 +363,8 @@ type Setting struct {
 	Field *Field
 	Value Expr
 	Pos   source.Pos
+	// Sp covers the field word and its value.
+	Sp source.Span
 }
 
 // Item is "item key of coll".
@@ -361,6 +382,8 @@ type Binary struct {
 	A, B Expr
 	// OpPos is the position of the operator's first word.
 	OpPos source.Pos
+	// OpSpan covers the operator words ("is not in", "divided by").
+	OpSpan source.Span
 }
 
 // Not is "not x".
