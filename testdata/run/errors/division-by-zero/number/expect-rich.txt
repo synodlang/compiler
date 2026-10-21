@@ -3,4 +3,4 @@ failed at 0s: p/main.synod:6:29: error[division-by-zero]: division by zero
 6 |   emit (message p.R with v (1 divided by (2 minus 2))) by sim.Nobody
   |                             ^^^^^^^^^^^^^^^^^^^^^^^^
   |                                           --------- this is 0
-scene 30ms, 1 shapes -> out/scene.json
+scene 0.03s, 1 shapes -> out/scene.json

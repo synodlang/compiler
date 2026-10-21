@@ -199,7 +199,7 @@ func TestRunDefaultTracePath(t *testing.T) {
 	}
 	lines := strings.Split(strings.TrimSuffix(stdout, "\n"), "\n")
 	if len(lines) != 2 || !strings.HasSuffix(lines[0], " events -> out/trace.jsonl") ||
-		!regexp.MustCompile(`^scene [0-9.]+m?s, \d+ shapes -> out/scene\.json$`).MatchString(lines[1]) {
+		!regexp.MustCompile(`^scene [0-9.]+s, \d+ shapes -> out/scene\.json$`).MatchString(lines[1]) {
 		t.Errorf("stdout %q", stdout)
 	}
 	if sc := read(t, filepath.Join(dir, "out", "scene.json")); !strings.HasPrefix(sc, `{"format":"synod-scene/1",`) {
@@ -479,5 +479,13 @@ func TestRunLookFault(t *testing.T) {
 	if code != 1 || !strings.HasPrefix(stdout, strings.TrimSuffix(plain, plain[strings.LastIndex(strings.TrimSuffix(plain, "\n"), "\n")+1:])) ||
 		!strings.Contains(stdout[strings.LastIndex(strings.TrimSuffix(stdout, "\n"), "\n"):], "look failed at") {
 		t.Errorf("summary stdout %q", stdout)
+	}
+}
+
+func TestFormatSceneLength(t *testing.T) {
+	for ms, want := range map[int64]string{147982: "147.98s", 2186: "2.19s", 2000: "2s", 0: "0s", 4: "0s", 5: "0.01s", 2050: "2.05s", 2100: "2.1s", 999: "1s"} {
+		if got := formatSceneLength(ms); got != want {
+			t.Errorf("%d: %q, want %q", ms, got, want)
+		}
 	}
 }

@@ -1,4 +1,4 @@
 failed at 600s: error[time-limit]: the run reached 10 minutes of simulated time
   = note: runs stop after 10 minutes of simulated time
   = help: end the run earlier with sim.StopAt
-scene 600ms, 1 shapes -> out/scene.json
+scene 0.6s, 1 shapes -> out/scene.json

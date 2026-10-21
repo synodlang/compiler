@@ -294,7 +294,7 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 		if dest == "-" {
 			dest = "stdout"
 		}
-		fmt.Fprintf(status, "scene %s, %d shapes -> %s\n", value.FormatTime(sc.Duration*1000), len(sc.Shapes), dest)
+		fmt.Fprintf(status, "scene %s, %d shapes -> %s\n", formatSceneLength(sc.Duration), len(sc.Shapes), dest)
 	}
 	if r.Failed != nil {
 		return exitDiags
@@ -379,4 +379,22 @@ func writeStatus(w io.Writer, ra runArgs, r *sim.Result, o trace.Options, known 
 		}
 		fmt.Fprintf(w, "broken at %s (%s): %s\n", value.FormatTime(inv.FirstBreak), times, rule)
 	}
+}
+
+// formatSceneLength prints ms as seconds with at most two decimals, trailing
+// zeros trimmed, rounding half away from zero: 147982 is "147.98s".
+func formatSceneLength(ms int64) string {
+	neg := ms < 0
+	if neg {
+		ms = -ms
+	}
+	h := (ms + 5) / 10 // hundredths of a second
+	s := strconv.FormatInt(h/100, 10)
+	if f := h % 100; f != 0 {
+		s += "." + strings.TrimRight(fmt.Sprintf("%02d", f), "0")
+	}
+	if neg && h != 0 {
+		s = "-" + s
+	}
+	return s + "s"
 }

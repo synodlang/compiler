@@ -90,7 +90,7 @@ func TestRunExamples(t *testing.T) {
 			if code != 0 || stderr != "" {
 				t.Fatalf("exit %d: %s%s", code, stdout, stderr)
 			}
-			if !regexp.MustCompile(`\nscene [0-9.]+m?s, [1-9]\d* shapes -> out/scene\.json\n$`).MatchString(stdout) {
+			if !regexp.MustCompile(`\nscene [0-9.]+s, [1-9]\d* shapes -> out/scene\.json\n$`).MatchString(stdout) {
 				t.Errorf("stdout %q", stdout)
 			}
 			want := read(t, filepath.Join(golden, name, "scene.json"))

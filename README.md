@@ -92,7 +92,7 @@ of shapes.
 ```
 $ synod run ./tcp
 ok seed 1: empty at 100ms, 2 nodes, 19 events -> out/trace.jsonl
-scene 2186ms, 20 shapes -> out/scene.json
+scene 2.19s, 20 shapes -> out/scene.json
 ```
 
 Read the run as text with `--summary`. Facts are grouped per step, and the

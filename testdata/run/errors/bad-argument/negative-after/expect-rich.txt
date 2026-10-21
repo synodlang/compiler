@@ -3,4 +3,4 @@ failed at 0s: p/main.synod:5:3: error[bad-argument]: after needs a delay of 0 or
 5 |   after (0s minus 1s)
   |   ^^^^^^^^^^^^^^^^^^^
   |          ----------- is -1s
-scene 30ms, 1 shapes -> out/scene.json
+scene 0.03s, 1 shapes -> out/scene.json
