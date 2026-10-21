@@ -5,12 +5,25 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+## v0.2.2 — 2026-10-21
+
+Implements Synod 0.2. Errors now look like a good compiler's: on a terminal,
+every compile-time and run-time error shows the source line, underlines the
+exact problem, points at related places ("first defined here", "called from
+node context here", "this is 0") and shows the fix as a diff. Piped output,
+which agents and CI read, is unchanged byte for byte.
+
 ### Added
 
 - `--style rich|short` and `--color auto|always|never` on `synod fmt`, `check` and `run` (both `--flag value` and `--flag=value`; a bad value exits 2). Rich output draws the source line with markers, labels, notes and help under the unchanged first line; it is the default when the destination is a terminal. Piped or redirected output stays the one-line form byte for byte. Color needs `NO_COLOR` unset or empty and `TERM` other than `dumb`; the flags beat the environment. `--json` ignores both flags.
 - `synod run` failures render a snippet under the `failed at …` line in rich style.
 - `check.json` diagnostics gain `end`, and `label`, `labels`, `help` (with edits) and `notes` when present; the format stays `synod-check/1`.
 - A diagnostic without a position prints as `path: error[code]: message`.
+- Fixes shown under `help:` for missing parentheses, imports to add, remove
+  or rename, the package header, canonical form, receivers, `sim.Nobody`,
+  "did you mean" names and more; each is tested to remove its error.
+- Hidden control and bidi characters in source are neutralised in snippets,
+  so a file cannot inject terminal escapes.
 - Golden cases of `testdata/check` have `expect-rich.txt` and `expect.json` next to `expect.txt`; `testdata/run/errors` cases have `expect-rich.txt`.
 
 ## v0.2.1 — 2026-10-21
