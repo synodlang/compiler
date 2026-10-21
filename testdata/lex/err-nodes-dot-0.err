@@ -1,0 +1,2 @@
+err-nodes-dot-0.synod:1:10: error[syntax]: "nodes.0" is not a member
+  hint: write item 0 of nodes

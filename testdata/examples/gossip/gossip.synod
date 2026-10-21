@@ -1,0 +1,57 @@
+# package gossip
+use std/disk
+use std/lists
+use std/net
+use std/random
+use std/time
+
+digest has
+  set known to {}
+
+Node has
+  set Generation to 0
+  set Heartbeat to 0
+  set Known to {}
+  set Down to {}
+  set peers to {}
+  set seenAt to {}
+
+define Join [n: Node] to [seed: node]
+  set n.peers to {seed}
+
+# Versions combine generation and heartbeat, so a restarted node is believed again
+define [n: Node] Version
+  result ((n.Generation times 1000000) plus n.Heartbeat)
+
+define [n: Node] Learn [k: node] at [v: number]
+  set item k of n.Known to v
+  set item k of n.seenAt to time.Now
+  if ((k is not n) and (k is not in n.peers))
+    set n.peers to (lists.Append k to n.peers)
+
+define [n: Node] CheckPeers
+  set suspects to {}
+  each k, t in n.seenAt
+    if ((time.Now minus t) more than 4s)
+      set suspects to (lists.Append k to suspects)
+  set n.Down to suspects
+
+define [n: Node] start
+  set n.Generation to ((disk.Read "generation" on n or 0) plus 1)
+  disk.Write n.Generation at "generation" on n
+  time.Every 1s
+    set n.Heartbeat to (n.Heartbeat plus 1)
+    n.Learn n at n.Version
+    n.CheckPeers
+    if ((lists.Size n.peers) more than 0)
+      net.Send (message digest with known n.Known) from n to (random.Pick n.peers)
+
+when [n: Node] (net.Received digest from sender)
+  each k, v in digest.known
+    if (k is in n.Known)
+      if (v more than (item k of n.Known))
+        n.Learn k at v
+    else
+      n.Learn k at v
+  if (sender is not in n.peers)
+    set n.peers to (lists.Append sender to n.peers)

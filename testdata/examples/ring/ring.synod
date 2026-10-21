@@ -1,0 +1,37 @@
+# package ring
+use std/lists
+use std/maps
+use std/math
+use std/sim
+use std/text
+
+Placed has
+  set Key to ""
+  set Owner to sim.Nobody
+
+define Vnodes
+  result 8
+
+# Each node owns several points on a ring of [0, 1), derived from its name
+define TokensOf [n: node]
+  set tokens to {}
+  each i in (lists.Range 1 to Vnodes)
+    set tokens to (lists.Append (math.Hash (text.Join {(sim.Name n), "#", (text.From i)})) to tokens)
+  result tokens
+
+# Clockwise distance from a key's point to the nearest point of a node
+define Distance from [h: number] to [n: node]
+  set best to 1
+  each t in (TokensOf n)
+    set d to (math.Remainder of (t minus h) by 1)
+    if (d less than best)
+      set best to d
+  result best
+
+# The first r nodes clockwise from the key own it
+define Owners of [k: text] among [ns: list of node] count [r: number]
+  set h to (math.Hash k)
+  set distances to {}
+  each n in ns
+    set item n of distances to (Distance from h to n)
+  result (lists.Take r from (maps.KeysByValue distances))

@@ -1,0 +1,2 @@
+err-hash-short.synod:1:1: error[syntax]: # starts a comment only when followed by a space
+  hint: write "# text"; a color is # and six hex digits

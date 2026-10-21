@@ -1,0 +1,2 @@
+err-minus-alone.synod:1:10: error[syntax]: "-" must be followed by a digit
+  hint: subtract with minus

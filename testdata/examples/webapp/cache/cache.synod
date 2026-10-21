@@ -1,0 +1,16 @@
+# package cache
+use github.com/synodlang/examples/webapp/api
+use std/net
+
+Node has
+  set Entries to {}
+
+when [n: Node] (net.Received api.Lookup from asker)
+  set k to api.Lookup.Key
+  if (k is in n.Entries)
+    net.Send (message api.CacheReply with Key k, Id api.Lookup.Id, Value (item k of n.Entries), Found true) from n to asker
+  else
+    net.Send (message api.CacheReply with Key k, Id api.Lookup.Id) from n to asker
+
+when [n: Node] (net.Received api.Fill from filler)
+  set item api.Fill.Key of n.Entries to api.Fill.Value

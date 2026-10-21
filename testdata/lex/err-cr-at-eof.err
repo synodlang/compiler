@@ -1,0 +1,1 @@
+err-cr-at-eof.synod:1:2: error[syntax]: carriage return without line feed

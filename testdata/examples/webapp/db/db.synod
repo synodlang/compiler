@@ -1,0 +1,13 @@
+# package db
+use github.com/synodlang/examples/webapp/api
+use std/net
+use std/text
+
+Node has
+  set Queries to 0
+
+# The database is slow: every query takes 40ms of work
+when [n: Node] (net.Received api.Query from asker)
+  set n.Queries to (n.Queries plus 1)
+  after 40ms
+    net.Send (message api.Rows with Key api.Query.Key, Id api.Query.Id, Value (text.Join {"row for ", api.Query.Key})) from n to asker

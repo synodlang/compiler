@@ -1,0 +1,5 @@
+# package raft
+use std/net
+
+define Ping
+  net.Send 1

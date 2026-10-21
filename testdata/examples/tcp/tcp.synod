@@ -1,0 +1,46 @@
+# package tcp
+use std/net
+use std/sim
+
+Open has
+  set Server to sim.Nobody
+
+Syn has
+  set Seq to 0
+
+SynAck has
+  set Seq to 0
+  set AckNo to 0
+
+Ack has
+  set AckNo to 0
+
+Node has
+  set State to "CLOSED"
+  set seq to 0
+  set peerSeq to 0
+
+# Client: the application asks to open a connection
+when [n: Node] (sim.Delivered Open)
+  set n.seq to 100
+  set n.State to "SYN-SENT"
+  net.Send (message Syn with Seq n.seq) from n to Open.Server
+
+# Server: answer a SYN with SYN-ACK
+when [n: Node] (net.Received Syn from client)
+  set n.peerSeq to Syn.Seq
+  set n.seq to 300
+  set n.State to "SYN-RECEIVED"
+  net.Send (message SynAck with Seq n.seq, AckNo (n.peerSeq plus 1)) from n to client
+
+# Client: a SYN-ACK that acknowledges our SYN completes our side
+when [n: Node] (net.Received SynAck from server)
+  if (SynAck.AckNo is (n.seq plus 1))
+    set n.peerSeq to SynAck.Seq
+    set n.State to "ESTABLISHED"
+    net.Send (message Ack with AckNo (n.peerSeq plus 1)) from n to server
+
+# Server: the final ACK completes the handshake
+when [n: Node] (net.Received Ack from client)
+  if (Ack.AckNo is (n.seq plus 1))
+    set n.State to "ESTABLISHED"

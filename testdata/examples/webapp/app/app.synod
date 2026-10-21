@@ -1,0 +1,38 @@
+# package app
+use github.com/synodlang/examples/webapp/api
+use std/maps
+use std/net
+use std/sim
+use std/time
+
+Node has
+  set Cache to sim.Nobody
+  set Db to sim.Nobody
+  set pending to {}
+
+define Wire [n: Node] to [c: node] and [d: node]
+  set n.Cache to c
+  set n.Db to d
+
+define [n: Node] Finish [r: api.Get] hit [h: bool]
+  set n.pending to (maps.Without r.Id from n.pending)
+  emit (message api.Served with Id r.Id, Hit h, Latency (time.Now minus r.Start)) by n
+
+# Cache-aside: ask the cache first
+when [n: Node] (net.Received api.Get from balancer)
+  set item api.Get.Id of n.pending to api.Get
+  net.Send (message api.Lookup with Key api.Get.Key, Id api.Get.Id) from n to n.Cache
+
+# On a miss, query the database
+when [n: Node] (net.Received api.CacheReply from cache)
+  set request to (item api.CacheReply.Id of n.pending)
+  if api.CacheReply.Found
+    n.Finish request hit true
+  else
+    net.Send (message api.Query with Key request.Key, Id request.Id) from n to n.Db
+
+# Fill the cache with what the database returned
+when [n: Node] (net.Received api.Rows from db)
+  set request to (item api.Rows.Id of n.pending)
+  net.Send (message api.Fill with Key api.Rows.Key, Value api.Rows.Value) from n to n.Cache
+  n.Finish request hit false

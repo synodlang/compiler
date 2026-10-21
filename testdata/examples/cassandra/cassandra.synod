@@ -1,0 +1,148 @@
+# package cassandra
+use github.com/synodlang/examples/gossip
+use github.com/synodlang/examples/ring
+use std/lists
+use std/maps
+use std/net
+use std/sim
+use std/text
+use std/time
+
+Write has
+  set Key to ""
+  set Value to ""
+
+Read has
+  set Key to ""
+
+Written has
+  set Key to ""
+  set Acks to 0
+
+ReadDone has
+  set Key to ""
+  set Value to ""
+
+Mutation has
+  set key to ""
+  set value to ""
+  set stamp to 0s
+  set request to ""
+
+MutationAck has
+  set request to ""
+
+Fetch has
+  set key to ""
+  set request to ""
+
+FetchReply has
+  set request to ""
+  set value to ""
+  set stamp to 0s
+
+Hint has
+  set target to sim.Nobody
+  set mutation to (message Mutation with key "")
+
+Node has
+  set Data to {}
+  set PendingHints to 0
+  set versions to {}
+  set hints to {}
+  set nextRequest to 0
+  set acks to {}
+  set keys to {}
+  set replies to {}
+
+define Factor
+  result 3
+
+define Quorum
+  result 2
+
+# Membership comes from gossip, never from a global list
+define [n: Node] Members
+  result (maps.Keys n.gossip.Known)
+
+define [n: Node] ReplicasOf [k: text]
+  result (ring.Owners of k among n.Members count Factor)
+
+define [n: Node] NewRequest [k: text]
+  set n.nextRequest to (n.nextRequest plus 1)
+  set id to (text.From n.nextRequest)
+  set item id of n.keys to k
+  result id
+
+define [n: Node] start
+  time.Every 1s
+    set waiting to {}
+    each h in n.hints
+      if (h.target is in n.gossip.Down)
+        set waiting to (lists.Append h to waiting)
+      else
+        net.Send h.mutation from n to h.target
+    set n.hints to waiting
+    set n.PendingHints to (lists.Size n.hints)
+
+# Coordinator: write to every replica; keep a hint for replicas that look down
+when [n: Node] (sim.Delivered Write)
+  set id to (n.NewRequest Write.Key)
+  set item id of n.acks to 0
+  set m to (message Mutation with key Write.Key, value Write.Value, stamp time.Now, request id)
+  each r in (n.ReplicasOf Write.Key)
+    if (r is in n.gossip.Down)
+      set n.hints to (lists.Append (message Hint with target r, mutation m) to n.hints)
+      set n.PendingHints to (lists.Size n.hints)
+    else
+      net.Send m from n to r
+
+define [n: Node] Store [m: Mutation]
+  set item m.key of n.Data to m.value
+  set item m.key of n.versions to m.stamp
+
+# Replica: keep the newest value per key (last write wins)
+define [n: Node] Apply [m: Mutation]
+  set k to m.key
+  if (k is in n.versions)
+    if (m.stamp more than (item k of n.versions))
+      n.Store m
+  else
+    n.Store m
+
+when [n: Node] (net.Received Mutation from coordinator)
+  n.Apply Mutation
+  net.Send (message MutationAck with request Mutation.request) from n to coordinator
+
+# Coordinator: the write succeeds at QUORUM acknowledgements
+when [n: Node] (net.Received MutationAck from replica)
+  set id to MutationAck.request
+  set item id of n.acks to ((item id of n.acks) plus 1)
+  if ((item id of n.acks) is Quorum)
+    emit (message Written with Key (item id of n.keys), Acks Quorum) by n
+
+# Coordinator: read from the live replicas
+when [n: Node] (sim.Delivered Read)
+  set id to (n.NewRequest Read.Key)
+  set item id of n.replies to {}
+  each r in (n.ReplicasOf Read.Key)
+    if (r is not in n.gossip.Down)
+      net.Send (message Fetch with key Read.Key, request id) from n to r
+
+when [n: Node] (net.Received Fetch from coordinator)
+  set k to Fetch.key
+  if (k is in n.Data)
+    net.Send (message FetchReply with request Fetch.request, value (item k of n.Data), stamp (item k of n.versions)) from n to coordinator
+  else
+    net.Send (message FetchReply with request Fetch.request) from n to coordinator
+
+# Coordinator: at QUORUM replies, answer with the newest value
+when [n: Node] (net.Received FetchReply from replica)
+  set id to FetchReply.request
+  set item id of n.replies to (lists.Append FetchReply to (item id of n.replies))
+  if ((lists.Size (item id of n.replies)) is Quorum)
+    set best to (item 0 of (item id of n.replies))
+    each r in (item id of n.replies)
+      if (r.stamp more than best.stamp)
+        set best to r
+    emit (message ReadDone with Key (item id of n.keys), Value best.value) by n

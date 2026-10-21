@@ -1,0 +1,2 @@
+err-tab-after-spaces.synod:2:3: error[indent]: tabs are not allowed
+  hint: indent with 2 spaces per level

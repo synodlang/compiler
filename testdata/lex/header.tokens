@@ -1,0 +1,14 @@
+1:1 COMMENT "# package raft" own
+1:15 NEWLINE ""
+2:1 WORD "use"
+2:5 PATH "std/net"
+2:12 NEWLINE ""
+4:1 WORD "define" blank
+4:8 WORD "Ping"
+4:12 NEWLINE ""
+5:1 INDENT ""
+5:3 MEMBER "net.Send"
+5:12 NUMBER "1"
+5:13 NEWLINE ""
+6:1 DEDENT ""
+6:1 EOF ""

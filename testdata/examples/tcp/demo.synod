@@ -1,0 +1,16 @@
+# package main
+use github.com/synodlang/examples/tcp
+use std/lesson
+use std/sim
+
+define main
+  set client to (sim.Spawn tcp)
+  set server to (sim.Spawn tcp)
+  set server.tcp.State to "LISTEN"
+  lesson.Note "A connection needs three messages before data can flow."
+  deliver (message tcp.Open with Server server) to client
+  after 5ms
+    lesson.Ask "What does the server send back after a SYN?"
+  after 100ms
+    lesson.Note "Both ends are ESTABLISHED: data can now flow either way."
+  sim.StopAt 200ms

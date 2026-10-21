@@ -1,0 +1,2 @@
+err-indent-plus4.synod:2:7: error[indent]: unexpected indent
+  hint: a block is indented 2 spaces more than its statement

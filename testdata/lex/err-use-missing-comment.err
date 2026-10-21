@@ -1,0 +1,1 @@
+err-use-missing-comment.synod:1:5: error[syntax]: missing import path after use

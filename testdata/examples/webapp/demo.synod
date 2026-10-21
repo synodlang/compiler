@@ -1,0 +1,30 @@
+# package main
+use github.com/synodlang/examples/webapp/api
+use github.com/synodlang/examples/webapp/app
+use github.com/synodlang/examples/webapp/cache
+use github.com/synodlang/examples/webapp/db
+use github.com/synodlang/examples/webapp/lb
+use std/lesson
+use std/lists
+use std/random
+use std/sim
+use std/time
+
+define main
+  sim.Seed 9
+  set balancer to (sim.Spawn lb)
+  set servers to (sim.Cluster of 3 running app)
+  set store to (sim.Spawn cache)
+  set database to (sim.Spawn db)
+  lb.Balance servers on balancer
+  each s in servers
+    app.Wire s to store and database
+  set keys to {"home", "cart", "profile", "search", "help"}
+  each i in (lists.Range 1 to 150)
+    after (i times 20ms)
+      deliver (message api.Get with Key (random.Pick keys), Id i, Start time.Now) to balancer
+  lesson.Note "Misses go to the database and fill the cache; hits come back fast."
+  after 2s
+    sim.Crash store
+    lesson.Ask "The cache just crashed. What happens to new requests?"
+  sim.StopAt 4s

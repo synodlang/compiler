@@ -1,0 +1,18 @@
+# package main
+use github.com/synodlang/examples/gossip
+use std/lesson
+use std/sim
+
+define main
+  sim.Seed 4
+  set nodes to (sim.Cluster of 6 running gossip)
+  each i, n in nodes
+    if (i more than 0)
+      gossip.Join n to (item 0 of nodes)
+  after 8s
+    sim.Crash (item 2 of nodes)
+    lesson.Ask "How long until the others mark n3 as down?"
+  after 16s
+    sim.Restart (item 2 of nodes)
+    lesson.Note "n3 comes back with a new generation, so its lower heartbeat is still believed."
+  sim.StopAt 25s

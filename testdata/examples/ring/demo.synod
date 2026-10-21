@@ -1,0 +1,18 @@
+# package main
+use github.com/synodlang/examples/ring
+use github.com/synodlang/examples/ringlook
+use std/lesson
+use std/lists
+use std/sim
+
+define main
+  set nodes to (sim.Cluster of 4 running ring)
+  set keys to {"user:1", "user:2", "user:3", "cart:7", "cart:9", "order:12"}
+  each k in keys
+    emit (message ring.Placed with Key k, Owner (item 0 of (ring.Owners of k among nodes count 1))) by sim.Nobody
+  after 2s
+    lesson.Ask "A fifth node joins the ring. How many keys move?"
+    set grown to (lists.Append (sim.Spawn ring) to nodes)
+    each k in keys
+      emit (message ring.Placed with Key k, Owner (item 0 of (ring.Owners of k among grown count 1))) by sim.Nobody
+  sim.StopAt 4s

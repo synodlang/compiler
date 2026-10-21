@@ -1,0 +1,33 @@
+# package api
+Get has
+  set Key to ""
+  set Id to 0
+  set Start to 0s
+
+Lookup has
+  set Key to ""
+  set Id to 0
+
+CacheReply has
+  set Key to ""
+  set Id to 0
+  set Value to ""
+  set Found to false
+
+Query has
+  set Key to ""
+  set Id to 0
+
+Rows has
+  set Key to ""
+  set Id to 0
+  set Value to ""
+
+Fill has
+  set Key to ""
+  set Value to ""
+
+Served has
+  set Id to 0
+  set Hit to false
+  set Latency to 0s

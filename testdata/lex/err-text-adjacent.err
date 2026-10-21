@@ -1,0 +1,1 @@
+err-text-adjacent.synod:1:8: error[syntax]: missing space between "\"a\"" and "\"b\""

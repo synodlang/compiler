@@ -1,0 +1,19 @@
+# package lb
+use github.com/synodlang/examples/webapp/api
+use std/lists
+use std/net
+use std/sim
+
+Node has
+  set Backends to {}
+  set next to 0
+
+define Balance [servers: list of node] on [n: Node]
+  set n.Backends to servers
+
+# Round robin over the application servers
+when [n: Node] (sim.Delivered api.Get)
+  net.Send api.Get from n to (item n.next of n.Backends)
+  set n.next to (n.next plus 1)
+  if (n.next is (lists.Size n.Backends))
+    set n.next to 0

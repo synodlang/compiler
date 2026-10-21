@@ -1,0 +1,22 @@
+# package raftlook
+use github.com/synodlang/examples/raft
+use std/look
+use std/look/basic
+use std/sim
+use std/theme
+
+define RoleColor [r: text]
+  if (r is "leader")
+    result theme.Accent
+  if (r is "candidate")
+    result theme.Warning
+  result theme.Ink
+
+# Replace the basic card with one whose fill follows the node's role
+when (sim.Added [n: raft.Node])
+  draw (look.Card for n) as card for n
+    look.Fill card with (RoleColor n.raft.Role)
+
+when (sim.Emitted raft.Elected by n)
+  look.Pulse (card of n)
+  look.Effect "glow" on (card of n)

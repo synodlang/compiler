@@ -1,0 +1,1 @@
+err-use-bad-version.synod:1:5: error[syntax]: bad import path

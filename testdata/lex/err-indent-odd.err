@@ -1,0 +1,1 @@
+err-indent-odd.synod:2:4: error[indent]: indentation is not a multiple of 2 spaces

@@ -1,0 +1,7 @@
+1:1 WORD "a"
+1:2 NEWLINE ""
+2:1 INDENT ""
+2:3 WORD "b"
+2:3 NEWLINE ""
+2:4 DEDENT ""
+2:4 EOF ""

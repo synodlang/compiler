@@ -1,0 +1,6 @@
+1:1 COMMENT "# package x" own
+1:12 NEWLINE ""
+2:1 WORD "use"
+2:5 PATH "std/net"
+2:12 NEWLINE ""
+3:1 EOF ""

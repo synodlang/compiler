@@ -1,0 +1,2 @@
+err-hash-todo.synod:1:3: error[syntax]: # starts a comment only when followed by a space
+  hint: write "# text"; a color is # and six hex digits

@@ -1,0 +1,15 @@
+1:1 WORD "a"
+1:2 NEWLINE ""
+2:1 INDENT ""
+2:3 WORD "b"
+2:4 NEWLINE ""
+3:4 COMMENT "# odd" own
+3:9 NEWLINE ""
+4:7 COMMENT "# deep" own
+4:13 NEWLINE ""
+5:1 COMMENT "# shallow" own
+5:10 NEWLINE ""
+6:3 WORD "c"
+6:4 NEWLINE ""
+7:1 DEDENT ""
+7:1 EOF ""

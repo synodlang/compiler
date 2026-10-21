@@ -1,0 +1,29 @@
+# package main
+use github.com/synodlang/examples/cassandra
+use github.com/synodlang/examples/gossip
+use github.com/synodlang/examples/ring
+use std/lesson
+use std/sim
+
+define main
+  sim.Seed 5
+  set nodes to (sim.Cluster of 6 running cassandra)
+  each i, n in nodes
+    if (i more than 0)
+      gossip.Join n to (item 0 of nodes)
+  set replicas to (ring.Owners of "user:42" among nodes count 3)
+  set coordinator to (item 0 of replicas)
+  set victim to (item 1 of replicas)
+  after 5s
+    deliver (message cassandra.Write with Key "user:42", Value "Ada") to coordinator
+  after 6s
+    sim.Crash victim
+  after 12s
+    deliver (message cassandra.Write with Key "user:42", Value "Grace") to coordinator
+    lesson.Ask "One replica is down. Does the write succeed, and how will that replica catch up?"
+  after 14s
+    deliver (message cassandra.Read with Key "user:42") to (item 2 of replicas)
+  after 18s
+    sim.Restart victim
+    lesson.Note "Data lives in memory here, so the restarted replica is refilled only by hints."
+  sim.StopAt 30s

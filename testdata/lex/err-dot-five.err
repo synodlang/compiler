@@ -1,0 +1,2 @@
+err-dot-five.synod:1:10: error[syntax]: ".5" is not a number
+  hint: write 0.5

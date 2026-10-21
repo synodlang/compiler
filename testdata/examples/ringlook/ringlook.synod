@@ -1,0 +1,24 @@
+# package ringlook
+use github.com/synodlang/examples/ring
+use std/look
+use std/sim
+use std/theme
+
+when sim.Started
+  draw (look.Circle 300) as wheel
+    look.Fill wheel with theme.Paper
+    look.Stroke wheel with theme.Line
+
+# A node sits at its first token; small marks show all its tokens
+when (sim.Added n)
+  draw (look.Card for n) as card for n
+  look.Orbit card around look.Center at (item 0 of (ring.TokensOf n))
+  each t in (ring.TokensOf n)
+    draw (look.Circle 4) as mark
+      look.Fill mark with theme.Quiet
+    look.Orbit mark around look.Center at t
+
+# A key label sits beside its owner and morphs when the owner changes
+when (sim.Emitted ring.Placed by origin)
+  draw (look.Label ring.Placed.Key) as tag for ring.Placed.Key
+  look.Place tag beside (card of ring.Placed.Owner)

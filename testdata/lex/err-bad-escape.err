@@ -1,0 +1,2 @@
+err-bad-escape.synod:1:7: error[syntax]: unknown escape
+  hint: escapes are \" \\ \n

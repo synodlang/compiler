@@ -1,0 +1,7 @@
+# top
+#
+define x # trailing   
+  # own
+  set a to #F4A340
+  set b to #deface
+  set c to 1# tight

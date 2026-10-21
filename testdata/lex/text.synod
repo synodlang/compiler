@@ -1,0 +1,3 @@
+set a to "he said \"hi\" \\ and \n bye"
+set b to ""
+set c to "naïve # not a comment"

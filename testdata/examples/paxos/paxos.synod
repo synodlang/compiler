@@ -1,0 +1,109 @@
+# package paxos
+use std/lists
+use std/math
+use std/net
+use std/sim
+use std/text
+
+Start has
+  set Value to ""
+
+Learned has
+  set Value to ""
+
+Prepare has
+  set number to 0
+
+Promise has
+  set number to 0
+  set prior to 0
+  set priorValue to ""
+
+Accept has
+  set number to 0
+  set value to ""
+
+Accepted has
+  set number to 0
+  set value to ""
+
+Node has
+  set Peers to {}
+  set Promised to 0
+  set AcceptedBallot to 0
+  set AcceptedValue to ""
+  set Chosen to ""
+  set round to 0
+  set ballot to 0
+  set proposal to ""
+  set promises to {}
+  set votes to {}
+
+define Meet [ns: list of Node]
+  each n in ns
+    set n.Peers to ns
+
+define Majority of [n: number]
+  result ((math.Floor (n divided by 2)) plus 1)
+
+# Proposer, phase 1: ask every acceptor to promise a fresh, unique ballot
+define [n: Node] Propose [v: text]
+  set n.round to (n.round plus 1)
+  set n.ballot to ((n.round times 100) plus (sim.Id n))
+  set n.proposal to v
+  set n.promises to {}
+  each p in n.Peers
+    net.Send (message Prepare with number n.ballot) from n to p
+
+when [n: Node] (sim.Delivered Start)
+  n.Propose Start.Value
+
+# Acceptor: promise to ignore every lower ballot
+when [n: Node] (net.Received Prepare from proposer)
+  if (Prepare.number more than n.Promised)
+    set n.Promised to Prepare.number
+    net.Send (message Promise with number n.Promised, prior n.AcceptedBallot, priorValue n.AcceptedValue) from n to proposer
+
+# Proposer, phase 2: with a majority of promises, adopt the highest prior value
+when [n: Node] (net.Received Promise from acceptor)
+  if (Promise.number is n.ballot)
+    set n.promises to (lists.Append Promise to n.promises)
+    if ((lists.Size n.promises) is (Majority of (lists.Size n.Peers)))
+      set best to 0
+      each p in n.promises
+        if (p.prior more than best)
+          set best to p.prior
+          set n.proposal to p.priorValue
+      each a in n.Peers
+        net.Send (message Accept with number n.ballot, value n.proposal) from n to a
+
+# Acceptor: accept unless it promised a higher ballot
+when [n: Node] (net.Received Accept from proposer)
+  if (Accept.number at least n.Promised)
+    set n.Promised to Accept.number
+    set n.AcceptedBallot to Accept.number
+    set n.AcceptedValue to Accept.value
+    each p in n.Peers
+      net.Send (message Accepted with number Accept.number, value Accept.value) from n to p
+
+# Learner: a value is chosen once a majority accepted the same ballot
+when [n: Node] (net.Received Accepted from acceptor)
+  set key to (text.From Accepted.number)
+  if (key is in n.votes)
+    set item key of n.votes to ((item key of n.votes) plus 1)
+  else
+    set item key of n.votes to 1
+  if ((item key of n.votes) is (Majority of (lists.Size n.Peers)))
+    set n.Chosen to Accepted.value
+    emit (message Learned with Value n.Chosen) by n
+
+define ChosenValues
+  set values to {}
+  each n in (sim.NodesRunning paxos)
+    set c to n.Chosen
+    if ((c is not "") and (c is not in values))
+      set values to (lists.Append c to values)
+  result values
+
+# Safety: at most one value is ever chosen
+always ((lists.Size ChosenValues) at most 1)

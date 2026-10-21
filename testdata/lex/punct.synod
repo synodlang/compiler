@@ -1,0 +1,5 @@
+foo(bar)
+{a,b}
+{}
+when (sim.Added [n: raft.Node])
+define [x: list of Node] y

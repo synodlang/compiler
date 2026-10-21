@@ -1,0 +1,2 @@
+err-plus.synod:1:10: error[syntax]: "+" is not allowed
+  hint: add with plus; numbers have no leading +

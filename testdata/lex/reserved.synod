@@ -1,0 +1,4 @@
+if x is not in y
+  result true
+else
+  result false

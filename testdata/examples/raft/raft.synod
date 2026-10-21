@@ -1,0 +1,108 @@
+# package raft
+use std/lists
+use std/math
+use std/net
+use std/random
+use std/sim
+use std/time
+
+Elected has
+  set Term to 0
+
+RequestVote has
+  set term to 0
+
+Vote has
+  set term to 0
+  set granted to false
+
+Heartbeat has
+  set term to 0
+
+Node has
+  set Role to "follower"
+  set Term to 0
+  set VotedFor to sim.Nobody
+  set Peers to {}
+  set votes to 0
+  set lastHeard to 0s
+
+define Meet [ns: list of Node]
+  each n in ns
+    set n.Peers to (lists.Without n from ns)
+
+define Majority of [n: number]
+  result ((math.Floor (n divided by 2)) plus 1)
+
+define Leaders
+  set found to {}
+  each n in (sim.NodesRunning raft)
+    if ((n.Role is "leader") and (sim.IsUp n))
+      set found to (lists.Append n to found)
+  result found
+
+define LeadersAgree
+  set terms to {}
+  each n in (sim.NodesRunning raft)
+    if (n.Role is "leader")
+      if (n.Term is in terms)
+        result false
+      set terms to (lists.Append n.Term to terms)
+  result true
+
+# Election safety: never two leaders in the same term
+always LeadersAgree
+
+define [n: Node] BecomeFollower [t: number]
+  set n.Term to t
+  set n.Role to "follower"
+  set n.VotedFor to sim.Nobody
+
+define [n: Node] StartElection
+  set n.Role to "candidate"
+  set n.Term to (n.Term plus 1)
+  set n.VotedFor to n
+  set n.votes to 1
+  set n.lastHeard to time.Now
+  each p in n.Peers
+    net.Send (message RequestVote with term n.Term) from n to p
+
+# A randomized timeout keeps candidates from colliding forever
+define [n: Node] WatchElection
+  after (random.TimeBetween 150ms and 300ms)
+    if ((n.Role is not "leader") and ((time.Now minus n.lastHeard) at least 150ms))
+      n.StartElection
+    n.WatchElection
+
+define [n: Node] start
+  n.WatchElection
+  time.Every 50ms
+    if (n.Role is "leader")
+      each p in n.Peers
+        net.Send (message Heartbeat with term n.Term) from n to p
+
+when [n: Node] (net.Received RequestVote from candidate)
+  if (RequestVote.term more than n.Term)
+    n.BecomeFollower RequestVote.term
+  set grant to ((RequestVote.term is n.Term) and ((n.VotedFor is sim.Nobody) or (n.VotedFor is candidate)))
+  if grant
+    set n.VotedFor to candidate
+    set n.lastHeard to time.Now
+  net.Send (message Vote with term n.Term, granted grant) from n to candidate
+
+when [n: Node] (net.Received Vote from voter)
+  if (Vote.term more than n.Term)
+    n.BecomeFollower Vote.term
+  else
+    if (((n.Role is "candidate") and Vote.granted) and (Vote.term is n.Term))
+      set n.votes to (n.votes plus 1)
+      if (n.votes is (Majority of ((lists.Size n.Peers) plus 1)))
+        set n.Role to "leader"
+        emit (message Elected with Term n.Term) by n
+
+when [n: Node] (net.Received Heartbeat from leader)
+  if (Heartbeat.term at least n.Term)
+    if (Heartbeat.term more than n.Term)
+      n.BecomeFollower Heartbeat.term
+    set n.Role to "follower"
+    set n.lastHeard to time.Now

@@ -1,0 +1,8 @@
+1:1 MEMBER "net.Send"
+1:10 MEMBER "a.b.c"
+1:15 NEWLINE ""
+2:1 MEMBER "n.Role"
+2:7 NEWLINE ""
+3:1 MEMBER "raft.Node"
+3:10 NEWLINE ""
+4:1 EOF ""

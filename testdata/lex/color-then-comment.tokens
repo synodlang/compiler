@@ -1,0 +1,6 @@
+1:1 COLOR "#F4A340"
+1:8 NEWLINE ""
+2:1 COLOR "#deface"
+2:9 COMMENT "# c"
+2:12 NEWLINE ""
+3:1 EOF ""
