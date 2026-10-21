@@ -1,0 +1,8 @@
+package example.com/t/a name=a dir=a module=example.com/t
+  file a/a.synod
+  import example.com/t/a at 2:5 -> example.com/t/a
+  deps example.com/t/a
+targets example.com/t/a
+module "example.com/t" dir=. version= synod=0.2 requires=0
+diagnostics 1
+a/a.synod:2:5: error[import-cycle]: import cycle: a → a

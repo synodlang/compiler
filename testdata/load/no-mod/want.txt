@@ -1,0 +1,13 @@
+package std/sim name=sim dir=std/sim module=github.com/synodlang/std std
+  file std/sim/sim.synod
+  deps 
+package a name=a dir=a module=
+  file a/a.synod
+  import std/sim at 2:5 -> std/sim
+  import github.com/other/raft at 3:5 -> UNRESOLVED
+  deps std/sim
+targets a
+module "" dir=a version= synod= requires=0
+diagnostics 1
+a/a.synod:3:5: error[unknown-import]: no module provides "github.com/other/raft"
+  hint: no synod.mod found above a

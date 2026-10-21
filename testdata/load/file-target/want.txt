@@ -1,0 +1,16 @@
+package std/sim name=sim dir=std/sim module=github.com/synodlang/std std
+  file std/sim/sim.synod
+  deps 
+package example.com/t/x name=x dir=x module=example.com/t broken
+  file x/bad.synod (unparsed)
+  file x/x.synod
+  import std/sim at 2:5 -> std/sim
+  deps std/sim
+package example.com/t/x#main name=main dir=x module=example.com/t main
+  file x/main.synod
+  import example.com/t/x at 2:5 -> example.com/t/x
+  deps example.com/t/x
+targets example.com/t/x#main
+module "example.com/t" dir=. version= synod=0.2 requires=0
+diagnostics 1
+x/bad.synod:2:2: error[indent]: indentation is not a multiple of 2 spaces

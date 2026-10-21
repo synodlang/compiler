@@ -1,0 +1,3 @@
+# package a
+use github.com/other/log
+use github.com/other/raft

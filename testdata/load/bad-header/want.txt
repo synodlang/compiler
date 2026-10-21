@@ -1,0 +1,27 @@
+package example.com/t/Up name=Up dir=Up module=example.com/t
+  file Up/up.synod
+  deps 
+package example.com/t/m name=m dir=m module=example.com/t
+  file m/m.synod
+  deps 
+package std/sim name=sim dir=std/sim module=github.com/synodlang/std std
+  file std/sim/sim.synod
+  deps 
+package example.com/t/none name=none dir=none module=example.com/t
+  file none/none.synod
+  import std/sim at 1:5 -> std/sim
+  deps std/sim
+package example.com/t/ok name=ok dir=ok module=example.com/t
+  file ok/ok.synod
+  deps 
+package example.com/t/use name=use dir=use module=example.com/t
+  file use/use.synod
+  deps 
+targets example.com/t/Up example.com/t/m example.com/t/none example.com/t/ok example.com/t/use
+module "example.com/t" dir=. version= synod=0.2 requires=0
+diagnostics 4
+Up/up.synod:1:1: error[bad-header]: package name "Up" must be a lower-case word
+m/m.synod:1:1: error[bad-header]: package "other" must be the folder name "m" or main
+none/none.synod:1:1: error[bad-header]: missing "# package" header
+  hint: the first line is "# package <folder>"
+use/use.synod:1:1: error[bad-header]: package name "use" is a reserved word

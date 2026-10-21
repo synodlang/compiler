@@ -1,0 +1,3 @@
+# package a
+use github.com/lib/thing/sub
+use github.com/lib/thing@v1.0.0

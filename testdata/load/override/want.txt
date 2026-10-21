@@ -1,0 +1,14 @@
+package github.com/lib/thing/sub name=sub dir=$mod/github.com/lib/thing/sub module=github.com/lib/thing
+  file $mod/github.com/lib/thing/sub/sub.synod
+  deps 
+package example.com/t/a name=a dir=a module=example.com/t
+  file a/a.synod
+  import github.com/lib/thing/sub at 2:5 -> github.com/lib/thing/sub
+  import github.com/lib/thing@v1.0.0 at 3:5 -> UNRESOLVED
+  deps github.com/lib/thing/sub
+targets example.com/t/a
+module "example.com/t" dir=. version= synod=0.2 requires=0
+module "github.com/lib/thing" dir=$mod/github.com/lib/thing version= synod=0.2 requires=0
+diagnostics 1
+a/a.synod:3:5: error[unknown-import]: "github.com/lib/thing@v1.0.0" is a local package and takes no version
+  hint: write "use github.com/lib/thing"

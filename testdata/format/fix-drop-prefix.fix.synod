@@ -1,0 +1,8 @@
+# package raft
+
+define [n: Node] Step
+  set n.raft.Role to "leader"
+  set x to (n.raft.Role)
+  raft.Elect n
+  set y to (raft.a.b)
+  show raft.Role

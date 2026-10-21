@@ -11,8 +11,13 @@ import (
 // Check reports the first way in which f differs from its canonical form as
 // a non-canonical diagnostic, and returns nil when f is canonical. A file
 // that does not parse yields its syntax or indent diagnostic instead.
-func Check(f *source.File) *source.Diagnostic {
-	out, d := Format(f)
+func Check(f *source.File) *source.Diagnostic { return CheckWith(f, nil) }
+
+// CheckWith is Check for the canonical form that FormatWith(f, fixes) gives.
+// The messages are the same as Check's; when the fixes change a line, the
+// hint is the canonical line.
+func CheckWith(f *source.File, fixes []Fix) *source.Diagnostic {
+	out, d := FormatWith(f, fixes)
 	if d != nil {
 		return d
 	}

@@ -1,0 +1,6 @@
+# package a
+use github.com/synodlang/std/net
+use std
+use std/net@v1.0.0
+use std/nope
+use std/onlymain

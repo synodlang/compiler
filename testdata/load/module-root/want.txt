@@ -1,0 +1,10 @@
+package example.com/rootpkg name=rootpkg dir=. module=example.com/rootpkg
+  file r.synod
+  deps 
+package example.com/rootpkg/a name=a dir=a module=example.com/rootpkg
+  file a/a.synod
+  import example.com/rootpkg at 2:5 -> example.com/rootpkg
+  deps example.com/rootpkg
+targets example.com/rootpkg/a example.com/rootpkg
+module "example.com/rootpkg" dir=. version= synod=0.2 requires=0
+diagnostics 0

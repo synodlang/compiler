@@ -1,0 +1,5 @@
+# package x
+
+define Show [a: number]
+  set m to (message T with b 1, a 2)
+  show a "text" 5

@@ -1,0 +1,3 @@
+# package main
+define main
+  sim.StopAt 1s

@@ -1,0 +1,3 @@
+# package a
+use github.com/other/gone
+use github.com/other/unrequired

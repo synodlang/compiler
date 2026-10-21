@@ -1,0 +1,10 @@
+# package paxos
+use std/net
+
+define [n: Node] Promise to [p: node]
+  net.Send (message Promise with number 7, prior n.Promised, extra 3) to p
+  set m to (message Promise with prior 2, number 1)
+  if n.Ready
+    set k to (message Same with a 1, b 2)
+  set odd to (message Wide with a 2, b (x plus 1))
+  set done to (message Promise with number 1)

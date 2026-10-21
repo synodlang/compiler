@@ -1,0 +1,8 @@
+package example.com/t/a name=a dir=a module=example.com/t
+  file a/a.synod
+  deps 
+targets example.com/t/a
+module "example.com/t" dir=. version= synod=0.2 requires=2
+diagnostics 1
+synod.mod:4:1: error[non-canonical]: require lines are not sorted
+  hint: sort them by module path

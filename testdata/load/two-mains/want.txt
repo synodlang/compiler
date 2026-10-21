@@ -1,0 +1,10 @@
+package example.com/t/x name=x dir=x module=example.com/t
+  file x/x.synod
+  deps 
+package example.com/t/x#main name=main dir=x module=example.com/t main
+  file x/a.synod
+  deps 
+targets example.com/t/x example.com/t/x#main
+module "example.com/t" dir=. version= synod=0.2 requires=0
+diagnostics 1
+x/b.synod:1:1: error[extra-main]: a second main file in x; the first is x/a.synod

@@ -1,0 +1,12 @@
+package example.com/t/a name=a dir=a module=example.com/t
+  file a/a.synod
+  import example.com/t/a-b at 2:5 -> UNRESOLVED
+  import example.com/t/b.c at 3:5 -> UNRESOLVED
+  import example.com/t/9 at 4:5 -> UNRESOLVED
+  deps 
+targets example.com/t/a
+module "example.com/t" dir=. version= synod=0.2 requires=0
+diagnostics 3
+a/a.synod:2:5: error[unknown-import]: the last segment of "example.com/t/a-b" is not a word
+a/a.synod:3:5: error[unknown-import]: the last segment of "example.com/t/b.c" is not a word
+a/a.synod:4:5: error[unknown-import]: the last segment of "example.com/t/9" is not a word

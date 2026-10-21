@@ -1,0 +1,224 @@
+package std/disk name=disk dir=std/disk module=github.com/synodlang/std std
+  file std/disk/disk.synod
+  deps 
+package std/lists name=lists dir=std/lists module=github.com/synodlang/std std
+  file std/lists/lists.synod
+  deps 
+package std/sim name=sim dir=std/sim module=github.com/synodlang/std std
+  file std/sim/sim.synod
+  deps 
+package std/net name=net dir=std/net module=github.com/synodlang/std std
+  file std/net/net.synod
+  import std/sim at 2:5 -> std/sim
+  deps std/sim
+package std/random name=random dir=std/random module=github.com/synodlang/std std
+  file std/random/random.synod
+  deps 
+package std/time name=time dir=std/time module=github.com/synodlang/std std
+  file std/time/time.synod
+  deps 
+package github.com/synodlang/examples/gossip name=gossip dir=gossip module=github.com/synodlang/examples
+  file gossip/gossip.synod
+  import std/disk at 2:5 -> std/disk
+  import std/lists at 3:5 -> std/lists
+  import std/net at 4:5 -> std/net
+  import std/random at 5:5 -> std/random
+  import std/time at 6:5 -> std/time
+  deps std/disk std/lists std/net std/random std/time
+package std/maps name=maps dir=std/maps module=github.com/synodlang/std std
+  file std/maps/maps.synod
+  deps 
+package std/math name=math dir=std/math module=github.com/synodlang/std std
+  file std/math/math.synod
+  deps 
+package std/text name=text dir=std/text module=github.com/synodlang/std std
+  file std/text/text.synod
+  deps 
+package github.com/synodlang/examples/ring name=ring dir=ring module=github.com/synodlang/examples
+  file ring/ring.synod
+  import std/lists at 2:5 -> std/lists
+  import std/maps at 3:5 -> std/maps
+  import std/math at 4:5 -> std/math
+  import std/sim at 5:5 -> std/sim
+  import std/text at 6:5 -> std/text
+  deps std/lists std/maps std/math std/sim std/text
+package github.com/synodlang/examples/cassandra name=cassandra dir=cassandra module=github.com/synodlang/examples
+  file cassandra/cassandra.synod
+  import github.com/synodlang/examples/gossip at 2:5 -> github.com/synodlang/examples/gossip
+  import github.com/synodlang/examples/ring at 3:5 -> github.com/synodlang/examples/ring
+  import std/lists at 4:5 -> std/lists
+  import std/maps at 5:5 -> std/maps
+  import std/net at 6:5 -> std/net
+  import std/sim at 7:5 -> std/sim
+  import std/text at 8:5 -> std/text
+  import std/time at 9:5 -> std/time
+  deps github.com/synodlang/examples/gossip github.com/synodlang/examples/ring std/lists std/maps std/net std/sim std/text std/time
+package std/lesson name=lesson dir=std/lesson module=github.com/synodlang/std std
+  file std/lesson/lesson.synod
+  deps 
+package github.com/synodlang/examples/cassandra#main name=main dir=cassandra module=github.com/synodlang/examples main
+  file cassandra/demo.synod
+  import github.com/synodlang/examples/cassandra at 2:5 -> github.com/synodlang/examples/cassandra
+  import github.com/synodlang/examples/gossip at 3:5 -> github.com/synodlang/examples/gossip
+  import github.com/synodlang/examples/ring at 4:5 -> github.com/synodlang/examples/ring
+  import std/lesson at 5:5 -> std/lesson
+  import std/sim at 6:5 -> std/sim
+  deps github.com/synodlang/examples/cassandra github.com/synodlang/examples/gossip github.com/synodlang/examples/ring std/lesson std/sim
+package github.com/synodlang/examples/gossip#main name=main dir=gossip module=github.com/synodlang/examples main
+  file gossip/demo.synod
+  import github.com/synodlang/examples/gossip at 2:5 -> github.com/synodlang/examples/gossip
+  import std/lesson at 3:5 -> std/lesson
+  import std/sim at 4:5 -> std/sim
+  deps github.com/synodlang/examples/gossip std/lesson std/sim
+package github.com/synodlang/examples/paxos name=paxos dir=paxos module=github.com/synodlang/examples
+  file paxos/paxos.synod
+  import std/lists at 2:5 -> std/lists
+  import std/math at 3:5 -> std/math
+  import std/net at 4:5 -> std/net
+  import std/sim at 5:5 -> std/sim
+  import std/text at 6:5 -> std/text
+  deps std/lists std/math std/net std/sim std/text
+package github.com/synodlang/examples/paxos#main name=main dir=paxos module=github.com/synodlang/examples main
+  file paxos/demo.synod
+  import github.com/synodlang/examples/paxos at 2:5 -> github.com/synodlang/examples/paxos
+  import std/lesson at 3:5 -> std/lesson
+  import std/net at 4:5 -> std/net
+  import std/sim at 5:5 -> std/sim
+  deps github.com/synodlang/examples/paxos std/lesson std/net std/sim
+package github.com/synodlang/examples/raft name=raft dir=raft module=github.com/synodlang/examples
+  file raft/raft.synod
+  import std/lists at 2:5 -> std/lists
+  import std/math at 3:5 -> std/math
+  import std/net at 4:5 -> std/net
+  import std/random at 5:5 -> std/random
+  import std/sim at 6:5 -> std/sim
+  import std/time at 7:5 -> std/time
+  deps std/lists std/math std/net std/random std/sim std/time
+package std/look name=look dir=std/look module=github.com/synodlang/std std
+  file std/look/look.synod
+  import std/sim at 2:5 -> std/sim
+  deps std/sim
+package std/look/basic name=basic dir=std/look/basic module=github.com/synodlang/std std
+  file std/look/basic/basic.synod
+  import std/look at 2:5 -> std/look
+  deps std/look
+package std/theme name=theme dir=std/theme module=github.com/synodlang/std std
+  file std/theme/theme.synod
+  deps 
+package github.com/synodlang/examples/raftlook name=raftlook dir=raftlook module=github.com/synodlang/examples
+  file raftlook/raftlook.synod
+  import github.com/synodlang/examples/raft at 2:5 -> github.com/synodlang/examples/raft
+  import std/look at 3:5 -> std/look
+  import std/look/basic at 4:5 -> std/look/basic
+  import std/sim at 5:5 -> std/sim
+  import std/theme at 6:5 -> std/theme
+  deps github.com/synodlang/examples/raft std/look std/look/basic std/sim std/theme
+package github.com/synodlang/examples/raft#main name=main dir=raft module=github.com/synodlang/examples main
+  file raft/demo.synod
+  import github.com/synodlang/examples/raft at 2:5 -> github.com/synodlang/examples/raft
+  import github.com/synodlang/examples/raftlook at 3:5 -> github.com/synodlang/examples/raftlook
+  import std/lesson at 4:5 -> std/lesson
+  import std/net at 5:5 -> std/net
+  import std/sim at 6:5 -> std/sim
+  deps github.com/synodlang/examples/raft github.com/synodlang/examples/raftlook std/lesson std/net std/sim
+package github.com/synodlang/examples/ringlook name=ringlook dir=ringlook module=github.com/synodlang/examples
+  file ringlook/ringlook.synod
+  import github.com/synodlang/examples/ring at 2:5 -> github.com/synodlang/examples/ring
+  import std/look at 3:5 -> std/look
+  import std/sim at 4:5 -> std/sim
+  import std/theme at 5:5 -> std/theme
+  deps github.com/synodlang/examples/ring std/look std/sim std/theme
+package github.com/synodlang/examples/ring#main name=main dir=ring module=github.com/synodlang/examples main
+  file ring/demo.synod
+  import github.com/synodlang/examples/ring at 2:5 -> github.com/synodlang/examples/ring
+  import github.com/synodlang/examples/ringlook at 3:5 -> github.com/synodlang/examples/ringlook
+  import std/lesson at 4:5 -> std/lesson
+  import std/lists at 5:5 -> std/lists
+  import std/sim at 6:5 -> std/sim
+  deps github.com/synodlang/examples/ring github.com/synodlang/examples/ringlook std/lesson std/lists std/sim
+package github.com/synodlang/examples/tcp name=tcp dir=tcp module=github.com/synodlang/examples
+  file tcp/tcp.synod
+  import std/net at 2:5 -> std/net
+  import std/sim at 3:5 -> std/sim
+  deps std/net std/sim
+package github.com/synodlang/examples/tcp#main name=main dir=tcp module=github.com/synodlang/examples main
+  file tcp/demo.synod
+  import github.com/synodlang/examples/tcp at 2:5 -> github.com/synodlang/examples/tcp
+  import std/lesson at 3:5 -> std/lesson
+  import std/sim at 4:5 -> std/sim
+  deps github.com/synodlang/examples/tcp std/lesson std/sim
+package github.com/synodlang/examples/twopc name=twopc dir=twopc module=github.com/synodlang/examples
+  file twopc/twopc.synod
+  import std/lists at 2:5 -> std/lists
+  import std/net at 3:5 -> std/net
+  import std/random at 4:5 -> std/random
+  import std/sim at 5:5 -> std/sim
+  deps std/lists std/net std/random std/sim
+package github.com/synodlang/examples/twopc#main name=main dir=twopc module=github.com/synodlang/examples main
+  file twopc/demo.synod
+  import github.com/synodlang/examples/twopc at 2:5 -> github.com/synodlang/examples/twopc
+  import std/lesson at 3:5 -> std/lesson
+  import std/net at 4:5 -> std/net
+  import std/sim at 5:5 -> std/sim
+  deps github.com/synodlang/examples/twopc std/lesson std/net std/sim
+package github.com/synodlang/examples/wal name=wal dir=wal module=github.com/synodlang/examples
+  file wal/wal.synod
+  import std/disk at 2:5 -> std/disk
+  import std/lists at 3:5 -> std/lists
+  import std/sim at 4:5 -> std/sim
+  import std/text at 5:5 -> std/text
+  import std/time at 6:5 -> std/time
+  deps std/disk std/lists std/sim std/text std/time
+package github.com/synodlang/examples/wal#main name=main dir=wal module=github.com/synodlang/examples main
+  file wal/demo.synod
+  import github.com/synodlang/examples/wal at 2:5 -> github.com/synodlang/examples/wal
+  import std/lesson at 3:5 -> std/lesson
+  import std/lists at 4:5 -> std/lists
+  import std/sim at 5:5 -> std/sim
+  import std/text at 6:5 -> std/text
+  deps github.com/synodlang/examples/wal std/lesson std/lists std/sim std/text
+package github.com/synodlang/examples/webapp/api name=api dir=webapp/api module=github.com/synodlang/examples
+  file webapp/api/api.synod
+  deps 
+package github.com/synodlang/examples/webapp/app name=app dir=webapp/app module=github.com/synodlang/examples
+  file webapp/app/app.synod
+  import github.com/synodlang/examples/webapp/api at 2:5 -> github.com/synodlang/examples/webapp/api
+  import std/maps at 3:5 -> std/maps
+  import std/net at 4:5 -> std/net
+  import std/sim at 5:5 -> std/sim
+  import std/time at 6:5 -> std/time
+  deps github.com/synodlang/examples/webapp/api std/maps std/net std/sim std/time
+package github.com/synodlang/examples/webapp/cache name=cache dir=webapp/cache module=github.com/synodlang/examples
+  file webapp/cache/cache.synod
+  import github.com/synodlang/examples/webapp/api at 2:5 -> github.com/synodlang/examples/webapp/api
+  import std/net at 3:5 -> std/net
+  deps github.com/synodlang/examples/webapp/api std/net
+package github.com/synodlang/examples/webapp/db name=db dir=webapp/db module=github.com/synodlang/examples
+  file webapp/db/db.synod
+  import github.com/synodlang/examples/webapp/api at 2:5 -> github.com/synodlang/examples/webapp/api
+  import std/net at 3:5 -> std/net
+  import std/text at 4:5 -> std/text
+  deps github.com/synodlang/examples/webapp/api std/net std/text
+package github.com/synodlang/examples/webapp/lb name=lb dir=webapp/lb module=github.com/synodlang/examples
+  file webapp/lb/lb.synod
+  import github.com/synodlang/examples/webapp/api at 2:5 -> github.com/synodlang/examples/webapp/api
+  import std/lists at 3:5 -> std/lists
+  import std/net at 4:5 -> std/net
+  import std/sim at 5:5 -> std/sim
+  deps github.com/synodlang/examples/webapp/api std/lists std/net std/sim
+package github.com/synodlang/examples/webapp#main name=main dir=webapp module=github.com/synodlang/examples main
+  file webapp/demo.synod
+  import github.com/synodlang/examples/webapp/api at 2:5 -> github.com/synodlang/examples/webapp/api
+  import github.com/synodlang/examples/webapp/app at 3:5 -> github.com/synodlang/examples/webapp/app
+  import github.com/synodlang/examples/webapp/cache at 4:5 -> github.com/synodlang/examples/webapp/cache
+  import github.com/synodlang/examples/webapp/db at 5:5 -> github.com/synodlang/examples/webapp/db
+  import github.com/synodlang/examples/webapp/lb at 6:5 -> github.com/synodlang/examples/webapp/lb
+  import std/lesson at 7:5 -> std/lesson
+  import std/lists at 8:5 -> std/lists
+  import std/random at 9:5 -> std/random
+  import std/sim at 10:5 -> std/sim
+  import std/time at 11:5 -> std/time
+  deps github.com/synodlang/examples/webapp/api github.com/synodlang/examples/webapp/app github.com/synodlang/examples/webapp/cache github.com/synodlang/examples/webapp/db github.com/synodlang/examples/webapp/lb std/lesson std/lists std/random std/sim std/time
+targets github.com/synodlang/examples/cassandra github.com/synodlang/examples/cassandra#main github.com/synodlang/examples/gossip github.com/synodlang/examples/gossip#main github.com/synodlang/examples/paxos github.com/synodlang/examples/paxos#main github.com/synodlang/examples/raft github.com/synodlang/examples/raft#main github.com/synodlang/examples/raftlook github.com/synodlang/examples/ring github.com/synodlang/examples/ring#main github.com/synodlang/examples/ringlook github.com/synodlang/examples/tcp github.com/synodlang/examples/tcp#main github.com/synodlang/examples/twopc github.com/synodlang/examples/twopc#main github.com/synodlang/examples/wal github.com/synodlang/examples/wal#main github.com/synodlang/examples/webapp#main github.com/synodlang/examples/webapp/api github.com/synodlang/examples/webapp/app github.com/synodlang/examples/webapp/cache github.com/synodlang/examples/webapp/db github.com/synodlang/examples/webapp/lb
+module "github.com/synodlang/examples" dir=. version= synod=0.2 requires=0
+diagnostics 0

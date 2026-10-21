@@ -7,19 +7,9 @@
 // the rewrites.
 package format
 
-import (
-	"github.com/synodlang/compiler/internal/parse"
-	"github.com/synodlang/compiler/internal/source"
-)
+import "github.com/synodlang/compiler/internal/source"
 
 // Format returns the canonical form of f. When f does not parse, it returns
 // the syntax or indent diagnostic and no output. Format is idempotent: the
 // result formats to itself.
-func Format(f *source.File) ([]byte, *source.Diagnostic) {
-	tree, d := parse.Parse(f)
-	if d != nil {
-		return nil, d
-	}
-	canonicalize(tree)
-	return emit(tree), nil
-}
+func Format(f *source.File) ([]byte, *source.Diagnostic) { return FormatWith(f, nil) }

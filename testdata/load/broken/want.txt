@@ -1,0 +1,13 @@
+package example.com/t/b name=b dir=b module=example.com/t
+  file b/b.synod
+  deps 
+package example.com/t/a name=a dir=a module=example.com/t broken
+  file a/a.synod
+  file a/z.synod (unparsed)
+  import example.com/t/b at 2:5 -> example.com/t/b
+  deps example.com/t/b
+targets example.com/t/a
+module "example.com/t" dir=. version= synod=0.2 requires=0
+diagnostics 1
+a/z.synod:2:1: error[syntax]: a continuation line must follow a block
+  hint: "else" goes directly after its if block, at the if's indentation

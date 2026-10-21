@@ -1,0 +1,7 @@
+# package gossip
+
+define Greet [N: Node] with [Best: number]
+  set Total to (Best plus 1)
+  each Item in (Total.Items)
+    show Item
+  show Total

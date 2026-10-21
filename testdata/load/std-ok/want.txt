@@ -1,0 +1,23 @@
+package std/sim name=sim dir=std/sim module=github.com/synodlang/std std
+  file std/sim/sim.synod
+  deps 
+package std/look name=look dir=std/look module=github.com/synodlang/std std
+  file std/look/look.synod
+  import std/sim at 2:5 -> std/sim
+  deps std/sim
+package std/look/basic name=basic dir=std/look/basic module=github.com/synodlang/std std
+  file std/look/basic/basic.synod
+  import std/look at 2:5 -> std/look
+  deps std/look
+package std/net name=net dir=std/net module=github.com/synodlang/std std
+  file std/net/net.synod
+  import std/sim at 2:5 -> std/sim
+  deps std/sim
+package example.com/t/a name=a dir=a module=example.com/t
+  file a/a.synod
+  import std/look/basic at 2:5 -> std/look/basic
+  import std/net at 3:5 -> std/net
+  deps std/look/basic std/net
+targets example.com/t/a
+module "example.com/t" dir=. version= synod=0.2 requires=0
+diagnostics 0

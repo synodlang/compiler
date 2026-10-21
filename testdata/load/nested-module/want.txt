@@ -1,0 +1,9 @@
+package example.com/t/a name=a dir=a module=example.com/t
+  file a/a.synod
+  import example.com/t/inner/p at 2:5 -> UNRESOLVED
+  deps 
+targets example.com/t/a
+module "example.com/t" dir=. version= synod=0.2 requires=0
+diagnostics 1
+a/a.synod:2:5: error[unknown-import]: "example.com/t/inner/p" lies in a nested module
+  hint: import it by the path of its own module

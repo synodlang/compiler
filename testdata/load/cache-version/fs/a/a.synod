@@ -1,0 +1,3 @@
+# package a
+use github.com/other/raft@v1.0.0
+use github.com/other/raft/sub@v1.2.0

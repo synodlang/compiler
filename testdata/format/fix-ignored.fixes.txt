@@ -1,0 +1,7 @@
+99:1 rename zzz
+5:3 order a b
+5:17 rename zzz
+5:10 drop
+4:13 order b
+4:13 order b a c
+4:13 drop 1

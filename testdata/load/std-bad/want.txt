@@ -1,0 +1,19 @@
+package example.com/t/a name=a dir=a module=example.com/t
+  file a/a.synod
+  import github.com/synodlang/std/net at 2:5 -> UNRESOLVED
+  import std at 3:5 -> UNRESOLVED
+  import std/net@v1.0.0 at 4:5 -> UNRESOLVED
+  import std/nope at 5:5 -> UNRESOLVED
+  import std/onlymain at 6:5 -> UNRESOLVED
+  deps 
+targets example.com/t/a
+module "example.com/t" dir=. version= synod=0.2 requires=0
+diagnostics 5
+a/a.synod:2:5: error[unknown-import]: "github.com/synodlang/std/net" cannot be imported by the std module path
+  hint: write "use std/net"
+a/a.synod:3:5: error[unknown-import]: no library package at "std"
+  hint: write "use std/<package>"
+a/a.synod:4:5: error[unknown-import]: "std/net@v1.0.0" takes no version: std is versioned with the language
+  hint: write "use std/net"
+a/a.synod:5:5: error[unknown-import]: no std package "nope"
+a/a.synod:6:5: error[unknown-import]: no std package "onlymain"
