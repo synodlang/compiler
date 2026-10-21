@@ -38,17 +38,14 @@ func Check(f *source.File) *source.Diagnostic {
 		switch {
 		case i >= len(s) && i >= len(c):
 			return mk(1, 1, "line is not canonical", "") // unreachable: the texts differ
+		// Format prints one output line per source line and never invents
+		// content, so past the end of one text the other has only the final
+		// newline or blank lines left.
 		case i >= len(s):
-			if i == len(c)-1 && c[i] == "" {
-				last := s[len(s)-1]
-				return mk(len(s), utf8.RuneCountInString(last)+1, "missing newline at end of file", "")
-			}
-			return mk(i+1, 1, "missing line", write(i))
+			last := s[len(s)-1]
+			return mk(len(s), utf8.RuneCountInString(last)+1, "missing newline at end of file", "")
 		case i >= len(c):
-			if strings.TrimSpace(s[i]) == "" {
-				return mk(i+1, 1, "unexpected blank line", "")
-			}
-			return mk(i+1, 1, "unexpected line", "")
+			return mk(i+1, 1, "unexpected blank line", "")
 		case s[i] == c[i]:
 			continue
 		}
