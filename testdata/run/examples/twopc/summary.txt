@@ -32,7 +32,7 @@ steps:
   net.Arrived #4 twopc.Vote{tx 1, yes true} from n3 to n1
 @38.926ms receive n1
   net.Arrived #6 twopc.Vote{tx 1, yes true} from n4 to n1
-@45ms timer nobody
+@45ms timer main
   sim.Crashed n1
   sim.Emitted lesson.Asked{Question "The coordinator crashed while votes were in flight. What can a prepared participant do?"} by nobody
 @45.881ms receive n1

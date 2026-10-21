@@ -13,7 +13,7 @@ steps:
   sim.Emitted ring.Placed{Key "cart:7", Owner n3} by nobody
   sim.Emitted ring.Placed{Key "cart:9", Owner n3} by nobody
   sim.Emitted ring.Placed{Key "order:12", Owner n2} by nobody
-@2s timer nobody
+@2s timer main
   sim.Emitted lesson.Asked{Question "A fifth node joins the ring. How many keys move?"} by nobody
   sim.Added n5 runs ring
   sim.Emitted ring.Placed{Key "user:1", Owner n1} by nobody

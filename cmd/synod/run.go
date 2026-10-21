@@ -207,15 +207,7 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 // writeStatus prints the status line and one line per broken always.
 func writeStatus(w io.Writer, ra runArgs, r *sim.Result, o trace.Options) {
 	if f := r.Failed; f != nil {
-		pos := ""
-		if f.HasPos {
-			file := f.Pos.File
-			if t, ok := o.Paths[file]; ok {
-				file = t
-			}
-			pos = fmt.Sprintf("%s:%d:%d: ", file, f.Pos.Line, f.Pos.Col)
-		}
-		fmt.Fprintf(w, "failed at %s: %serror[%s]: %s\n", value.FormatTime(r.End), pos, f.Code, f.Message)
+		fmt.Fprintln(w, trace.FailedLine(f, r.End, o))
 		return
 	}
 	dest := ra.trace

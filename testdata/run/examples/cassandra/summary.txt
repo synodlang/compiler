@@ -330,7 +330,7 @@ steps:
   net.Arrived #29 gossip.digest{known {n1: 1000002, n2: 1000004, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000005}} from n6 to n1
   sim.Changed gossip.Known of n1 from {n1: 1000005, n2: 1000003, n3: 1000005, n4: 1000004, n5: 1000005, n6: 1000004} to {n1: 1000005, n2: 1000004, n3: 1000005, n4: 1000004, n5: 1000005, n6: 1000004}
   sim.Changed gossip.Known of n1 from {n1: 1000005, n2: 1000004, n3: 1000005, n4: 1000004, n5: 1000005, n6: 1000004} to {n1: 1000005, n2: 1000004, n3: 1000005, n4: 1000004, n5: 1000005, n6: 1000005}
-@5s timer nobody
+@5s timer main
   sim.Injected cassandra.Write{Key "user:42", Value "Ada"} into n2
 @5s timer n1
   sim.Fired n1

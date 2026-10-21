@@ -17,11 +17,11 @@ steps:
   sim.Changed app.Cache of n4 from nobody to n5
   sim.Changed app.Db of n4 from nobody to n6
   sim.Emitted lesson.Noted{Text "Misses go to the database and fill the cache; hits come back fast."} by nobody
-@20ms timer nobody
+@20ms timer main
   sim.Injected api.Get{Key "cart", Id 1, Start 20ms} into n1
 @20ms deliver n1
   net.Sent #1 api.Get{Key "cart", Id 1, Start 20ms} from n1 to n2
-@40ms timer nobody
+@40ms timer main
   sim.Injected api.Get{Key "home", Id 2, Start 40ms} into n1
 @40ms deliver n1
   net.Sent #2 api.Get{Key "home", Id 2, Start 40ms} from n1 to n3
@@ -31,7 +31,7 @@ steps:
 @52.68ms receive n3
   net.Arrived #2 api.Get{Key "home", Id 2, Start 40ms} from n1 to n3
   net.Sent #4 api.Lookup{Key "home", Id 2} from n3 to n5
-@60ms timer nobody
+@60ms timer main
   sim.Injected api.Get{Key "help", Id 3, Start 60ms} into n1
 @60ms deliver n1
   net.Sent #5 api.Get{Key "help", Id 3, Start 60ms} from n1 to n4
@@ -41,7 +41,7 @@ steps:
 @77.298ms receive n5
   net.Arrived #4 api.Lookup{Key "home", Id 2} from n3 to n5
   net.Sent #7 api.CacheReply{Key "home", Id 2, Value "", Found false} from n5 to n3
-@80ms timer nobody
+@80ms timer main
   sim.Injected api.Get{Key "cart", Id 4, Start 80ms} into n1
 @80ms deliver n1
   net.Sent #8 api.Get{Key "cart", Id 4, Start 80ms} from n1 to n2
@@ -51,7 +51,7 @@ steps:
 @95.487ms receive n2
   net.Arrived #6 api.CacheReply{Key "cart", Id 1, Value "", Found false} from n5 to n2
   net.Sent #10 api.Query{Key "cart", Id 1} from n2 to n6
-@100ms timer nobody
+@100ms timer main
   sim.Injected api.Get{Key "profile", Id 5, Start 100ms} into n1
 @100ms deliver n1
   net.Sent #11 api.Get{Key "profile", Id 5, Start 100ms} from n1 to n3
@@ -70,7 +70,7 @@ steps:
 @112.579ms receive n6
   net.Arrived #10 api.Query{Key "cart", Id 1} from n2 to n6
   sim.Changed db.Queries of n6 from 0 to 1
-@120ms timer nobody
+@120ms timer main
   sim.Injected api.Get{Key "search", Id 6, Start 120ms} into n1
 @120ms deliver n1
   net.Sent #16 api.Get{Key "search", Id 6, Start 120ms} from n1 to n4
@@ -89,7 +89,7 @@ steps:
 @139.882ms receive n5
   net.Arrived #15 api.Lookup{Key "profile", Id 5} from n3 to n5
   net.Sent #20 api.CacheReply{Key "profile", Id 5, Value "", Found false} from n5 to n3
-@140ms timer nobody
+@140ms timer main
   sim.Injected api.Get{Key "cart", Id 7, Start 140ms} into n1
 @140ms deliver n1
   net.Sent #21 api.Get{Key "cart", Id 7, Start 140ms} from n1 to n2
@@ -105,7 +105,7 @@ steps:
 @155.813ms receive n6
   net.Arrived #17 api.Query{Key "help", Id 3} from n4 to n6
   sim.Changed db.Queries of n6 from 2 to 3
-@160ms timer nobody
+@160ms timer main
   sim.Injected api.Get{Key "profile", Id 8, Start 160ms} into n1
 @160ms deliver n1
   net.Sent #25 api.Get{Key "profile", Id 8, Start 160ms} from n1 to n3
@@ -128,7 +128,7 @@ steps:
   net.Arrived #24 api.Rows{Key "cart", Id 1, Value "row for cart"} from n6 to n2
   net.Sent #30 api.Fill{Key "cart", Value "row for cart"} from n2 to n5
   sim.Emitted api.Served{Id 1, Hit false, Latency 155.686ms} by n2
-@180ms timer nobody
+@180ms timer main
   sim.Injected api.Get{Key "search", Id 9, Start 180ms} into n1
 @180ms deliver n1
   net.Sent #31 api.Get{Key "search", Id 9, Start 180ms} from n1 to n4
@@ -163,7 +163,7 @@ steps:
 @199.317ms receive n6
   net.Arrived #32 api.Query{Key "search", Id 6} from n4 to n6
   sim.Changed db.Queries of n6 from 5 to 6
-@200ms timer nobody
+@200ms timer main
   sim.Injected api.Get{Key "home", Id 10, Start 200ms} into n1
 @200ms deliver n1
   net.Sent #39 api.Get{Key "home", Id 10, Start 200ms} from n1 to n2
@@ -189,7 +189,7 @@ steps:
 @219.012ms receive n6
   net.Arrived #38 api.Query{Key "profile", Id 8} from n3 to n6
   sim.Changed db.Queries of n6 from 7 to 8
-@220ms timer nobody
+@220ms timer main
   sim.Injected api.Get{Key "cart", Id 11, Start 220ms} into n1
 @220ms deliver n1
   net.Sent #44 api.Get{Key "cart", Id 11, Start 220ms} from n1 to n3
@@ -212,7 +212,7 @@ steps:
 @239.317ms timer n6
   sim.Fired n6
   net.Sent #50 api.Rows{Key "search", Id 6, Value "row for search"} from n6 to n4
-@240ms timer nobody
+@240ms timer main
   sim.Injected api.Get{Key "help", Id 12, Start 240ms} into n1
 @240ms deliver n1
   net.Sent #51 api.Get{Key "help", Id 12, Start 240ms} from n1 to n4
@@ -244,7 +244,7 @@ steps:
   net.Arrived #47 api.Rows{Key "profile", Id 5, Value "row for profile"} from n6 to n3
   net.Sent #56 api.Fill{Key "profile", Value "row for profile"} from n3 to n5
   sim.Emitted api.Served{Id 5, Hit false, Latency 159.483ms} by n3
-@260ms timer nobody
+@260ms timer main
   sim.Injected api.Get{Key "profile", Id 13, Start 260ms} into n1
 @260ms deliver n1
   net.Sent #57 api.Get{Key "profile", Id 13, Start 260ms} from n1 to n2
@@ -270,7 +270,7 @@ steps:
 @279.804ms receive n2
   net.Arrived #57 api.Get{Key "profile", Id 13, Start 260ms} from n1 to n2
   net.Sent #61 api.Lookup{Key "profile", Id 13} from n2 to n5
-@280ms timer nobody
+@280ms timer main
   sim.Injected api.Get{Key "search", Id 14, Start 280ms} into n1
 @280ms deliver n1
   net.Sent #62 api.Get{Key "search", Id 14, Start 280ms} from n1 to n3
@@ -294,7 +294,7 @@ steps:
 @297.477ms receive n5
   net.Arrived #59 api.Lookup{Key "help", Id 12} from n4 to n5
   net.Sent #67 api.CacheReply{Key "help", Id 12, Value "row for help", Found true} from n5 to n4
-@300ms timer nobody
+@300ms timer main
   sim.Injected api.Get{Key "home", Id 15, Start 300ms} into n1
 @300ms deliver n1
   net.Sent #68 api.Get{Key "home", Id 15, Start 300ms} from n1 to n4
@@ -308,7 +308,7 @@ steps:
 @319.266ms receive n3
   net.Arrived #69 api.CacheReply{Key "search", Id 14, Value "row for search", Found true} from n5 to n3
   sim.Emitted api.Served{Id 14, Hit true, Latency 39.266ms} by n3
-@320ms timer nobody
+@320ms timer main
   sim.Injected api.Get{Key "search", Id 16, Start 320ms} into n1
 @320ms deliver n1
   net.Sent #71 api.Get{Key "search", Id 16, Start 320ms} from n1 to n2
@@ -326,7 +326,7 @@ steps:
   net.Sent #73 api.CacheReply{Key "home", Id 15, Value "row for home", Found true} from n5 to n4
 @332.984ms receive n5
   net.Arrived #70 api.Fill{Key "search", Value "row for search"} from n4 to n5
-@340ms timer nobody
+@340ms timer main
   sim.Injected api.Get{Key "help", Id 17, Start 340ms} into n1
 @340ms deliver n1
   net.Sent #74 api.Get{Key "help", Id 17, Start 340ms} from n1 to n3
@@ -336,7 +336,7 @@ steps:
 @358.734ms receive n4
   net.Arrived #73 api.CacheReply{Key "home", Id 15, Value "row for home", Found true} from n5 to n4
   sim.Emitted api.Served{Id 15, Hit true, Latency 58.734ms} by n4
-@360ms timer nobody
+@360ms timer main
   sim.Injected api.Get{Key "cart", Id 18, Start 360ms} into n1
 @360ms deliver n1
   net.Sent #76 api.Get{Key "cart", Id 18, Start 360ms} from n1 to n4
@@ -346,7 +346,7 @@ steps:
 @366.295ms receive n5
   net.Arrived #75 api.Lookup{Key "search", Id 16} from n2 to n5
   net.Sent #78 api.CacheReply{Key "search", Id 16, Value "row for search", Found true} from n5 to n2
-@380ms timer nobody
+@380ms timer main
   sim.Injected api.Get{Key "home", Id 19, Start 380ms} into n1
 @380ms deliver n1
   net.Sent #79 api.Get{Key "home", Id 19, Start 380ms} from n1 to n2
@@ -362,7 +362,7 @@ steps:
 @396.868ms receive n5
   net.Arrived #80 api.Lookup{Key "cart", Id 18} from n4 to n5
   net.Sent #82 api.CacheReply{Key "cart", Id 18, Value "row for cart", Found true} from n5 to n4
-@400ms timer nobody
+@400ms timer main
   sim.Injected api.Get{Key "home", Id 20, Start 400ms} into n1
 @400ms deliver n1
   net.Sent #83 api.Get{Key "home", Id 20, Start 400ms} from n1 to n3
@@ -378,7 +378,7 @@ steps:
 @419.311ms receive n5
   net.Arrived #84 api.Lookup{Key "home", Id 19} from n2 to n5
   net.Sent #85 api.CacheReply{Key "home", Id 19, Value "row for home", Found true} from n5 to n2
-@420ms timer nobody
+@420ms timer main
   sim.Injected api.Get{Key "help", Id 21, Start 420ms} into n1
 @420ms deliver n1
   net.Sent #86 api.Get{Key "help", Id 21, Start 420ms} from n1 to n4
@@ -392,7 +392,7 @@ steps:
 @2633.695ms receive n3
   net.Arrived #386 api.Get{Key "home", Id 131, Start 2620ms} from n1 to n3
   net.Sent #387 api.Lookup{Key "home", Id 131} from n3 to n5
-@2640ms timer nobody
+@2640ms timer main
   sim.Injected api.Get{Key "search", Id 132, Start 2640ms} into n1
 @2640ms deliver n1
   net.Sent #388 api.Get{Key "search", Id 132, Start 2640ms} from n1 to n4
@@ -400,14 +400,14 @@ steps:
   net.Dropped #385 api.Lookup{Key "help", Id 130} from n2 to n5 (crashed)
 @2650.863ms receive n5
   net.Dropped #387 api.Lookup{Key "home", Id 131} from n3 to n5 (crashed)
-@2660ms timer nobody
+@2660ms timer main
   sim.Injected api.Get{Key "cart", Id 133, Start 2660ms} into n1
 @2660ms deliver n1
   net.Sent #389 api.Get{Key "cart", Id 133, Start 2660ms} from n1 to n2
 @2661.399ms receive n4
   net.Arrived #388 api.Get{Key "search", Id 132, Start 2640ms} from n1 to n4
   net.Sent #390 api.Lookup{Key "search", Id 132} from n4 to n5
-@2680ms timer nobody
+@2680ms timer main
   sim.Injected api.Get{Key "help", Id 134, Start 2680ms} into n1
 @2680ms deliver n1
   net.Sent #391 api.Get{Key "help", Id 134, Start 2680ms} from n1 to n3
@@ -421,7 +421,7 @@ steps:
 @2698.665ms receive n3
   net.Arrived #391 api.Get{Key "help", Id 134, Start 2680ms} from n1 to n3
   net.Sent #393 api.Lookup{Key "help", Id 134} from n3 to n5
-@2700ms timer nobody
+@2700ms timer main
   sim.Injected api.Get{Key "home", Id 135, Start 2700ms} into n1
 @2700ms deliver n1
   net.Sent #394 api.Get{Key "home", Id 135, Start 2700ms} from n1 to n4
@@ -430,13 +430,13 @@ steps:
   net.Sent #395 api.Lookup{Key "home", Id 135} from n4 to n5
 @2719.048ms receive n5
   net.Dropped #393 api.Lookup{Key "help", Id 134} from n3 to n5 (crashed)
-@2720ms timer nobody
+@2720ms timer main
   sim.Injected api.Get{Key "help", Id 136, Start 2720ms} into n1
 @2720ms deliver n1
   net.Sent #396 api.Get{Key "help", Id 136, Start 2720ms} from n1 to n2
 @2721.96ms receive n5
   net.Dropped #395 api.Lookup{Key "home", Id 135} from n4 to n5 (crashed)
-@2740ms timer nobody
+@2740ms timer main
   sim.Injected api.Get{Key "search", Id 137, Start 2740ms} into n1
 @2740ms deliver n1
   net.Sent #397 api.Get{Key "search", Id 137, Start 2740ms} from n1 to n3
@@ -448,14 +448,14 @@ steps:
   net.Sent #399 api.Lookup{Key "search", Id 137} from n3 to n5
 @2758.957ms receive n5
   net.Dropped #398 api.Lookup{Key "help", Id 136} from n2 to n5 (crashed)
-@2760ms timer nobody
+@2760ms timer main
   sim.Injected api.Get{Key "home", Id 138, Start 2760ms} into n1
 @2760ms deliver n1
   net.Sent #400 api.Get{Key "home", Id 138, Start 2760ms} from n1 to n4
 @2772.372ms receive n4
   net.Arrived #400 api.Get{Key "home", Id 138, Start 2760ms} from n1 to n4
   net.Sent #401 api.Lookup{Key "home", Id 138} from n4 to n5
-@2780ms timer nobody
+@2780ms timer main
   sim.Injected api.Get{Key "cart", Id 139, Start 2780ms} into n1
 @2780ms deliver n1
   net.Sent #402 api.Get{Key "cart", Id 139, Start 2780ms} from n1 to n2
@@ -463,7 +463,7 @@ steps:
   net.Dropped #399 api.Lookup{Key "search", Id 137} from n3 to n5 (crashed)
 @2786.459ms receive n5
   net.Dropped #401 api.Lookup{Key "home", Id 138} from n4 to n5 (crashed)
-@2800ms timer nobody
+@2800ms timer main
   sim.Injected api.Get{Key "help", Id 140, Start 2800ms} into n1
 @2800ms deliver n1
   net.Sent #403 api.Get{Key "help", Id 140, Start 2800ms} from n1 to n3
@@ -475,14 +475,14 @@ steps:
 @2818.918ms receive n3
   net.Arrived #403 api.Get{Key "help", Id 140, Start 2800ms} from n1 to n3
   net.Sent #405 api.Lookup{Key "help", Id 140} from n3 to n5
-@2820ms timer nobody
+@2820ms timer main
   sim.Injected api.Get{Key "profile", Id 141, Start 2820ms} into n1
 @2820ms deliver n1
   net.Sent #406 api.Get{Key "profile", Id 141, Start 2820ms} from n1 to n4
 @2833.128ms receive n4
   net.Arrived #406 api.Get{Key "profile", Id 141, Start 2820ms} from n1 to n4
   net.Sent #407 api.Lookup{Key "profile", Id 141} from n4 to n5
-@2840ms timer nobody
+@2840ms timer main
   sim.Injected api.Get{Key "help", Id 142, Start 2840ms} into n1
 @2840ms deliver n1
   net.Sent #408 api.Get{Key "help", Id 142, Start 2840ms} from n1 to n2
@@ -490,7 +490,7 @@ steps:
   net.Dropped #405 api.Lookup{Key "help", Id 140} from n3 to n5 (crashed)
 @2858.275ms receive n5
   net.Dropped #407 api.Lookup{Key "profile", Id 141} from n4 to n5 (crashed)
-@2860ms timer nobody
+@2860ms timer main
   sim.Injected api.Get{Key "home", Id 143, Start 2860ms} into n1
 @2860ms deliver n1
   net.Sent #409 api.Get{Key "home", Id 143, Start 2860ms} from n1 to n3
@@ -500,7 +500,7 @@ steps:
 @2874.104ms receive n3
   net.Arrived #409 api.Get{Key "home", Id 143, Start 2860ms} from n1 to n3
   net.Sent #411 api.Lookup{Key "home", Id 143} from n3 to n5
-@2880ms timer nobody
+@2880ms timer main
   sim.Injected api.Get{Key "search", Id 144, Start 2880ms} into n1
 @2880ms deliver n1
   net.Sent #412 api.Get{Key "search", Id 144, Start 2880ms} from n1 to n4
@@ -511,7 +511,7 @@ steps:
 @2894.293ms receive n4
   net.Arrived #412 api.Get{Key "search", Id 144, Start 2880ms} from n1 to n4
   net.Sent #413 api.Lookup{Key "search", Id 144} from n4 to n5
-@2900ms timer nobody
+@2900ms timer main
   sim.Injected api.Get{Key "home", Id 145, Start 2900ms} into n1
 @2900ms deliver n1
   net.Sent #414 api.Get{Key "home", Id 145, Start 2900ms} from n1 to n2
@@ -520,14 +520,14 @@ steps:
 @2913.648ms receive n2
   net.Arrived #414 api.Get{Key "home", Id 145, Start 2900ms} from n1 to n2
   net.Sent #415 api.Lookup{Key "home", Id 145} from n2 to n5
-@2920ms timer nobody
+@2920ms timer main
   sim.Injected api.Get{Key "help", Id 146, Start 2920ms} into n1
 @2920ms deliver n1
   net.Sent #416 api.Get{Key "help", Id 146, Start 2920ms} from n1 to n3
 @2932.213ms receive n3
   net.Arrived #416 api.Get{Key "help", Id 146, Start 2920ms} from n1 to n3
   net.Sent #417 api.Lookup{Key "help", Id 146} from n3 to n5
-@2940ms timer nobody
+@2940ms timer main
   sim.Injected api.Get{Key "help", Id 147, Start 2940ms} into n1
 @2940ms deliver n1
   net.Sent #418 api.Get{Key "help", Id 147, Start 2940ms} from n1 to n4
@@ -535,14 +535,14 @@ steps:
   net.Dropped #415 api.Lookup{Key "home", Id 145} from n2 to n5 (crashed)
 @2951.482ms receive n5
   net.Dropped #417 api.Lookup{Key "help", Id 146} from n3 to n5 (crashed)
-@2960ms timer nobody
+@2960ms timer main
   sim.Injected api.Get{Key "profile", Id 148, Start 2960ms} into n1
 @2960ms deliver n1
   net.Sent #419 api.Get{Key "profile", Id 148, Start 2960ms} from n1 to n2
 @2967.283ms receive n4
   net.Arrived #418 api.Get{Key "help", Id 147, Start 2940ms} from n1 to n4
   net.Sent #420 api.Lookup{Key "help", Id 147} from n4 to n5
-@2980ms timer nobody
+@2980ms timer main
   sim.Injected api.Get{Key "search", Id 149, Start 2980ms} into n1
 @2980ms deliver n1
   net.Sent #421 api.Get{Key "search", Id 149, Start 2980ms} from n1 to n3
@@ -553,7 +553,7 @@ steps:
   net.Dropped #420 api.Lookup{Key "help", Id 147} from n4 to n5 (crashed)
 @2998.778ms receive n5
   net.Dropped #422 api.Lookup{Key "profile", Id 148} from n2 to n5 (crashed)
-@3s timer nobody
+@3s timer main
   sim.Injected api.Get{Key "search", Id 150, Start 3s} into n1
 @3s deliver n1
   net.Sent #423 api.Get{Key "search", Id 150, Start 3s} from n1 to n4

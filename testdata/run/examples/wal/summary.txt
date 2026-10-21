@@ -8,42 +8,42 @@ steps:
   sim.Emitted wal.Recovered{Replayed 0} by n1
   disk.Written "pages" on n1
   disk.Written "flushed" on n1
-@300ms timer nobody
+@300ms timer main
   sim.Injected wal.Put{Key "k1", Value "1"} into n1
 @300ms deliver n1
   sim.Changed wal.Lsn of n1 from 0 to 1
   disk.Written "1" on n1
   disk.Written "last" on n1
   sim.Changed wal.Table of n1 from {} to {"k1": "1"}
-@600ms timer nobody
+@600ms timer main
   sim.Injected wal.Put{Key "k2", Value "2"} into n1
 @600ms deliver n1
   sim.Changed wal.Lsn of n1 from 1 to 2
   disk.Written "2" on n1
   disk.Written "last" on n1
   sim.Changed wal.Table of n1 from {"k1": "1"} to {"k1": "1", "k2": "2"}
-@900ms timer nobody
+@900ms timer main
   sim.Injected wal.Put{Key "k3", Value "3"} into n1
 @900ms deliver n1
   sim.Changed wal.Lsn of n1 from 2 to 3
   disk.Written "3" on n1
   disk.Written "last" on n1
   sim.Changed wal.Table of n1 from {"k1": "1", "k2": "2"} to {"k1": "1", "k2": "2", "k3": "3"}
-@1200ms timer nobody
+@1200ms timer main
   sim.Injected wal.Put{Key "k4", Value "4"} into n1
 @1200ms deliver n1
   sim.Changed wal.Lsn of n1 from 3 to 4
   disk.Written "4" on n1
   disk.Written "last" on n1
   sim.Changed wal.Table of n1 from {"k1": "1", "k2": "2", "k3": "3"} to {"k1": "1", "k2": "2", "k3": "3", "k4": "4"}
-@1500ms timer nobody
+@1500ms timer main
   sim.Injected wal.Put{Key "k5", Value "5"} into n1
 @1500ms deliver n1
   sim.Changed wal.Lsn of n1 from 4 to 5
   disk.Written "5" on n1
   disk.Written "last" on n1
   sim.Changed wal.Table of n1 from {"k1": "1", "k2": "2", "k3": "3", "k4": "4"} to {"k1": "1", "k2": "2", "k3": "3", "k4": "4", "k5": "5"}
-@1800ms timer nobody
+@1800ms timer main
   sim.Injected wal.Put{Key "k6", Value "6"} into n1
 @1800ms deliver n1
   sim.Changed wal.Lsn of n1 from 5 to 6
@@ -55,40 +55,40 @@ steps:
   disk.Written "pages" on n1
   disk.Written "flushed" on n1
   sim.Changed wal.Flushed of n1 from 0 to 6
-@2100ms timer nobody
+@2100ms timer main
   sim.Injected wal.Put{Key "k7", Value "7"} into n1
 @2100ms deliver n1
   sim.Changed wal.Lsn of n1 from 6 to 7
   disk.Written "7" on n1
   disk.Written "last" on n1
   sim.Changed wal.Table of n1 from {"k1": "1", "k2": "2", "k3": "3", "k4": "4", "k5": "5", "k6": "6"} to {"k1": "1", "k2": "2", "k3": "3", "k4": "4", "k5": "5", "k6": "6", "k7": "7"}
-@2400ms timer nobody
+@2400ms timer main
   sim.Injected wal.Put{Key "k8", Value "8"} into n1
 @2400ms deliver n1
   sim.Changed wal.Lsn of n1 from 7 to 8
   disk.Written "8" on n1
   disk.Written "last" on n1
   sim.Changed wal.Table of n1 from {"k1": "1", "k2": "2", "k3": "3", "k4": "4", "k5": "5", "k6": "6", "k7": "7"} to {"k1": "1", "k2": "2", "k3": "3", "k4": "4", "k5": "5", "k6": "6", "k7": "7", "k8": "8"}
-@2700ms timer nobody
+@2700ms timer main
   sim.Injected wal.Put{Key "k9", Value "9"} into n1
 @2700ms deliver n1
   sim.Changed wal.Lsn of n1 from 8 to 9
   disk.Written "9" on n1
   disk.Written "last" on n1
   sim.Changed wal.Table of n1 from {"k1": "1", "k2": "2", "k3": "3", "k4": "4", "k5": "5", "k6": "6", "k7": "7", "k8": "8"} to {"k1": "1", "k2": "2", "k3": "3", "k4": "4", "k5": "5", "k6": "6", "k7": "7", "k8": "8", "k9": "9"}
-@3s timer nobody
+@3s timer main
   sim.Injected wal.Put{Key "k10", Value "10"} into n1
 @3s deliver n1
   sim.Changed wal.Lsn of n1 from 9 to 10
   disk.Written "10" on n1
   disk.Written "last" on n1
   sim.Changed wal.Table of n1 from {"k1": "1", "k2": "2", "k3": "3", "k4": "4", "k5": "5", "k6": "6", "k7": "7", "k8": "8", "k9": "9"} to {"k1": "1", "k10": "10", "k2": "2", "k3": "3", "k4": "4", "k5": "5", "k6": "6", "k7": "7", "k8": "8", "k9": "9"}
-@3100ms timer nobody
+@3100ms timer main
   sim.Crashed n1
   sim.Emitted lesson.Asked{Question "The last checkpoint was at 2s. Which writes survive the crash?"} by nobody
-@3300ms timer nobody
+@3300ms timer main
   sim.Injected wal.Put{Key "k11", Value "11"} into n1
-@3500ms timer nobody
+@3500ms timer main
   sim.Restarted n1 runs wal: wal.Table {}, wal.Lsn 0, wal.Flushed 0
   sim.Emitted lesson.Noted{Text "Writes after the checkpoint come back from the log."} by nobody
 @3500ms start n1
@@ -103,7 +103,7 @@ steps:
   disk.Written "pages" on n1
   disk.Written "flushed" on n1
   sim.Changed wal.Flushed of n1 from 6 to 10
-@3600ms timer nobody
+@3600ms timer main
   sim.Injected wal.Put{Key "k12", Value "12"} into n1
 @3600ms deliver n1
   sim.Changed wal.Lsn of n1 from 10 to 11

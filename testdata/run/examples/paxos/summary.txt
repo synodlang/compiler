@@ -24,7 +24,7 @@ steps:
   net.Arrived #3 paxos.Prepare{number 101} from n1 to n3
   sim.Changed paxos.Promised of n3 from 0 to 101
   net.Sent #5 paxos.Promise{number 101, prior 0, priorValue ""} from n3 to n1
-@15ms timer nobody
+@15ms timer main
   sim.Injected paxos.Start{Value "y"} into n3
   sim.Emitted lesson.Asked{Question "Two proposers are racing. Can both x and y be chosen?"} by nobody
 @15ms deliver n3

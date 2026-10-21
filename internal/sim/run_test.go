@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/synodlang/compiler/internal/trace"
-	"github.com/synodlang/compiler/internal/value"
 )
 
 // compactCase is the case whose trace is too large to keep (more than half a
@@ -91,13 +90,8 @@ func runDirs(t *testing.T, root string, nested bool) {
 			checkGolden(t, filepath.Join(dir, "trace.jsonl"), g1)
 			if nested {
 				ls := strings.Split(strings.TrimSuffix(g1, "\n"), "\n")
-				f := r1.Failed
-				pos := "no position"
-				if f.HasPos {
-					pos = trace.FilePaths(g)[f.Pos.File]
-					pos = fmt.Sprintf("%s:%d:%d", pos, f.Pos.Line, f.Pos.Col)
-				}
-				out := fmt.Sprintf("%s\nfailed at %s: %s: error[%s]: %s\n", ls[len(ls)-1], value.FormatTime(r1.End), pos, f.Code, f.Message)
+				o := trace.Options{Paths: trace.FilePaths(g), Qual: trace.Qualifiers(prog)}
+				out := fmt.Sprintf("%s\n%s\n", ls[len(ls)-1], trace.FailedLine(r1.Failed, r1.End, o))
 				checkGolden(t, filepath.Join(dir, "expect.txt"), out)
 			}
 		})

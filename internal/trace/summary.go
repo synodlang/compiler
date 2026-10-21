@@ -181,7 +181,9 @@ func (s *summarizer) header(steps map[int]Step, f *Fact) string {
 		return "@" + value.FormatTime(f.T) + " step"
 	}
 	h := "@" + value.FormatTime(st.T) + " " + st.Kind
-	if st.Kind != "main" {
+	if st.Kind == "timer" && st.Node == 0 {
+		h += " main"
+	} else if st.Kind != "main" {
 		h += " " + value.NodeName(st.Node)
 	}
 	return h
@@ -279,4 +281,16 @@ func (s *summarizer) phrase(f *Fact) string {
 		return f.Ev
 	}
 	return f.Ev
+}
+
+// FailedLine is the line `synod run` prints for a failed run:
+// "failed at 2s: raft/demo.synod:12:5: error[index-range]: message", without
+// the position part when the fault has none. end is the time of the failure
+// in microseconds.
+func FailedLine(f *value.Fault, end int64, o Options) string {
+	pos := ""
+	if f.HasPos {
+		pos = o.pos(f.Pos) + ": "
+	}
+	return "failed at " + value.FormatTime(end) + ": " + pos + "error[" + string(f.Code) + "]: " + f.Message
 }

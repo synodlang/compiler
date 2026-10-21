@@ -11,7 +11,7 @@ steps:
 @0s deliver n1
   sim.Changed tcp.State of n1 from "CLOSED" to "SYN-SENT"
   net.Sent #1 tcp.Syn{Seq 100} from n1 to n2
-@5ms timer nobody
+@5ms timer main
   sim.Emitted lesson.Asked{Question "What does the server send back after a SYN?"} by nobody
 @22.142ms receive n2
   net.Arrived #1 tcp.Syn{Seq 100} from n1 to n2
@@ -24,7 +24,7 @@ steps:
 @59.234ms receive n2
   net.Arrived #3 tcp.Ack{AckNo 301} from n1 to n2
   sim.Changed tcp.State of n2 from "SYN-RECEIVED" to "ESTABLISHED"
-@100ms timer nobody
+@100ms timer main
   sim.Emitted lesson.Noted{Text "Both ends are ESTABLISHED: data can now flow either way."} by nobody
   sim.Ended empty
 final:
