@@ -1,0 +1,24 @@
+# package main
+use std/net
+use std/sim
+
+Node has
+  set x to 0
+
+define [n: Node] Foo
+  result 1
+
+define [n: Node] start
+  sim.Seed 1
+
+when [n: Node] (net.Received m from a)
+  sim.Seed 2
+
+when (net.Received m from a)
+  sim.Seed 3
+
+when (sim.Added m)
+  sim.Seed 4
+
+define main
+  sim.Seed 1

@@ -1,0 +1,7 @@
+# package p
+use example.com/t/obs
+use example.com/t/q
+use example.com/t/quiet
+
+define Go [r: q.Rec]
+  result r.a

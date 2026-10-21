@@ -1,0 +1,9 @@
+# package p
+Node has
+  set x to 0
+
+define Foo plus [n: number]
+  result n
+
+define [n: Node] Go
+  set n.x to (Foo plus 1)

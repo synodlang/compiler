@@ -1,0 +1,6 @@
+# package q
+hidden has
+  set n to 0
+
+Node has
+  set secret to 0

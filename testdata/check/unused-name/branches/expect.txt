@@ -1,0 +1,3 @@
+p/p.synod:4:9: error[unused-name]: "inner" is never used
+p/p.synod:6:9: error[unused-name]: "other" is never used
+p/p.synod:8:9: error[unused-name]: "late" is never used

@@ -1,0 +1,6 @@
+# package free
+define Count [N: number]
+  set Best to N
+  each Item in {1, 2}
+    set Best to (Best plus Item)
+  result Best

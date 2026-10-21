@@ -1,0 +1,8 @@
+# package p
+define Go [flag: bool]
+  if flag
+    set inner to 1
+  else
+    set other to 2
+  after 1s
+    set late to 3

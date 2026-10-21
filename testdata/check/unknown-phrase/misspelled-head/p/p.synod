@@ -1,0 +1,11 @@
+# package p
+use std/net
+
+Ping has
+  set seq to 0
+
+define [n: Node] Hello [m: node]
+  net.Sned (message Ping with seq 1) from n to m
+
+define [n: Node] Bye [m: node]
+  net.Send (message Ping with seq 2) form n to m

@@ -1,0 +1,5 @@
+# package p
+use std/net@v1.0.0
+
+define Go
+  result net.Latency

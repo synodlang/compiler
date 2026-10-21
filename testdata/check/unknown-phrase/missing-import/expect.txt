@@ -1,0 +1,4 @@
+p/p.synod:6:15: error[unknown-phrase]: "lists" is not imported
+  hint: add "use std/lists"
+p/p.synod:7:3: error[unknown-phrase]: "random" is not imported
+  hint: add "use std/random"

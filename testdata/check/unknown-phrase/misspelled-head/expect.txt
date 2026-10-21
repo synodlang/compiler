@@ -1,0 +1,4 @@
+p/p.synod:8:3: error[unknown-phrase]: no phrase matches "net.Sned (message Ping with seq 1) from n to m"
+  hint: did you mean "net.Send [m: msg] from [a: node] to [b: node]"?
+p/p.synod:11:3: error[unknown-phrase]: no phrase matches "net.Send (message Ping with seq 2) form n to m"
+  hint: did you mean "net.Send [m: msg] from [a: node] to [b: node]"?

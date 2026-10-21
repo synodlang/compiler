@@ -1,0 +1,4 @@
+# package p
+
+define Go
+   set a to 1

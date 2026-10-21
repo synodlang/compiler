@@ -1,0 +1,2 @@
+p/p.synod:2:5: error[unknown-import]: "std/net@v1.0.0" takes no version: std is versioned with the language
+  hint: write "use std/net"

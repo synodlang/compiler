@@ -1,0 +1,18 @@
+# package p
+use std/lists
+
+Ping has
+  set seq to 0
+
+Node has
+  set x to 0
+  set l to {}
+
+define [n: Node] Go
+  set n.x to ghost
+  set n.x to (lists.Sizee n.l)
+  set n.x to (message Pong with seq 1)
+  set n.x to (message Ping with seqq 1)
+  set n.x to (message Ping with seq n.x plus 1)
+  set n.x to (message Ping with seq 1, seq 2)
+  set n.x to (message lists.Ping with seq 1)

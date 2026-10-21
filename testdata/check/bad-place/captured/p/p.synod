@@ -1,0 +1,20 @@
+# package p
+Node has
+  set x to 0
+
+define Run now [b: block]
+  b
+
+define [n: Node] Go
+  set total to 0
+  after 1s
+    set total to 1
+    set inner to 2
+    set inner to 3
+    set n.x to inner
+  Run now
+    set total to 2
+  set items to {}
+  after 1s
+    set item 0 of items to 1
+  set n.x to (total plus (item 0 of items))

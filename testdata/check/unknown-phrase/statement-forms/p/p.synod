@@ -1,0 +1,21 @@
+# package p
+use std/net
+use std/sim
+
+Node has
+  set x to 0
+
+define [n: Node] Go
+  if (n.x is 1)
+    set n.x to 2
+  else if (n.x is 2)
+    set n.x to 3
+  (set n.x to 1)
+  Frob n.x
+  n.Nothing
+
+when (net.Recieved m from a)
+  set m to 1
+
+when (sim.Added n m)
+  set a to 1

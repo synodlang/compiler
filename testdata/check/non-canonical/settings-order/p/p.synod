@@ -1,0 +1,8 @@
+# package p
+Promise has
+  set number to 0
+  set prior to 0
+  set value to ""
+
+define Make
+  result (message Promise with value "x", number 1)

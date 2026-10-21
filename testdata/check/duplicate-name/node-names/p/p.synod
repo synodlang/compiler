@@ -1,0 +1,18 @@
+# package p
+Node has
+  set x to 0
+
+Node has
+  set y to 0
+
+text has
+  set a to 0
+
+define Node
+  result 1
+
+define [n: Node] start
+  set n.x to 1
+
+define [m: Node] start
+  set m.x to 2

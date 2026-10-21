@@ -1,0 +1,5 @@
+# package p
+use example.com/t/q as qq
+
+define Go
+  result qq.One

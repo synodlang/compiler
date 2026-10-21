@@ -1,0 +1,9 @@
+# package q
+hidden has
+  set n to 0
+
+define secret [n: number]
+  result n
+
+define zero
+  result 0

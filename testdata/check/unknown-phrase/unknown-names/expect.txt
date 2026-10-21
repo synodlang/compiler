@@ -1,0 +1,11 @@
+p/p.synod:12:14: error[unknown-phrase]: no phrase matches "ghost"
+p/p.synod:13:15: error[unknown-phrase]: no phrase matches "lists.Sizee n.l"
+  hint: did you mean "lists.Size [l: list of value]"?
+p/p.synod:14:23: error[unknown-phrase]: no record type "Pong"
+  hint: did you mean "Ping"?
+p/p.synod:15:33: error[unknown-phrase]: record "Ping" has no field "seqq"
+  hint: did you mean "seq"?
+p/p.synod:16:33: error[unknown-phrase]: no phrase matches "seq n.x plus 1"
+  hint: did you mean "seq (n.x plus 1)"?
+p/p.synod:17:40: error[duplicate-name]: field "seq" is set twice
+p/p.synod:18:23: error[unknown-phrase]: no record type "lists.Ping"

@@ -1,0 +1,5 @@
+# package a
+use example.com/t/a as aa
+
+define One
+  result aa.One

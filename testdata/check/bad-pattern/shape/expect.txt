@@ -1,0 +1,14 @@
+p/p.synod:2:24: error[bad-pattern]: holes "[a: number]" and "[b: text]" are adjacent
+p/p.synod:5:24: error[bad-pattern]: holes "[a: number]" and "[b: number]" are adjacent
+p/p.synod:5:36: error[bad-pattern]: pattern words after the head start lower-case
+p/p.synod:8:15: error[bad-pattern]: a word or hole must stand between the head and the first block hole
+p/p.synod:8:32: error[bad-pattern]: block holes come last
+p/p.synod:11:15: error[bad-pattern]: a word or hole must stand between the head and the first block hole
+p/p.synod:14:14: error[bad-pattern]: pattern words after the head start lower-case
+p/p.synod:14:28: error[bad-pattern]: block holes come last
+p/p.synod:17:16: error[bad-pattern]: "Compare is" reads as a comparison; a head is never directly followed by "is"
+p/p.synod:20:13: error[bad-pattern]: "Less less than" reads as a comparison; a head is never directly followed by "less than"
+p/p.synod:23:14: error[bad-pattern]: pattern words after the head start lower-case
+p/p.synod:23:17: error[bad-pattern]: pattern words after the head start lower-case
+p/p.synod:26:18: error[bad-pattern]: only the receiver stands before the head
+p/p.synod:29:8: error[bad-receiver]: a receiver has type Node or p.Node, not number

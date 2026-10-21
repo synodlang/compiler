@@ -1,0 +1,3 @@
+p/p.synod:2:8: error[bad-pattern]: a pattern needs a word
+p/p.synod:5:8: error[bad-pattern]: pattern items are words and holes
+p/p.synod:8:11: error[bad-pattern]: pattern items are words and holes

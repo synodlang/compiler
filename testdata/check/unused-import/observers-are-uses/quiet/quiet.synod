@@ -1,0 +1,3 @@
+# package quiet
+define One
+  result 1

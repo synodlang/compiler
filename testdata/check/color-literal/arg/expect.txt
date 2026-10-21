@@ -1,0 +1,2 @@
+p/p.synod:3:12: error[color-literal]: a color literal stands only as the result of a phrase with no holes
+  hint: name the color, as theme.Accent does

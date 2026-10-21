@@ -1,0 +1,7 @@
+# package p
+use std/look
+use std/sim
+
+when (sim.Added n)
+  draw (look.Circle 3) as Card for n
+  look.Fade (Card of n) to 0.5

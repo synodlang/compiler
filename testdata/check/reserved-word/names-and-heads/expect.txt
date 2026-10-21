@@ -1,0 +1,7 @@
+p/p.synod:3:7: error[reserved-word]: "to" is a reserved word and cannot be a field
+p/p.synod:6:1: error[reserved-word]: "list" is a reserved word and cannot be a record type
+p/p.synod:9:8: error[reserved-word]: "if" is a reserved word and cannot be a phrase head
+p/p.synod:12:14: error[reserved-word]: "to" is a reserved word and cannot be a hole name
+p/p.synod:13:7: error[reserved-word]: "plus" is a reserved word and cannot be a name
+p/p.synod:14:8: error[reserved-word]: "by" is a reserved word and cannot be a name
+p/p.synod:15:9: error[unused-name]: "x" is never used

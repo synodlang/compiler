@@ -1,0 +1,2 @@
+p/p.synod:9:15: error[ambiguous-phrase]: "Foo plus 1" matches more than one phrase
+  hint: "Foo plus [n: number]" (p/p.synod:5) and the language form "[a] plus [b]"

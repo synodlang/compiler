@@ -1,0 +1,6 @@
+# package c
+Rec has
+  set a to 0
+
+define Make
+  result (message c.Rec with a 1)

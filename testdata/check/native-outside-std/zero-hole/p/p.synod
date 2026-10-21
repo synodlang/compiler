@@ -1,0 +1,5 @@
+# package p
+define Heal native "net.heal"
+
+define Go
+  Heal

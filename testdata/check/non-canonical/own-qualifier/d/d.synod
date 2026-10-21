@@ -1,0 +1,8 @@
+# package d
+use std/sim
+
+Node has
+  set Role to ""
+
+define Pick
+  result (sim.NodesRunning d)

@@ -1,0 +1,9 @@
+# package p
+Node has
+  set ok to false
+
+define Foo and [b: bool]
+  result b
+
+define [n: Node] Go
+  set n.ok to (Foo and true)

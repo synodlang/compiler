@@ -1,0 +1,9 @@
+# package p
+define [n: Node]
+  result 1
+
+define 1 [a: number]
+  result 1
+
+define Go 5
+  result 1

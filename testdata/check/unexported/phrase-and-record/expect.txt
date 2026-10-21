@@ -1,0 +1,8 @@
+p/p.synod:5:13: error[unexported]: "q.secret" is not exported by q
+  hint: only names starting upper-case are visible outside q
+p/p.synod:8:21: error[unexported]: "q.hidden" is not exported by q
+  hint: only names starting upper-case are visible outside q
+p/p.synod:11:12: error[unexported]: "q.zero" is not exported by q
+  hint: only names starting upper-case are visible outside q
+p/p.synod:13:17: error[unexported]: "q.hidden" is not exported by q
+  hint: only names starting upper-case are visible outside q

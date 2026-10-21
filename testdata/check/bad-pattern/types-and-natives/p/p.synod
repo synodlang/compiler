@@ -1,0 +1,20 @@
+# package p
+define Unknown [x: Foo]
+  result 1
+
+define Nested [l: list of block] now
+  result 1
+
+define Wide [m: map of list of number to number] now
+  result 1
+
+define Anything [v: value] now
+  result 1
+
+define Qualified [n: q.Node] now
+  result 1
+
+define Missing
+define Raw native "x.y"
+define Mix [a: number] native "x.y"
+  result 1

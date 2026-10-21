@@ -1,0 +1,15 @@
+# package p
+Node has
+  set to to 0
+  set x to 0
+
+list has
+  set a to 0
+
+define if [a: number]
+  result a
+
+define Send [to: node]
+  set plus to 1
+  each by in {1}
+    set x to by

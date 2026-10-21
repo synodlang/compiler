@@ -1,0 +1,7 @@
+p/p.synod:7:7: error[unused-name]: "unused" is never used
+p/p.synod:8:7: error[unused-name]: "twice" is never used
+p/p.synod:10:8: error[unused-name]: "i" is never used
+  hint: write "each e in …"
+p/p.synod:12:11: error[unused-name]: "v" is never used
+  hint: write "each k in …"
+p/p.synod:14:8: error[unused-name]: "j" is never used

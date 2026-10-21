@@ -1,0 +1,2 @@
+p/p.synod:2:24: error[unneeded-alias]: "as qq" is only for imports that share a last segment
+  hint: write "use example.com/t/q"

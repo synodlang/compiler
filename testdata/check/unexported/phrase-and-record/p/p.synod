@@ -1,0 +1,14 @@
+# package p
+use example.com/t/q
+
+define Go
+  result (q.secret 1)
+
+define Two
+  result (message q.hidden with n 1)
+
+define Three
+  result q.zero
+
+define Four [r: q.hidden]
+  result 1

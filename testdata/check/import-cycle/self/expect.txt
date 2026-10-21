@@ -1,0 +1,1 @@
+a/a.synod:2:5: error[import-cycle]: import cycle: a → a

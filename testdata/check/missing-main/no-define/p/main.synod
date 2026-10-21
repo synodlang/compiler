@@ -1,0 +1,5 @@
+# package main
+use example.com/t/p
+
+define Helper
+  result p.One

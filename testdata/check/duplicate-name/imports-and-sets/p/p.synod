@@ -1,0 +1,20 @@
+# package p
+use example.com/t/q
+use example.com/t/r/q
+use std/net
+use std/net
+
+Ping has
+  set seq to 0
+  set big to 0
+
+Node has
+  set x to 0
+  set y to 0
+
+define [n: Node] Go
+  set n.x to (message Ping with seq 1, seq 2)
+  set n.y to (message Ping with seq 2, big 1)
+
+define Third
+  result q.One

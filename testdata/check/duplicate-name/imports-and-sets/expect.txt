@@ -1,0 +1,7 @@
+p/p.synod:3:5: error[duplicate-name]: qualifier "q" is already used by "example.com/t/q"
+  hint: rename one with "use example.com/t/r/q as <name>"
+p/p.synod:3:5: error[unused-import]: "example.com/t/r/q" is imported but not used
+p/p.synod:4:5: error[unused-import]: "std/net" is imported but not used
+p/p.synod:5:5: error[duplicate-name]: "std/net" is already imported
+p/p.synod:5:5: error[unused-import]: "std/net" is imported but not used
+p/p.synod:16:40: error[duplicate-name]: field "seq" is set twice

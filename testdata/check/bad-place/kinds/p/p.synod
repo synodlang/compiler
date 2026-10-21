@@ -1,0 +1,29 @@
+# package p
+use std/net
+
+tick has
+  set seq to 0
+
+Node has
+  set x to 0
+
+define Zero
+  result 0
+
+define [n: Node] Go [k: number] with [b: block]
+  set k to 1
+  set n to n
+  set Zero to 1
+  set net to 2
+  set net.Send to 3
+  each i in {1, 2}
+    set i to i
+  set n.x to k
+  b
+
+when [n: Node] (net.Received tick from peer)
+  set peer to n
+  set tick to 1
+  set item 1 of peer to 2
+  set item 1 of zzz to 2
+  set 3 to 4

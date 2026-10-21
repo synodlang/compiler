@@ -1,0 +1,15 @@
+# package p
+use std/lists
+
+Node has
+  set x to 0
+  set l to {}
+
+define [n: Node] Bump
+  set n.x to n.x plus 1
+  if n.x is 3
+    set n.x to 0
+  set n.x to (lists.Size n.l plus 1)
+
+define [n: Node] Total
+  result n.x plus 1

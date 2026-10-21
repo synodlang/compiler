@@ -1,0 +1,11 @@
+p/p.synod:14:7: error[bad-place]: cannot set "k": it is a hole parameter
+p/p.synod:15:7: error[bad-place]: cannot set "n": it is a receiver
+p/p.synod:16:7: error[bad-place]: cannot set "Zero": it is a phrase
+p/p.synod:17:7: error[bad-place]: cannot set "net": it is a package
+p/p.synod:18:7: error[bad-place]: cannot set "net.Send": it is a phrase
+p/p.synod:20:9: error[bad-place]: cannot set "i": it is an each name
+p/p.synod:25:7: error[bad-place]: cannot set "peer": it is a when binding
+p/p.synod:26:7: error[bad-place]: cannot set "tick": it is a when binding
+p/p.synod:27:17: error[bad-place]: cannot set "peer": it is a when binding
+p/p.synod:28:17: error[unknown-phrase]: no phrase matches "zzz"
+p/p.synod:29:7: error[bad-place]: cannot set "3": it is not a place

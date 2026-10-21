@@ -1,0 +1,4 @@
+p/p.synod:8:32: error[non-canonical]: line is not canonical
+  hint: write "  result (message Promise with number 1, value "x")"
+q/q.synod:7:32: error[non-canonical]: line is not canonical
+  hint: write "  result (message Promise with number 2, prior 1)"

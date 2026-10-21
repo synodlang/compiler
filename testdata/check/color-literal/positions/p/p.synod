@@ -1,0 +1,12 @@
+# package p
+Node has
+  set c to 0
+
+define Accent
+  result #F4A340
+
+define Tinted [c: number]
+  result #F4A340
+
+define [n: Node] Mixed
+  set n.c to #F4A340

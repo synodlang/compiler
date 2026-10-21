@@ -1,0 +1,6 @@
+# package a
+Node has
+  set Role to ""
+
+define [n: Node] Two
+  set n.a.Role to "x"

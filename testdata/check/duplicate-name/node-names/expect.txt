@@ -1,0 +1,4 @@
+p/p.synod:5:1: error[duplicate-name]: a second "Node has"; the first is at p/p.synod:2
+p/p.synod:8:1: error[duplicate-name]: "text" is a built-in type
+p/p.synod:11:1: error[duplicate-name]: "Node" is the name of the node type of every package
+p/p.synod:17:18: error[duplicate-name]: a second start; the first is at p/p.synod:14

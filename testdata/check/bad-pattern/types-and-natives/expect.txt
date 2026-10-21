@@ -1,0 +1,9 @@
+p/p.synod:2:20: error[bad-pattern]: unknown type "Foo"
+p/p.synod:5:27: error[bad-pattern]: "block" cannot be nested inside list or map
+p/p.synod:11:21: error[bad-pattern]: "value" is a type for std natives only
+p/p.synod:14:22: error[bad-pattern]: unknown type "q.Node"
+p/p.synod:17:1: error[bad-pattern]: a definition needs an indented block or native "<id>"
+p/p.synod:18:1: error[non-canonical]: missing blank line
+p/p.synod:18:12: error[native-outside-std]: "native" is only allowed in std packages
+p/p.synod:19:24: error[native-outside-std]: "native" is only allowed in std packages
+p/p.synod:20:3: error[bad-pattern]: a native definition has no block

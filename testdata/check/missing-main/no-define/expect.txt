@@ -1,0 +1,1 @@
+p/main.synod:1:1: error[missing-main]: main file has no "define main"

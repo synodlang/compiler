@@ -1,0 +1,5 @@
+# package taken
+define Count [n: number]
+  set Best to n
+  set best to 2
+  result (Best plus best)

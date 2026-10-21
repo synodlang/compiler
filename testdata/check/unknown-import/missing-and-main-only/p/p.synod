@@ -1,0 +1,9 @@
+# package p
+use example.com/t/nothing
+use example.com/t/prog
+use github.com/synodlang/std/net
+use other.org/x/y
+use std/nosuch
+
+define Go
+  result 1

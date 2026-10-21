@@ -1,0 +1,30 @@
+# package p
+define Adj [a: number] [b: text]
+  result 1
+
+define Two [a: number] [b: number] Go
+  result 1
+
+define Blocks [b: block] after [n: number]
+  b
+
+define Lonely [b: block]
+  b
+
+define Pairs Do [a: block] [c: number]
+  a
+
+define Compare is [n: number]
+  result n
+
+define Less less than [n: number]
+  result n
+
+define Upper Go To [n: number]
+  result n
+
+define [n: Node] [m: Node]
+  result 1
+
+define [a: number] Words
+  result 1

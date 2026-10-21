@@ -1,0 +1,8 @@
+# package main
+use std/sim
+
+define main
+  sim.Seed 1
+
+define main
+  sim.Seed 2

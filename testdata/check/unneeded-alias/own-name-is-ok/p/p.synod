@@ -1,0 +1,6 @@
+# package p
+use example.com/t/p2/p as pp
+use std/lists as ll
+
+define Go
+  result pp.One

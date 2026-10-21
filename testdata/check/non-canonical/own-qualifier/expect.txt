@@ -1,0 +1,6 @@
+a/a.synod:6:9: error[non-canonical]: line is not canonical
+  hint: write "  set n.Role to "x""
+b/b.synod:6:10: error[non-canonical]: line is not canonical
+  hint: write "  result One"
+c/c.synod:6:19: error[non-canonical]: line is not canonical
+  hint: write "  result (message Rec with a 1)"

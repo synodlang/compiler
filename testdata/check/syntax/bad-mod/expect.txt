@@ -1,0 +1,2 @@
+synod.mod:3:1: error[syntax]: unknown directive "requires"
+  hint: directives are "module", "synod" and "require"

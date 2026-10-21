@@ -1,0 +1,6 @@
+# package b
+define One
+  result 1
+
+define Two
+  result b.One

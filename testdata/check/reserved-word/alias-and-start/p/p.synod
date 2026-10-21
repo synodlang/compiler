@@ -1,0 +1,5 @@
+# package p
+use example.com/t/q as set
+
+define Go
+  result set.One

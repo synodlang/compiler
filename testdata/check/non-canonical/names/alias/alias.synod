@@ -1,0 +1,6 @@
+# package alias
+use example.com/t/q as Aa
+use example.com/t/r/q
+
+define Go
+  result (Aa.One plus q.Three)

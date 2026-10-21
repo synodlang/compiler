@@ -1,0 +1,19 @@
+# package p
+Node has
+  set l to {}
+  set m to {}
+
+define [n: Node] Go
+  set unused to 1
+  set twice to 1
+  set twice to 2
+  each i, e in n.l
+    set n.l to {e}
+  each k, v in n.m
+    set n.m to {k}
+  each j in n.l
+    set n.l to {}
+  set used to 1
+  set item 0 of n.l to used
+  set base to {}
+  set item 0 of base to 1

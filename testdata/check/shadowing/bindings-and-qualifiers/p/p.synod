@@ -1,0 +1,21 @@
+# package p
+use std/net
+use std/sim
+
+tick has
+  set seq to 0
+
+Node has
+  set net to 0
+  set x to 0
+
+define sim [a: number]
+  result a
+
+when [n: Node] (net.Received tick from peer)
+  each peer in {1}
+    each peer in {2}
+      set n.x to peer
+
+when [n: Node] (net.Received m from tick)
+  net.Send m from n to tick

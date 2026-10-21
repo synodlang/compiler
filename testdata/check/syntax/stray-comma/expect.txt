@@ -1,0 +1,1 @@
+p/p.synod:4:13: error[syntax]: a comma stands only between list items, message settings and each names

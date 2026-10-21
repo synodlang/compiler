@@ -1,0 +1,12 @@
+p/p.synod:3:5: error[unused-import]: "std/sim" is imported but not used
+p/p.synod:9:7: error[shadowing]: "net" hides the package "net" at p/p.synod:2
+  hint: rename it
+p/p.synod:12:8: error[shadowing]: "sim" hides the package "sim" at p/p.synod:3
+  hint: rename it
+p/p.synod:16:8: error[shadowing]: "peer" hides the binding "peer" at p/p.synod:15
+  hint: rename it
+p/p.synod:16:8: error[unused-name]: "peer" is never used
+p/p.synod:17:10: error[shadowing]: "peer" hides the each name "peer" at p/p.synod:16
+  hint: rename it
+p/p.synod:20:37: error[shadowing]: "tick" hides the record type "tick" at p/p.synod:5
+  hint: rename it

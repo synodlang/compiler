@@ -1,0 +1,21 @@
+# package p
+use std/net
+use std/sim
+
+define [n: number] Foo
+  result n
+
+define [n: text] start
+  sim.Seed 1
+
+define start
+  sim.Seed 1
+
+when [n: number] (net.Received m from a)
+  net.Latency between 1ms and 2ms
+
+when (net.Received m from a)
+  net.Latency between 1ms and 2ms
+
+when [n: Node] (sim.Added m)
+  net.Latency between 1ms and 2ms

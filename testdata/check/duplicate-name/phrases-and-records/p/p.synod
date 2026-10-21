@@ -1,0 +1,23 @@
+# package p
+Ping has
+  set seq to 0
+  set seq to 1
+
+Ping has
+  set n to 0
+
+Node has
+  set x to 0
+  set x to 1
+
+define Total [a: number] and [b: number]
+  result a
+
+define Total [c: number] and [d: number]
+  result c
+
+define Ping
+  result 1
+
+define Dup [a: number] to [a: number]
+  result a

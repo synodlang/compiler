@@ -1,0 +1,8 @@
+p/p.synod:9:3: error[unknown-phrase]: no phrase matches "set n.x to n.x plus 1"
+  hint: did you mean "set n.x to (n.x plus 1)"?
+p/p.synod:10:3: error[unknown-phrase]: no phrase matches "if n.x is 3"
+  hint: did you mean "if (n.x is 3)"?
+p/p.synod:12:15: error[unknown-phrase]: no phrase matches "lists.Size n.l plus 1"
+  hint: did you mean "lists.Size (n.l plus 1)"?
+p/p.synod:15:3: error[unknown-phrase]: no phrase matches "result n.x plus 1"
+  hint: did you mean "result (n.x plus 1)"?

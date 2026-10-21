@@ -1,0 +1,5 @@
+# package b
+use example.com/t/a
+
+define Two
+  result a.One

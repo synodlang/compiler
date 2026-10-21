@@ -1,0 +1,2 @@
+p/p.synod:9:16: error[ambiguous-phrase]: "Foo and true" matches more than one phrase
+  hint: "Foo and [b: bool]" (p/p.synod:5) and the language form "[a] and [b]"
