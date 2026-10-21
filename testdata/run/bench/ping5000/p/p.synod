@@ -1,0 +1,25 @@
+# package p
+use std/lists
+use std/net
+use std/random
+use std/time
+
+Ping has
+  set seq to 0
+
+Node has
+  set Peers to {}
+  set Sent to 0
+  set Received to 0
+
+define Meet [ns: list of Node]
+  each n in ns
+    set n.Peers to (lists.Without n from ns)
+
+define [n: Node] start
+  time.Every 35ms
+    set n.Sent to (n.Sent plus 1)
+    net.Send (message Ping with seq n.Sent) from n to (random.Pick n.Peers)
+
+when [n: Node] (net.Received Ping from sender)
+  set n.Received to (n.Received plus 1)

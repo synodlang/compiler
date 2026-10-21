@@ -1,6 +1,7 @@
 package sim
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,6 +12,22 @@ import (
 	"github.com/synodlang/compiler/internal/trace"
 	"github.com/synodlang/compiler/internal/value"
 )
+
+// compactCase is the case whose trace is too large to keep (more than half a
+// megabyte): its golden is the number of sim.Fired facts, the last fact and
+// the SHA-256 of the encoded trace.
+const compactCase = "every-ticks"
+
+func compactSummary(r *Result, trace string) string {
+	fired := 0
+	for _, f := range r.Facts {
+		if f.Ev == "sim.Fired" {
+			fired++
+		}
+	}
+	ls := strings.Split(strings.TrimSuffix(trace, "\n"), "\n")
+	return fmt.Sprintf("facts %d\nfired %d\nlast %s\nsha256 %x\n", len(r.Facts), fired, ls[len(ls)-1], sha256.Sum256([]byte(trace)))
+}
 
 func TestCases(t *testing.T) { runDirs(t, "../../testdata/run/cases", false) }
 
@@ -66,6 +83,10 @@ func runDirs(t *testing.T, root string, nested bool) {
 				if last.Ev != "sim.Failed" {
 					t.Fatalf("last fact %s", last.Ev)
 				}
+			}
+			if d == compactCase {
+				checkGolden(t, filepath.Join(dir, "expect.txt"), compactSummary(r1, g1))
+				return
 			}
 			checkGolden(t, filepath.Join(dir, "trace.jsonl"), g1)
 			if nested {

@@ -3,7 +3,7 @@
   (main "main"
     (vars (0 nodes local list of cassandra.Node) (1 i each number) (2 n each cassandra.Node) (3 replicas local list of node) (4 coordinator local node) (5 victim local node))
     (body
-      (native "sim.seed" 5)
+      (native "sim.seed" 4)
       (set nodes#0 (native "sim.cluster" 6 (package "github.com/synodlang/examples/cassandra")))
       (each i#1 n#2 nodes#0
         (if (more-than i#1 0)

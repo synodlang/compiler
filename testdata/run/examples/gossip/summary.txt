@@ -1,0 +1,456 @@
+run github.com/synodlang/examples/gossip seed 15
+end: stop at 25s, 6 nodes, 291 steps, 1073 events
+steps:
+@0s main
+  sim.Started
+  sim.Added n1 runs gossip: gossip.Generation 0, gossip.Heartbeat 0, gossip.Known {}, gossip.Down {}
+  sim.Added n2 runs gossip: gossip.Generation 0, gossip.Heartbeat 0, gossip.Known {}, gossip.Down {}
+  sim.Added n3 runs gossip: gossip.Generation 0, gossip.Heartbeat 0, gossip.Known {}, gossip.Down {}
+  sim.Added n4 runs gossip: gossip.Generation 0, gossip.Heartbeat 0, gossip.Known {}, gossip.Down {}
+  sim.Added n5 runs gossip: gossip.Generation 0, gossip.Heartbeat 0, gossip.Known {}, gossip.Down {}
+  sim.Added n6 runs gossip: gossip.Generation 0, gossip.Heartbeat 0, gossip.Known {}, gossip.Down {}
+@0s start n1
+  sim.Changed gossip.Generation of n1 from 0 to 1
+  disk.Written "generation" on n1
+  sim.Changed gossip.Heartbeat of n1 from 0 to 1
+  sim.Changed gossip.Known of n1 from {} to {n1: 1000001}
+@0s start n2
+  sim.Changed gossip.Generation of n2 from 0 to 1
+  disk.Written "generation" on n2
+  sim.Changed gossip.Heartbeat of n2 from 0 to 1
+  sim.Changed gossip.Known of n2 from {} to {n2: 1000001}
+  net.Sent #1 gossip.digest{known {n2: 1000001}} from n2 to n1
+@0s start n3
+  sim.Changed gossip.Generation of n3 from 0 to 1
+  disk.Written "generation" on n3
+  sim.Changed gossip.Heartbeat of n3 from 0 to 1
+  sim.Changed gossip.Known of n3 from {} to {n3: 1000001}
+  net.Sent #2 gossip.digest{known {n3: 1000001}} from n3 to n1
+@0s start n4
+  sim.Changed gossip.Generation of n4 from 0 to 1
+  disk.Written "generation" on n4
+  sim.Changed gossip.Heartbeat of n4 from 0 to 1
+  sim.Changed gossip.Known of n4 from {} to {n4: 1000001}
+  net.Sent #3 gossip.digest{known {n4: 1000001}} from n4 to n1
+@0s start n5
+  sim.Changed gossip.Generation of n5 from 0 to 1
+  disk.Written "generation" on n5
+  sim.Changed gossip.Heartbeat of n5 from 0 to 1
+  sim.Changed gossip.Known of n5 from {} to {n5: 1000001}
+  net.Sent #4 gossip.digest{known {n5: 1000001}} from n5 to n1
+@0s start n6
+  sim.Changed gossip.Generation of n6 from 0 to 1
+  disk.Written "generation" on n6
+  sim.Changed gossip.Heartbeat of n6 from 0 to 1
+  sim.Changed gossip.Known of n6 from {} to {n6: 1000001}
+  net.Sent #5 gossip.digest{known {n6: 1000001}} from n6 to n1
+@18.104ms receive n1
+  net.Arrived #4 gossip.digest{known {n5: 1000001}} from n5 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000001} to {n1: 1000001, n5: 1000001}
+@23.626ms receive n1
+  net.Arrived #2 gossip.digest{known {n3: 1000001}} from n3 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000001, n5: 1000001} to {n1: 1000001, n3: 1000001, n5: 1000001}
+@26.896ms receive n1
+  net.Arrived #3 gossip.digest{known {n4: 1000001}} from n4 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000001, n3: 1000001, n5: 1000001} to {n1: 1000001, n3: 1000001, n4: 1000001, n5: 1000001}
+@27.466ms receive n1
+  net.Arrived #5 gossip.digest{known {n6: 1000001}} from n6 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000001, n3: 1000001, n4: 1000001, n5: 1000001} to {n1: 1000001, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000001}
+@27.593ms receive n1
+  net.Arrived #1 gossip.digest{known {n2: 1000001}} from n2 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000001, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000001} to {n1: 1000001, n2: 1000001, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000001}
+@1s timer n1
+  sim.Fired n1
+  sim.Changed gossip.Heartbeat of n1 from 1 to 2
+  sim.Changed gossip.Known of n1 from {n1: 1000001, n2: 1000001, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000001} to {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000001}
+  net.Sent #6 gossip.digest{known {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000001}} from n1 to n4
+@1s timer n2
+  sim.Fired n2
+  sim.Changed gossip.Heartbeat of n2 from 1 to 2
+  sim.Changed gossip.Known of n2 from {n2: 1000001} to {n2: 1000002}
+  net.Sent #7 gossip.digest{known {n2: 1000002}} from n2 to n1
+@1s timer n3
+  sim.Fired n3
+  sim.Changed gossip.Heartbeat of n3 from 1 to 2
+  sim.Changed gossip.Known of n3 from {n3: 1000001} to {n3: 1000002}
+  net.Sent #8 gossip.digest{known {n3: 1000002}} from n3 to n1
+@1s timer n4
+  sim.Fired n4
+  sim.Changed gossip.Heartbeat of n4 from 1 to 2
+  sim.Changed gossip.Known of n4 from {n4: 1000001} to {n4: 1000002}
+  net.Sent #9 gossip.digest{known {n4: 1000002}} from n4 to n1
+@1s timer n5
+  sim.Fired n5
+  sim.Changed gossip.Heartbeat of n5 from 1 to 2
+  sim.Changed gossip.Known of n5 from {n5: 1000001} to {n5: 1000002}
+  net.Sent #10 gossip.digest{known {n5: 1000002}} from n5 to n1
+@1s timer n6
+  sim.Fired n6
+  sim.Changed gossip.Heartbeat of n6 from 1 to 2
+  sim.Changed gossip.Known of n6 from {n6: 1000001} to {n6: 1000002}
+  net.Sent #11 gossip.digest{known {n6: 1000002}} from n6 to n1
+@1011.453ms receive n1
+  net.Arrived #7 gossip.digest{known {n2: 1000002}} from n2 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000001} to {n1: 1000002, n2: 1000002, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000001}
+@1011.897ms receive n1
+  net.Arrived #10 gossip.digest{known {n5: 1000002}} from n5 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000002, n2: 1000002, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000001} to {n1: 1000002, n2: 1000002, n3: 1000001, n4: 1000001, n5: 1000002, n6: 1000001}
+@1017.772ms receive n4
+  net.Arrived #6 gossip.digest{known {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000001, n5: 1000001, n6: 1000001}} from n1 to n4
+  sim.Changed gossip.Known of n4 from {n4: 1000002} to {n1: 1000002, n4: 1000002}
+  sim.Changed gossip.Known of n4 from {n1: 1000002, n4: 1000002} to {n1: 1000002, n2: 1000001, n4: 1000002}
+  sim.Changed gossip.Known of n4 from {n1: 1000002, n2: 1000001, n4: 1000002} to {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000002}
+  sim.Changed gossip.Known of n4 from {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000002} to {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000002, n5: 1000001}
+  sim.Changed gossip.Known of n4 from {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000002, n5: 1000001} to {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000002, n5: 1000001, n6: 1000001}
+@1019.581ms receive n1
+  net.Arrived #9 gossip.digest{known {n4: 1000002}} from n4 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000002, n2: 1000002, n3: 1000001, n4: 1000001, n5: 1000002, n6: 1000001} to {n1: 1000002, n2: 1000002, n3: 1000001, n4: 1000002, n5: 1000002, n6: 1000001}
+@1024.594ms receive n1
+  net.Arrived #11 gossip.digest{known {n6: 1000002}} from n6 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000002, n2: 1000002, n3: 1000001, n4: 1000002, n5: 1000002, n6: 1000001} to {n1: 1000002, n2: 1000002, n3: 1000001, n4: 1000002, n5: 1000002, n6: 1000002}
+@1027.29ms receive n1
+  net.Arrived #8 gossip.digest{known {n3: 1000002}} from n3 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000002, n2: 1000002, n3: 1000001, n4: 1000002, n5: 1000002, n6: 1000002} to {n1: 1000002, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000002, n6: 1000002}
+@2s timer n1
+  sim.Fired n1
+  sim.Changed gossip.Heartbeat of n1 from 2 to 3
+  sim.Changed gossip.Known of n1 from {n1: 1000002, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000002, n6: 1000002} to {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000002, n6: 1000002}
+  net.Sent #12 gossip.digest{known {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000002, n6: 1000002}} from n1 to n5
+@2s timer n2
+  sim.Fired n2
+  sim.Changed gossip.Heartbeat of n2 from 2 to 3
+  sim.Changed gossip.Known of n2 from {n2: 1000002} to {n2: 1000003}
+  net.Sent #13 gossip.digest{known {n2: 1000003}} from n2 to n1
+@2s timer n3
+  sim.Fired n3
+  sim.Changed gossip.Heartbeat of n3 from 2 to 3
+  sim.Changed gossip.Known of n3 from {n3: 1000002} to {n3: 1000003}
+  net.Sent #14 gossip.digest{known {n3: 1000003}} from n3 to n1
+@2s timer n4
+  sim.Fired n4
+  sim.Changed gossip.Heartbeat of n4 from 2 to 3
+  sim.Changed gossip.Known of n4 from {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000002, n5: 1000001, n6: 1000001} to {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000003, n5: 1000001, n6: 1000001}
+  net.Sent #15 gossip.digest{known {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000003, n5: 1000001, n6: 1000001}} from n4 to n5
+@2s timer n5
+  sim.Fired n5
+  sim.Changed gossip.Heartbeat of n5 from 2 to 3
+  sim.Changed gossip.Known of n5 from {n5: 1000002} to {n5: 1000003}
+  net.Sent #16 gossip.digest{known {n5: 1000003}} from n5 to n1
+@2s timer n6
+  sim.Fired n6
+  sim.Changed gossip.Heartbeat of n6 from 2 to 3
+  sim.Changed gossip.Known of n6 from {n6: 1000002} to {n6: 1000003}
+  net.Sent #17 gossip.digest{known {n6: 1000003}} from n6 to n1
+@2012.007ms receive n5
+  net.Arrived #12 gossip.digest{known {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000002, n6: 1000002}} from n1 to n5
+  sim.Changed gossip.Known of n5 from {n5: 1000003} to {n1: 1000003, n5: 1000003}
+  sim.Changed gossip.Known of n5 from {n1: 1000003, n5: 1000003} to {n1: 1000003, n2: 1000002, n5: 1000003}
+  sim.Changed gossip.Known of n5 from {n1: 1000003, n2: 1000002, n5: 1000003} to {n1: 1000003, n2: 1000002, n3: 1000002, n5: 1000003}
+  sim.Changed gossip.Known of n5 from {n1: 1000003, n2: 1000002, n3: 1000002, n5: 1000003} to {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000003}
+  sim.Changed gossip.Known of n5 from {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000003} to {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000003, n6: 1000002}
+@2016.943ms receive n5
+  net.Arrived #15 gossip.digest{known {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000003, n5: 1000001, n6: 1000001}} from n4 to n5
+  sim.Changed gossip.Known of n5 from {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000003, n6: 1000002} to {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000003, n6: 1000002}
+@2020.069ms receive n1
+  net.Arrived #16 gossip.digest{known {n5: 1000003}} from n5 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000002, n6: 1000002} to {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000003, n6: 1000002}
+@2023.947ms receive n1
+  net.Arrived #17 gossip.digest{known {n6: 1000003}} from n6 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000003, n6: 1000002} to {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000003, n6: 1000003}
+@2024.925ms receive n1
+  net.Arrived #13 gossip.digest{known {n2: 1000003}} from n2 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000002, n5: 1000003, n6: 1000003} to {n1: 1000003, n2: 1000003, n3: 1000002, n4: 1000002, n5: 1000003, n6: 1000003}
+@2027.155ms receive n1
+  net.Arrived #14 gossip.digest{known {n3: 1000003}} from n3 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000003, n2: 1000003, n3: 1000002, n4: 1000002, n5: 1000003, n6: 1000003} to {n1: 1000003, n2: 1000003, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003}
+@3s timer n1
+  sim.Fired n1
+  sim.Changed gossip.Heartbeat of n1 from 3 to 4
+  sim.Changed gossip.Known of n1 from {n1: 1000003, n2: 1000003, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003} to {n1: 1000004, n2: 1000003, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003}
+  net.Sent #18 gossip.digest{known {n1: 1000004, n2: 1000003, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003}} from n1 to n2
+@3s timer n2
+  sim.Fired n2
+  sim.Changed gossip.Heartbeat of n2 from 3 to 4
+  sim.Changed gossip.Known of n2 from {n2: 1000003} to {n2: 1000004}
+  net.Sent #19 gossip.digest{known {n2: 1000004}} from n2 to n1
+@3s timer n3
+  sim.Fired n3
+  sim.Changed gossip.Heartbeat of n3 from 3 to 4
+  sim.Changed gossip.Known of n3 from {n3: 1000003} to {n3: 1000004}
+  net.Sent #20 gossip.digest{known {n3: 1000004}} from n3 to n1
+@3s timer n4
+  sim.Fired n4
+  sim.Changed gossip.Heartbeat of n4 from 3 to 4
+  sim.Changed gossip.Known of n4 from {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000003, n5: 1000001, n6: 1000001} to {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000004, n5: 1000001, n6: 1000001}
+  net.Sent #21 gossip.digest{known {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000004, n5: 1000001, n6: 1000001}} from n4 to n1
+@3s timer n5
+  sim.Fired n5
+  sim.Changed gossip.Heartbeat of n5 from 3 to 4
+  sim.Changed gossip.Known of n5 from {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000003, n6: 1000002} to {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000004, n6: 1000002}
+  net.Sent #22 gossip.digest{known {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000004, n6: 1000002}} from n5 to n1
+@3s timer n6
+  sim.Fired n6
+  sim.Changed gossip.Heartbeat of n6 from 3 to 4
+  sim.Changed gossip.Known of n6 from {n6: 1000003} to {n6: 1000004}
+  net.Sent #23 gossip.digest{known {n6: 1000004}} from n6 to n1
+@3017.16ms receive n1
+  net.Arrived #22 gossip.digest{known {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000004, n6: 1000002}} from n5 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000004, n2: 1000003, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003} to {n1: 1000004, n2: 1000003, n3: 1000003, n4: 1000003, n5: 1000003, n6: 1000003}
+  sim.Changed gossip.Known of n1 from {n1: 1000004, n2: 1000003, n3: 1000003, n4: 1000003, n5: 1000003, n6: 1000003} to {n1: 1000004, n2: 1000003, n3: 1000003, n4: 1000003, n5: 1000004, n6: 1000003}
+@3019.162ms receive n1
+  net.Arrived #21 gossip.digest{known {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000004, n5: 1000001, n6: 1000001}} from n4 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000004, n2: 1000003, n3: 1000003, n4: 1000003, n5: 1000004, n6: 1000003} to {n1: 1000004, n2: 1000003, n3: 1000003, n4: 1000004, n5: 1000004, n6: 1000003}
+@3023.535ms receive n1
+  net.Arrived #20 gossip.digest{known {n3: 1000004}} from n3 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000004, n2: 1000003, n3: 1000003, n4: 1000004, n5: 1000004, n6: 1000003} to {n1: 1000004, n2: 1000003, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000003}
+@3025.29ms receive n2
+  net.Arrived #18 gossip.digest{known {n1: 1000004, n2: 1000003, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003}} from n1 to n2
+  sim.Changed gossip.Known of n2 from {n2: 1000004} to {n1: 1000004, n2: 1000004}
+  sim.Changed gossip.Known of n2 from {n1: 1000004, n2: 1000004} to {n1: 1000004, n2: 1000004, n3: 1000003}
+  sim.Changed gossip.Known of n2 from {n1: 1000004, n2: 1000004, n3: 1000003} to {n1: 1000004, n2: 1000004, n3: 1000003, n4: 1000002}
+  sim.Changed gossip.Known of n2 from {n1: 1000004, n2: 1000004, n3: 1000003, n4: 1000002} to {n1: 1000004, n2: 1000004, n3: 1000003, n4: 1000002, n5: 1000003}
+  sim.Changed gossip.Known of n2 from {n1: 1000004, n2: 1000004, n3: 1000003, n4: 1000002, n5: 1000003} to {n1: 1000004, n2: 1000004, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003}
+@3025.535ms receive n1
+  net.Arrived #19 gossip.digest{known {n2: 1000004}} from n2 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000004, n2: 1000003, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000003} to {n1: 1000004, n2: 1000004, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000003}
+@3027.559ms receive n1
+  net.Arrived #23 gossip.digest{known {n6: 1000004}} from n6 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000004, n2: 1000004, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000003} to {n1: 1000004, n2: 1000004, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000004}
+@4s timer n1
+  sim.Fired n1
+  sim.Changed gossip.Heartbeat of n1 from 4 to 5
+  sim.Changed gossip.Known of n1 from {n1: 1000004, n2: 1000004, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000004} to {n1: 1000005, n2: 1000004, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000004}
+  net.Sent #24 gossip.digest{known {n1: 1000005, n2: 1000004, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000004}} from n1 to n2
+@4s timer n2
+  sim.Fired n2
+  sim.Changed gossip.Heartbeat of n2 from 4 to 5
+  sim.Changed gossip.Known of n2 from {n1: 1000004, n2: 1000004, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003} to {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003}
+  net.Sent #25 gossip.digest{known {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003}} from n2 to n4
+@4s timer n3
+  sim.Fired n3
+  sim.Changed gossip.Heartbeat of n3 from 4 to 5
+  sim.Changed gossip.Known of n3 from {n3: 1000004} to {n3: 1000005}
+  net.Sent #26 gossip.digest{known {n3: 1000005}} from n3 to n1
+@4s timer n4
+  sim.Fired n4
+  sim.Changed gossip.Heartbeat of n4 from 4 to 5
+  sim.Changed gossip.Known of n4 from {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000004, n5: 1000001, n6: 1000001} to {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000001}
+  net.Sent #27 gossip.digest{known {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000001}} from n4 to n6
+@4s timer n5
+  sim.Fired n5
+  sim.Changed gossip.Heartbeat of n5 from 4 to 5
+  sim.Changed gossip.Known of n5 from {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000004, n6: 1000002} to {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000005, n6: 1000002}
+  net.Sent #28 gossip.digest{known {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000005, n6: 1000002}} from n5 to n3
+@4s timer n6
+  sim.Fired n6
+  sim.Changed gossip.Heartbeat of n6 from 4 to 5
+  sim.Changed gossip.Known of n6 from {n6: 1000004} to {n6: 1000005}
+  net.Sent #29 gossip.digest{known {n6: 1000005}} from n6 to n1
+@4013.61ms receive n1
+  net.Arrived #29 gossip.digest{known {n6: 1000005}} from n6 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000005, n2: 1000004, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000004} to {n1: 1000005, n2: 1000004, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000005}
+@4016.972ms receive n1
+  net.Arrived #26 gossip.digest{known {n3: 1000005}} from n3 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000005, n2: 1000004, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000005} to {n1: 1000005, n2: 1000004, n3: 1000005, n4: 1000004, n5: 1000004, n6: 1000005}
+@4022.546ms receive n4
+  net.Arrived #25 gossip.digest{known {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003}} from n2 to n4
+  sim.Changed gossip.Known of n4 from {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000001} to {n1: 1000004, n2: 1000001, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000001}
+  sim.Changed gossip.Known of n4 from {n1: 1000004, n2: 1000001, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000001} to {n1: 1000004, n2: 1000005, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000001}
+  sim.Changed gossip.Known of n4 from {n1: 1000004, n2: 1000005, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000001} to {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000005, n5: 1000001, n6: 1000001}
+  sim.Changed gossip.Known of n4 from {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000005, n5: 1000001, n6: 1000001} to {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000005, n5: 1000003, n6: 1000001}
+  sim.Changed gossip.Known of n4 from {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000005, n5: 1000003, n6: 1000001} to {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000005, n5: 1000003, n6: 1000003}
+@4023.289ms receive n2
+  net.Arrived #24 gossip.digest{known {n1: 1000005, n2: 1000004, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000004}} from n1 to n2
+  sim.Changed gossip.Known of n2 from {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003} to {n1: 1000005, n2: 1000005, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003}
+  sim.Changed gossip.Known of n2 from {n1: 1000005, n2: 1000005, n3: 1000003, n4: 1000002, n5: 1000003, n6: 1000003} to {n1: 1000005, n2: 1000005, n3: 1000004, n4: 1000002, n5: 1000003, n6: 1000003}
+  sim.Changed gossip.Known of n2 from {n1: 1000005, n2: 1000005, n3: 1000004, n4: 1000002, n5: 1000003, n6: 1000003} to {n1: 1000005, n2: 1000005, n3: 1000004, n4: 1000004, n5: 1000003, n6: 1000003}
+  sim.Changed gossip.Known of n2 from {n1: 1000005, n2: 1000005, n3: 1000004, n4: 1000004, n5: 1000003, n6: 1000003} to {n1: 1000005, n2: 1000005, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000003}
+  sim.Changed gossip.Known of n2 from {n1: 1000005, n2: 1000005, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000003} to {n1: 1000005, n2: 1000005, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000004}
+@4026.477ms receive n3
+  net.Arrived #28 gossip.digest{known {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000005, n6: 1000002}} from n5 to n3
+  sim.Changed gossip.Known of n3 from {n3: 1000005} to {n1: 1000003, n3: 1000005}
+  sim.Changed gossip.Known of n3 from {n1: 1000003, n3: 1000005} to {n1: 1000003, n2: 1000002, n3: 1000005}
+  sim.Changed gossip.Known of n3 from {n1: 1000003, n2: 1000002, n3: 1000005} to {n1: 1000003, n2: 1000002, n3: 1000005, n4: 1000003}
+  sim.Changed gossip.Known of n3 from {n1: 1000003, n2: 1000002, n3: 1000005, n4: 1000003} to {n1: 1000003, n2: 1000002, n3: 1000005, n4: 1000003, n5: 1000005}
+  sim.Changed gossip.Known of n3 from {n1: 1000003, n2: 1000002, n3: 1000005, n4: 1000003, n5: 1000005} to {n1: 1000003, n2: 1000002, n3: 1000005, n4: 1000003, n5: 1000005, n6: 1000002}
+@4028.362ms receive n6
+  net.Arrived #27 gossip.digest{known {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000001}} from n4 to n6
+  sim.Changed gossip.Known of n6 from {n6: 1000005} to {n1: 1000002, n6: 1000005}
+  sim.Changed gossip.Known of n6 from {n1: 1000002, n6: 1000005} to {n1: 1000002, n2: 1000001, n6: 1000005}
+  sim.Changed gossip.Known of n6 from {n1: 1000002, n2: 1000001, n6: 1000005} to {n1: 1000002, n2: 1000001, n3: 1000001, n6: 1000005}
+  sim.Changed gossip.Known of n6 from {n1: 1000002, n2: 1000001, n3: 1000001, n6: 1000005} to {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000005, n6: 1000005}
+  sim.Changed gossip.Known of n6 from {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000005, n6: 1000005} to {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000005}
+@5s timer n1
+  sim.Fired n1
+  sim.Changed gossip.Heartbeat of n1 from 5 to 6
+  sim.Changed gossip.Known of n1 from {n1: 1000005, n2: 1000004, n3: 1000005, n4: 1000004, n5: 1000004, n6: 1000005} to {n1: 1000006, n2: 1000004, n3: 1000005, n4: 1000004, n5: 1000004, n6: 1000005}
+  net.Sent #30 gossip.digest{known {n1: 1000006, n2: 1000004, n3: 1000005, n4: 1000004, n5: 1000004, n6: 1000005}} from n1 to n3
+@5s timer n2
+  sim.Fired n2
+  sim.Changed gossip.Heartbeat of n2 from 5 to 6
+  sim.Changed gossip.Known of n2 from {n1: 1000005, n2: 1000005, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000004} to {n1: 1000005, n2: 1000006, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000004}
+  net.Sent #31 gossip.digest{known {n1: 1000005, n2: 1000006, n3: 1000004, n4: 1000004, n5: 1000004, n6: 1000004}} from n2 to n4
+@5s timer n3
+  sim.Fired n3
+  sim.Changed gossip.Heartbeat of n3 from 5 to 6
+  sim.Changed gossip.Known of n3 from {n1: 1000003, n2: 1000002, n3: 1000005, n4: 1000003, n5: 1000005, n6: 1000002} to {n1: 1000003, n2: 1000002, n3: 1000006, n4: 1000003, n5: 1000005, n6: 1000002}
+  net.Sent #32 gossip.digest{known {n1: 1000003, n2: 1000002, n3: 1000006, n4: 1000003, n5: 1000005, n6: 1000002}} from n3 to n4
+@5s timer n4
+  sim.Fired n4
+  sim.Changed gossip.Heartbeat of n4 from 5 to 6
+  sim.Changed gossip.Known of n4 from {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000005, n5: 1000003, n6: 1000003} to {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000006, n5: 1000003, n6: 1000003}
+  net.Sent #33 gossip.digest{known {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000006, n5: 1000003, n6: 1000003}} from n4 to n1
+@5s timer n5
+  sim.Fired n5
+  sim.Changed gossip.Heartbeat of n5 from 5 to 6
+  sim.Changed gossip.Known of n5 from {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000005, n6: 1000002} to {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000006, n6: 1000002}
+  net.Sent #34 gossip.digest{known {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000006, n6: 1000002}} from n5 to n4
+@5s timer n6
+  sim.Fired n6
+  sim.Changed gossip.Heartbeat of n6 from 5 to 6
+  sim.Changed gossip.Known of n6 from {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000005} to {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000006}
+  net.Sent #35 gossip.digest{known {n1: 1000002, n2: 1000001, n3: 1000001, n4: 1000005, n5: 1000001, n6: 1000006}} from n6 to n3
+@5016.071ms receive n4
+  net.Arrived #34 gossip.digest{known {n1: 1000003, n2: 1000002, n3: 1000002, n4: 1000003, n5: 1000006, n6: 1000002}} from n5 to n4
+  sim.Changed gossip.Known of n4 from {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000006, n5: 1000003, n6: 1000003} to {n1: 1000004, n2: 1000005, n3: 1000003, n4: 1000006, n5: 1000006, n6: 1000003}
+@5017.396ms receive n3
+  net.Arrived #30 gossip.digest{known {n1: 1000006, n2: 1000004, n3: 1000005, n4: 1000004, n5: 1000004, n6: 1000005}} from n1 to n3
+  sim.Changed gossip.Known of n3 from {n1: 1000003, n2: 1000002, n3: 1000006, n4: 1000003, n5: 1000005, n6: 1000002} to {n1: 1000006, n2: 1000002, n3: 1000006, n4: 1000003, n5: 1000005, n6: 1000002}
+  sim.Changed gossip.Known of n3 from {n1: 1000006, n2: 1000002, n3: 1000006, n4: 1000003, n5: 1000005, n6: 1000002} to {n1: 1000006, n2: 1000004, n3: 1000006, n4: 1000003, n5: 1000005, n6: 1000002}
+  sim.Changed gossip.Known of n3 from {n1: 1000006, n2: 1000004, n3: 1000006, n4: 1000003, n5: 1000005, n6: 1000002} to {n1: 1000006, n2: 1000004, n3: 1000006, n4: 1000004, n5: 1000005, n6: 1000002}
+  sim.Changed gossip.Known of n3 from {n1: 1000006, n2: 1000004, n3: 1000006, n4: 1000004, n5: 1000005, n6: 1000002} to {n1: 1000006, n2: 1000004, n3: 1000006, n4: 1000004, n5: 1000005, n6: 1000005}
+… 196 steps omitted (full trace: out/trace.jsonl)
+@23s timer n5
+  sim.Changed gossip.Known of n5 from {n1: 1000021, n2: 1000021, n3: 2000004, n4: 1000022, n5: 1000023, n6: 1000023} to {n1: 1000021, n2: 1000021, n3: 2000004, n4: 1000022, n5: 1000024, n6: 1000023}
+  net.Sent #132 gossip.digest{known {n1: 1000021, n2: 1000021, n3: 2000004, n4: 1000022, n5: 1000024, n6: 1000023}} from n5 to n3
+@23s timer n6
+  sim.Fired n6
+  sim.Changed gossip.Heartbeat of n6 from 23 to 24
+  sim.Changed gossip.Known of n6 from {n1: 1000021, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000020, n6: 1000023} to {n1: 1000021, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000020, n6: 1000024}
+  net.Sent #133 gossip.digest{known {n1: 1000021, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000020, n6: 1000024}} from n6 to n5
+@23s timer n3
+  sim.Fired n3
+  sim.Changed gossip.Heartbeat of n3 from 7 to 8
+  sim.Changed gossip.Known of n3 from {n1: 1000020, n2: 1000019, n3: 2000007, n4: 1000019, n5: 1000020, n6: 1000021} to {n1: 1000020, n2: 1000019, n3: 2000008, n4: 1000019, n5: 1000020, n6: 1000021}
+  sim.Changed gossip.Down of n3 from {} to {n2}
+  net.Sent #134 gossip.digest{known {n1: 1000020, n2: 1000019, n3: 2000008, n4: 1000019, n5: 1000020, n6: 1000021}} from n3 to n6
+@23012.583ms receive n6
+  net.Arrived #134 gossip.digest{known {n1: 1000020, n2: 1000019, n3: 2000008, n4: 1000019, n5: 1000020, n6: 1000021}} from n3 to n6
+  sim.Changed gossip.Known of n6 from {n1: 1000021, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000020, n6: 1000024} to {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000024}
+@23014.638ms receive n5
+  net.Arrived #133 gossip.digest{known {n1: 1000021, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000020, n6: 1000024}} from n6 to n5
+  sim.Changed gossip.Known of n5 from {n1: 1000021, n2: 1000021, n3: 2000004, n4: 1000022, n5: 1000024, n6: 1000023} to {n1: 1000021, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000024, n6: 1000023}
+  sim.Changed gossip.Known of n5 from {n1: 1000021, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000024, n6: 1000023} to {n1: 1000021, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000024, n6: 1000024}
+@23020.254ms receive n1
+  net.Arrived #130 gossip.digest{known {n1: 1000021, n2: 1000024, n3: 2000006, n4: 1000020, n5: 1000020, n6: 1000022}} from n2 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000024, n2: 1000023, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022} to {n1: 1000024, n2: 1000024, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022}
+@23020.588ms receive n3
+  net.Arrived #132 gossip.digest{known {n1: 1000021, n2: 1000021, n3: 2000004, n4: 1000022, n5: 1000024, n6: 1000023}} from n5 to n3
+  sim.Changed gossip.Known of n3 from {n1: 1000020, n2: 1000019, n3: 2000008, n4: 1000019, n5: 1000020, n6: 1000021} to {n1: 1000021, n2: 1000019, n3: 2000008, n4: 1000019, n5: 1000020, n6: 1000021}
+  sim.Changed gossip.Known of n3 from {n1: 1000021, n2: 1000019, n3: 2000008, n4: 1000019, n5: 1000020, n6: 1000021} to {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000019, n5: 1000020, n6: 1000021}
+  sim.Changed gossip.Known of n3 from {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000019, n5: 1000020, n6: 1000021} to {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000021}
+  sim.Changed gossip.Known of n3 from {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000021} to {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000024, n6: 1000021}
+  sim.Changed gossip.Known of n3 from {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000024, n6: 1000021} to {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000024, n6: 1000023}
+@23023.665ms receive n5
+  net.Arrived #129 gossip.digest{known {n1: 1000024, n2: 1000023, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022}} from n1 to n5
+  sim.Changed gossip.Known of n5 from {n1: 1000021, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000024, n6: 1000024} to {n1: 1000024, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000024, n6: 1000024}
+  sim.Changed gossip.Known of n5 from {n1: 1000024, n2: 1000021, n3: 2000007, n4: 1000022, n5: 1000024, n6: 1000024} to {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000022, n5: 1000024, n6: 1000024}
+  sim.Changed gossip.Known of n5 from {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000022, n5: 1000024, n6: 1000024} to {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000023, n5: 1000024, n6: 1000024}
+@23027.022ms receive n3
+  net.Arrived #131 gossip.digest{known {n1: 1000023, n2: 1000022, n3: 2000005, n4: 1000024, n5: 1000022, n6: 1000020}} from n4 to n3
+  sim.Changed gossip.Known of n3 from {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000024, n6: 1000023} to {n1: 1000023, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000024, n6: 1000023}
+  sim.Changed gossip.Known of n3 from {n1: 1000023, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000024, n6: 1000023} to {n1: 1000023, n2: 1000022, n3: 2000008, n4: 1000022, n5: 1000024, n6: 1000023}
+  sim.Changed gossip.Known of n3 from {n1: 1000023, n2: 1000022, n3: 2000008, n4: 1000022, n5: 1000024, n6: 1000023} to {n1: 1000023, n2: 1000022, n3: 2000008, n4: 1000024, n5: 1000024, n6: 1000023}
+@24s timer n1
+  sim.Fired n1
+  sim.Changed gossip.Heartbeat of n1 from 24 to 25
+  sim.Changed gossip.Known of n1 from {n1: 1000024, n2: 1000024, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022} to {n1: 1000025, n2: 1000024, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022}
+  net.Sent #135 gossip.digest{known {n1: 1000025, n2: 1000024, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022}} from n1 to n2
+@24s timer n2
+  sim.Fired n2
+  sim.Changed gossip.Heartbeat of n2 from 24 to 25
+  sim.Changed gossip.Known of n2 from {n1: 1000021, n2: 1000024, n3: 2000006, n4: 1000020, n5: 1000020, n6: 1000022} to {n1: 1000021, n2: 1000025, n3: 2000006, n4: 1000020, n5: 1000020, n6: 1000022}
+  net.Sent #136 gossip.digest{known {n1: 1000021, n2: 1000025, n3: 2000006, n4: 1000020, n5: 1000020, n6: 1000022}} from n2 to n1
+@24s timer n4
+  sim.Fired n4
+  sim.Changed gossip.Heartbeat of n4 from 24 to 25
+  sim.Changed gossip.Known of n4 from {n1: 1000023, n2: 1000022, n3: 2000005, n4: 1000024, n5: 1000022, n6: 1000020} to {n1: 1000023, n2: 1000022, n3: 2000005, n4: 1000025, n5: 1000022, n6: 1000020}
+  net.Sent #137 gossip.digest{known {n1: 1000023, n2: 1000022, n3: 2000005, n4: 1000025, n5: 1000022, n6: 1000020}} from n4 to n2
+@24s timer n5
+  sim.Fired n5
+  sim.Changed gossip.Heartbeat of n5 from 24 to 25
+  sim.Changed gossip.Known of n5 from {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000023, n5: 1000024, n6: 1000024} to {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000023, n5: 1000025, n6: 1000024}
+  net.Sent #138 gossip.digest{known {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000023, n5: 1000025, n6: 1000024}} from n5 to n1
+@24s timer n6
+  sim.Fired n6
+  sim.Changed gossip.Heartbeat of n6 from 24 to 25
+  sim.Changed gossip.Known of n6 from {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000024} to {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000025}
+  net.Sent #139 gossip.digest{known {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000025}} from n6 to n3
+@24s timer n3
+  sim.Fired n3
+  sim.Changed gossip.Heartbeat of n3 from 8 to 9
+  sim.Changed gossip.Known of n3 from {n1: 1000023, n2: 1000022, n3: 2000008, n4: 1000024, n5: 1000024, n6: 1000023} to {n1: 1000023, n2: 1000022, n3: 2000009, n4: 1000024, n5: 1000024, n6: 1000023}
+  sim.Changed gossip.Down of n3 from {n2} to {}
+  net.Sent #140 gossip.digest{known {n1: 1000023, n2: 1000022, n3: 2000009, n4: 1000024, n5: 1000024, n6: 1000023}} from n3 to n1
+@24010.231ms receive n1
+  net.Arrived #136 gossip.digest{known {n1: 1000021, n2: 1000025, n3: 2000006, n4: 1000020, n5: 1000020, n6: 1000022}} from n2 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000025, n2: 1000024, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022} to {n1: 1000025, n2: 1000025, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022}
+@24012.79ms receive n2
+  net.Arrived #135 gossip.digest{known {n1: 1000025, n2: 1000024, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022}} from n1 to n2
+  sim.Changed gossip.Known of n2 from {n1: 1000021, n2: 1000025, n3: 2000006, n4: 1000020, n5: 1000020, n6: 1000022} to {n1: 1000025, n2: 1000025, n3: 2000006, n4: 1000020, n5: 1000020, n6: 1000022}
+  sim.Changed gossip.Known of n2 from {n1: 1000025, n2: 1000025, n3: 2000006, n4: 1000020, n5: 1000020, n6: 1000022} to {n1: 1000025, n2: 1000025, n3: 2000006, n4: 1000023, n5: 1000020, n6: 1000022}
+  sim.Changed gossip.Known of n2 from {n1: 1000025, n2: 1000025, n3: 2000006, n4: 1000023, n5: 1000020, n6: 1000022} to {n1: 1000025, n2: 1000025, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022}
+@24016.431ms receive n3
+  net.Arrived #139 gossip.digest{known {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000025}} from n6 to n3
+  sim.Changed gossip.Known of n3 from {n1: 1000023, n2: 1000022, n3: 2000009, n4: 1000024, n5: 1000024, n6: 1000023} to {n1: 1000023, n2: 1000022, n3: 2000009, n4: 1000024, n5: 1000024, n6: 1000025}
+@24022.196ms receive n1
+  net.Arrived #138 gossip.digest{known {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000023, n5: 1000025, n6: 1000024}} from n5 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000025, n2: 1000025, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022} to {n1: 1000025, n2: 1000025, n3: 2000007, n4: 1000023, n5: 1000023, n6: 1000022}
+  sim.Changed gossip.Known of n1 from {n1: 1000025, n2: 1000025, n3: 2000007, n4: 1000023, n5: 1000023, n6: 1000022} to {n1: 1000025, n2: 1000025, n3: 2000007, n4: 1000023, n5: 1000025, n6: 1000022}
+  sim.Changed gossip.Known of n1 from {n1: 1000025, n2: 1000025, n3: 2000007, n4: 1000023, n5: 1000025, n6: 1000022} to {n1: 1000025, n2: 1000025, n3: 2000007, n4: 1000023, n5: 1000025, n6: 1000024}
+@24024.138ms receive n2
+  net.Arrived #137 gossip.digest{known {n1: 1000023, n2: 1000022, n3: 2000005, n4: 1000025, n5: 1000022, n6: 1000020}} from n4 to n2
+  sim.Changed gossip.Known of n2 from {n1: 1000025, n2: 1000025, n3: 2000006, n4: 1000023, n5: 1000023, n6: 1000022} to {n1: 1000025, n2: 1000025, n3: 2000006, n4: 1000025, n5: 1000023, n6: 1000022}
+@24029.854ms receive n1
+  net.Arrived #140 gossip.digest{known {n1: 1000023, n2: 1000022, n3: 2000009, n4: 1000024, n5: 1000024, n6: 1000023}} from n3 to n1
+  sim.Changed gossip.Known of n1 from {n1: 1000025, n2: 1000025, n3: 2000007, n4: 1000023, n5: 1000025, n6: 1000024} to {n1: 1000025, n2: 1000025, n3: 2000009, n4: 1000023, n5: 1000025, n6: 1000024}
+  sim.Changed gossip.Known of n1 from {n1: 1000025, n2: 1000025, n3: 2000009, n4: 1000023, n5: 1000025, n6: 1000024} to {n1: 1000025, n2: 1000025, n3: 2000009, n4: 1000024, n5: 1000025, n6: 1000024}
+@25s timer n1
+  sim.Fired n1
+  sim.Changed gossip.Heartbeat of n1 from 25 to 26
+  sim.Changed gossip.Known of n1 from {n1: 1000025, n2: 1000025, n3: 2000009, n4: 1000024, n5: 1000025, n6: 1000024} to {n1: 1000026, n2: 1000025, n3: 2000009, n4: 1000024, n5: 1000025, n6: 1000024}
+  net.Sent #141 gossip.digest{known {n1: 1000026, n2: 1000025, n3: 2000009, n4: 1000024, n5: 1000025, n6: 1000024}} from n1 to n4
+@25s timer n2
+  sim.Fired n2
+  sim.Changed gossip.Heartbeat of n2 from 25 to 26
+  sim.Changed gossip.Known of n2 from {n1: 1000025, n2: 1000025, n3: 2000006, n4: 1000025, n5: 1000023, n6: 1000022} to {n1: 1000025, n2: 1000026, n3: 2000006, n4: 1000025, n5: 1000023, n6: 1000022}
+  net.Sent #142 gossip.digest{known {n1: 1000025, n2: 1000026, n3: 2000006, n4: 1000025, n5: 1000023, n6: 1000022}} from n2 to n5
+@25s timer n4
+  sim.Fired n4
+  sim.Changed gossip.Heartbeat of n4 from 25 to 26
+  sim.Changed gossip.Known of n4 from {n1: 1000023, n2: 1000022, n3: 2000005, n4: 1000025, n5: 1000022, n6: 1000020} to {n1: 1000023, n2: 1000022, n3: 2000005, n4: 1000026, n5: 1000022, n6: 1000020}
+  net.Sent #143 gossip.digest{known {n1: 1000023, n2: 1000022, n3: 2000005, n4: 1000026, n5: 1000022, n6: 1000020}} from n4 to n1
+@25s timer n5
+  sim.Fired n5
+  sim.Changed gossip.Heartbeat of n5 from 25 to 26
+  sim.Changed gossip.Known of n5 from {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000023, n5: 1000025, n6: 1000024} to {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000023, n5: 1000026, n6: 1000024}
+  net.Sent #144 gossip.digest{known {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000023, n5: 1000026, n6: 1000024}} from n5 to n1
+@25s timer n6
+  sim.Fired n6
+  sim.Changed gossip.Heartbeat of n6 from 25 to 26
+  sim.Changed gossip.Known of n6 from {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000025} to {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000026}
+  sim.Changed gossip.Down of n6 from {} to {n1, n2}
+  net.Sent #145 gossip.digest{known {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000026}} from n6 to n3
+@25s timer n3
+  sim.Fired n3
+  sim.Changed gossip.Heartbeat of n3 from 9 to 10
+  sim.Changed gossip.Known of n3 from {n1: 1000023, n2: 1000022, n3: 2000009, n4: 1000024, n5: 1000024, n6: 1000025} to {n1: 1000023, n2: 1000022, n3: 2000010, n4: 1000024, n5: 1000024, n6: 1000025}
+  net.Sent #146 gossip.digest{known {n1: 1000023, n2: 1000022, n3: 2000010, n4: 1000024, n5: 1000024, n6: 1000025}} from n3 to n4
+  sim.Ended stop
+final:
+  n1 up  gossip.Generation 1, gossip.Heartbeat 26, gossip.Known {n1: 1000026, n2: 1000025, n3: 2000009, n4: 1000024, n5: 1000025, n6: 1000024}, gossip.Down {}
+  n2 up  gossip.Generation 1, gossip.Heartbeat 26, gossip.Known {n1: 1000025, n2: 1000026, n3: 2000006, n4: 1000025, n5: 1000023, n6: 1000022}, gossip.Down {}
+  n3 up  gossip.Generation 2, gossip.Heartbeat 10, gossip.Known {n1: 1000023, n2: 1000022, n3: 2000010, n4: 1000024, n5: 1000024, n6: 1000025}, gossip.Down {}
+  n4 up  gossip.Generation 1, gossip.Heartbeat 26, gossip.Known {n1: 1000023, n2: 1000022, n3: 2000005, n4: 1000026, n5: 1000022, n6: 1000020}, gossip.Down {}
+  n5 up  gossip.Generation 1, gossip.Heartbeat 26, gossip.Known {n1: 1000024, n2: 1000023, n3: 2000007, n4: 1000023, n5: 1000026, n6: 1000024}, gossip.Down {}
+  n6 up  gossip.Generation 1, gossip.Heartbeat 26, gossip.Known {n1: 1000021, n2: 1000021, n3: 2000008, n4: 1000022, n5: 1000020, n6: 1000026}, gossip.Down {n1, n2}

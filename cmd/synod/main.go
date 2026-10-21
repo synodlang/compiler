@@ -1,5 +1,5 @@
 // Command synod is the Synod compiler command line (implementation/05-cli.md).
-// This milestone implements fmt, check and version.
+// This milestone implements fmt, check, run and version.
 package main
 
 import (
@@ -20,6 +20,7 @@ const usage = `usage: synod <command> [arguments]
 commands:
   fmt [paths...] [--check]
   check [paths...] [--json] [--tokens]
+  run <folder> [--seed n] [--trace file] [--summary]
   version
 `
 
@@ -46,9 +47,11 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runFmt(rest, stdout, stderr)
 	case "check":
 		return runCheck(rest, stdout, stderr)
+	case "run":
+		return runRun(rest, stdout, stderr)
 	case "version":
 		return runVersion(rest, stdout, stderr)
-	case "new", "run", "get", "doc", "explain":
+	case "new", "get", "doc", "explain":
 		fmt.Fprintf(stderr, "synod: %s: not implemented yet\n", cmd)
 		return exitUsage
 	case "help", "-h", "--help":

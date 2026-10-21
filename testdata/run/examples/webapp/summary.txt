@@ -1,0 +1,577 @@
+run github.com/synodlang/examples/webapp seed 9
+end: empty at 3031.281ms, 6 nodes, 742 steps, 1139 events
+steps:
+@0s main
+  sim.Started
+  sim.Added n1 runs api, lb: lb.Backends {}
+  sim.Added n2 runs api, app: app.Cache nobody, app.Db nobody
+  sim.Added n3 runs api, app: app.Cache nobody, app.Db nobody
+  sim.Added n4 runs api, app: app.Cache nobody, app.Db nobody
+  sim.Added n5 runs api, cache: cache.Entries {}
+  sim.Added n6 runs api, db: db.Queries 0
+  sim.Changed lb.Backends of n1 from {} to {n2, n3, n4}
+  sim.Changed app.Cache of n2 from nobody to n5
+  sim.Changed app.Db of n2 from nobody to n6
+  sim.Changed app.Cache of n3 from nobody to n5
+  sim.Changed app.Db of n3 from nobody to n6
+  sim.Changed app.Cache of n4 from nobody to n5
+  sim.Changed app.Db of n4 from nobody to n6
+  sim.Emitted lesson.Noted{Text "Misses go to the database and fill the cache; hits come back fast."} by nobody
+@20ms timer nobody
+  sim.Injected api.Get{Key "cart", Id 1, Start 20ms} into n1
+@20ms deliver n1
+  net.Sent #1 api.Get{Key "cart", Id 1, Start 20ms} from n1 to n2
+@40ms timer nobody
+  sim.Injected api.Get{Key "home", Id 2, Start 40ms} into n1
+@40ms deliver n1
+  net.Sent #2 api.Get{Key "home", Id 2, Start 40ms} from n1 to n3
+@44.855ms receive n2
+  net.Arrived #1 api.Get{Key "cart", Id 1, Start 20ms} from n1 to n2
+  net.Sent #3 api.Lookup{Key "cart", Id 1} from n2 to n5
+@52.68ms receive n3
+  net.Arrived #2 api.Get{Key "home", Id 2, Start 40ms} from n1 to n3
+  net.Sent #4 api.Lookup{Key "home", Id 2} from n3 to n5
+@60ms timer nobody
+  sim.Injected api.Get{Key "help", Id 3, Start 60ms} into n1
+@60ms deliver n1
+  net.Sent #5 api.Get{Key "help", Id 3, Start 60ms} from n1 to n4
+@70.96ms receive n5
+  net.Arrived #3 api.Lookup{Key "cart", Id 1} from n2 to n5
+  net.Sent #6 api.CacheReply{Key "cart", Id 1, Value "", Found false} from n5 to n2
+@77.298ms receive n5
+  net.Arrived #4 api.Lookup{Key "home", Id 2} from n3 to n5
+  net.Sent #7 api.CacheReply{Key "home", Id 2, Value "", Found false} from n5 to n3
+@80ms timer nobody
+  sim.Injected api.Get{Key "cart", Id 4, Start 80ms} into n1
+@80ms deliver n1
+  net.Sent #8 api.Get{Key "cart", Id 4, Start 80ms} from n1 to n2
+@88.291ms receive n4
+  net.Arrived #5 api.Get{Key "help", Id 3, Start 60ms} from n1 to n4
+  net.Sent #9 api.Lookup{Key "help", Id 3} from n4 to n5
+@95.487ms receive n2
+  net.Arrived #6 api.CacheReply{Key "cart", Id 1, Value "", Found false} from n5 to n2
+  net.Sent #10 api.Query{Key "cart", Id 1} from n2 to n6
+@100ms timer nobody
+  sim.Injected api.Get{Key "profile", Id 5, Start 100ms} into n1
+@100ms deliver n1
+  net.Sent #11 api.Get{Key "profile", Id 5, Start 100ms} from n1 to n3
+@102.163ms receive n2
+  net.Arrived #8 api.Get{Key "cart", Id 4, Start 80ms} from n1 to n2
+  net.Sent #12 api.Lookup{Key "cart", Id 4} from n2 to n5
+@103.128ms receive n3
+  net.Arrived #7 api.CacheReply{Key "home", Id 2, Value "", Found false} from n5 to n3
+  net.Sent #13 api.Query{Key "home", Id 2} from n3 to n6
+@107.671ms receive n5
+  net.Arrived #9 api.Lookup{Key "help", Id 3} from n4 to n5
+  net.Sent #14 api.CacheReply{Key "help", Id 3, Value "", Found false} from n5 to n4
+@110.718ms receive n3
+  net.Arrived #11 api.Get{Key "profile", Id 5, Start 100ms} from n1 to n3
+  net.Sent #15 api.Lookup{Key "profile", Id 5} from n3 to n5
+@112.579ms receive n6
+  net.Arrived #10 api.Query{Key "cart", Id 1} from n2 to n6
+  sim.Changed db.Queries of n6 from 0 to 1
+@120ms timer nobody
+  sim.Injected api.Get{Key "search", Id 6, Start 120ms} into n1
+@120ms deliver n1
+  net.Sent #16 api.Get{Key "search", Id 6, Start 120ms} from n1 to n4
+@120.273ms receive n6
+  net.Arrived #13 api.Query{Key "home", Id 2} from n3 to n6
+  sim.Changed db.Queries of n6 from 1 to 2
+@126.901ms receive n4
+  net.Arrived #14 api.CacheReply{Key "help", Id 3, Value "", Found false} from n5 to n4
+  net.Sent #17 api.Query{Key "help", Id 3} from n4 to n6
+@129.146ms receive n5
+  net.Arrived #12 api.Lookup{Key "cart", Id 4} from n2 to n5
+  net.Sent #18 api.CacheReply{Key "cart", Id 4, Value "", Found false} from n5 to n2
+@138.19ms receive n4
+  net.Arrived #16 api.Get{Key "search", Id 6, Start 120ms} from n1 to n4
+  net.Sent #19 api.Lookup{Key "search", Id 6} from n4 to n5
+@139.882ms receive n5
+  net.Arrived #15 api.Lookup{Key "profile", Id 5} from n3 to n5
+  net.Sent #20 api.CacheReply{Key "profile", Id 5, Value "", Found false} from n5 to n3
+@140ms timer nobody
+  sim.Injected api.Get{Key "cart", Id 7, Start 140ms} into n1
+@140ms deliver n1
+  net.Sent #21 api.Get{Key "cart", Id 7, Start 140ms} from n1 to n2
+@147.164ms receive n2
+  net.Arrived #18 api.CacheReply{Key "cart", Id 4, Value "", Found false} from n5 to n2
+  net.Sent #22 api.Query{Key "cart", Id 4} from n2 to n6
+@151.657ms receive n5
+  net.Arrived #19 api.Lookup{Key "search", Id 6} from n4 to n5
+  net.Sent #23 api.CacheReply{Key "search", Id 6, Value "", Found false} from n5 to n4
+@152.579ms timer n6
+  sim.Fired n6
+  net.Sent #24 api.Rows{Key "cart", Id 1, Value "row for cart"} from n6 to n2
+@155.813ms receive n6
+  net.Arrived #17 api.Query{Key "help", Id 3} from n4 to n6
+  sim.Changed db.Queries of n6 from 2 to 3
+@160ms timer nobody
+  sim.Injected api.Get{Key "profile", Id 8, Start 160ms} into n1
+@160ms deliver n1
+  net.Sent #25 api.Get{Key "profile", Id 8, Start 160ms} from n1 to n3
+@160.273ms timer n6
+  sim.Fired n6
+  net.Sent #26 api.Rows{Key "home", Id 2, Value "row for home"} from n6 to n3
+@160.285ms receive n2
+  net.Arrived #21 api.Get{Key "cart", Id 7, Start 140ms} from n1 to n2
+  net.Sent #27 api.Lookup{Key "cart", Id 7} from n2 to n5
+@163.79ms receive n6
+  net.Arrived #22 api.Query{Key "cart", Id 4} from n2 to n6
+  sim.Changed db.Queries of n6 from 3 to 4
+@166.827ms receive n3
+  net.Arrived #20 api.CacheReply{Key "profile", Id 5, Value "", Found false} from n5 to n3
+  net.Sent #28 api.Query{Key "profile", Id 5} from n3 to n6
+@170.213ms receive n3
+  net.Arrived #25 api.Get{Key "profile", Id 8, Start 160ms} from n1 to n3
+  net.Sent #29 api.Lookup{Key "profile", Id 8} from n3 to n5
+@175.686ms receive n2
+  net.Arrived #24 api.Rows{Key "cart", Id 1, Value "row for cart"} from n6 to n2
+  net.Sent #30 api.Fill{Key "cart", Value "row for cart"} from n2 to n5
+  sim.Emitted api.Served{Id 1, Hit false, Latency 155.686ms} by n2
+@180ms timer nobody
+  sim.Injected api.Get{Key "search", Id 9, Start 180ms} into n1
+@180ms deliver n1
+  net.Sent #31 api.Get{Key "search", Id 9, Start 180ms} from n1 to n4
+@180.688ms receive n4
+  net.Arrived #23 api.CacheReply{Key "search", Id 6, Value "", Found false} from n5 to n4
+  net.Sent #32 api.Query{Key "search", Id 6} from n4 to n6
+@181.527ms receive n3
+  net.Arrived #26 api.Rows{Key "home", Id 2, Value "row for home"} from n6 to n3
+  net.Sent #33 api.Fill{Key "home", Value "row for home"} from n3 to n5
+  sim.Emitted api.Served{Id 2, Hit false, Latency 141.527ms} by n3
+@184.184ms receive n5
+  net.Arrived #29 api.Lookup{Key "profile", Id 8} from n3 to n5
+  net.Sent #34 api.CacheReply{Key "profile", Id 8, Value "", Found false} from n5 to n3
+@184.931ms receive n5
+  net.Arrived #27 api.Lookup{Key "cart", Id 7} from n2 to n5
+  net.Sent #35 api.CacheReply{Key "cart", Id 7, Value "", Found false} from n5 to n2
+@190.244ms receive n5
+  net.Arrived #30 api.Fill{Key "cart", Value "row for cart"} from n2 to n5
+  sim.Changed cache.Entries of n5 from {} to {"cart": "row for cart"}
+@192.185ms receive n6
+  net.Arrived #28 api.Query{Key "profile", Id 5} from n3 to n6
+  sim.Changed db.Queries of n6 from 4 to 5
+@195.813ms timer n6
+  sim.Fired n6
+  net.Sent #36 api.Rows{Key "help", Id 3, Value "row for help"} from n6 to n4
+@196.808ms receive n4
+  net.Arrived #31 api.Get{Key "search", Id 9, Start 180ms} from n1 to n4
+  net.Sent #37 api.Lookup{Key "search", Id 9} from n4 to n5
+@197.485ms receive n3
+  net.Arrived #34 api.CacheReply{Key "profile", Id 8, Value "", Found false} from n5 to n3
+  net.Sent #38 api.Query{Key "profile", Id 8} from n3 to n6
+@199.317ms receive n6
+  net.Arrived #32 api.Query{Key "search", Id 6} from n4 to n6
+  sim.Changed db.Queries of n6 from 5 to 6
+@200ms timer nobody
+  sim.Injected api.Get{Key "home", Id 10, Start 200ms} into n1
+@200ms deliver n1
+  net.Sent #39 api.Get{Key "home", Id 10, Start 200ms} from n1 to n2
+@200.568ms receive n2
+  net.Arrived #35 api.CacheReply{Key "cart", Id 7, Value "", Found false} from n5 to n2
+  net.Sent #40 api.Query{Key "cart", Id 7} from n2 to n6
+@202.612ms receive n5
+  net.Arrived #33 api.Fill{Key "home", Value "row for home"} from n3 to n5
+  sim.Changed cache.Entries of n5 from {"cart": "row for cart"} to {"cart": "row for cart", "home": "row for home"}
+@203.79ms timer n6
+  sim.Fired n6
+  net.Sent #41 api.Rows{Key "cart", Id 4, Value "row for cart"} from n6 to n2
+@215.668ms receive n5
+  net.Arrived #37 api.Lookup{Key "search", Id 9} from n4 to n5
+  net.Sent #42 api.CacheReply{Key "search", Id 9, Value "", Found false} from n5 to n4
+@216.914ms receive n6
+  net.Arrived #40 api.Query{Key "cart", Id 7} from n2 to n6
+  sim.Changed db.Queries of n6 from 6 to 7
+@218.677ms receive n4
+  net.Arrived #36 api.Rows{Key "help", Id 3, Value "row for help"} from n6 to n4
+  net.Sent #43 api.Fill{Key "help", Value "row for help"} from n4 to n5
+  sim.Emitted api.Served{Id 3, Hit false, Latency 158.677ms} by n4
+@219.012ms receive n6
+  net.Arrived #38 api.Query{Key "profile", Id 8} from n3 to n6
+  sim.Changed db.Queries of n6 from 7 to 8
+@220ms timer nobody
+  sim.Injected api.Get{Key "cart", Id 11, Start 220ms} into n1
+@220ms deliver n1
+  net.Sent #44 api.Get{Key "cart", Id 11, Start 220ms} from n1 to n3
+@224.244ms receive n2
+  net.Arrived #39 api.Get{Key "home", Id 10, Start 200ms} from n1 to n2
+  net.Sent #45 api.Lookup{Key "home", Id 10} from n2 to n5
+@227.931ms receive n2
+  net.Arrived #41 api.Rows{Key "cart", Id 4, Value "row for cart"} from n6 to n2
+  net.Sent #46 api.Fill{Key "cart", Value "row for cart"} from n2 to n5
+  sim.Emitted api.Served{Id 4, Hit false, Latency 147.931ms} by n2
+@232.185ms timer n6
+  sim.Fired n6
+  net.Sent #47 api.Rows{Key "profile", Id 5, Value "row for profile"} from n6 to n3
+@236.648ms receive n3
+  net.Arrived #44 api.Get{Key "cart", Id 11, Start 220ms} from n1 to n3
+  net.Sent #48 api.Lookup{Key "cart", Id 11} from n3 to n5
+@237.802ms receive n5
+  net.Arrived #45 api.Lookup{Key "home", Id 10} from n2 to n5
+  net.Sent #49 api.CacheReply{Key "home", Id 10, Value "row for home", Found true} from n5 to n2
+@239.317ms timer n6
+  sim.Fired n6
+  net.Sent #50 api.Rows{Key "search", Id 6, Value "row for search"} from n6 to n4
+@240ms timer nobody
+  sim.Injected api.Get{Key "help", Id 12, Start 240ms} into n1
+@240ms deliver n1
+  net.Sent #51 api.Get{Key "help", Id 12, Start 240ms} from n1 to n4
+@240.181ms receive n4
+  net.Arrived #42 api.CacheReply{Key "search", Id 9, Value "", Found false} from n5 to n4
+  net.Sent #52 api.Query{Key "search", Id 9} from n4 to n6
+@242.114ms receive n5
+  net.Arrived #43 api.Fill{Key "help", Value "row for help"} from n4 to n5
+  sim.Changed cache.Entries of n5 from {"cart": "row for cart", "home": "row for home"} to {"cart": "row for cart", "help": "row for help", "home": "row for home"}
+@250.556ms receive n4
+  net.Arrived #50 api.Rows{Key "search", Id 6, Value "row for search"} from n6 to n4
+  net.Sent #53 api.Fill{Key "search", Value "row for search"} from n4 to n5
+  sim.Emitted api.Served{Id 6, Hit false, Latency 130.556ms} by n4
+@252.109ms receive n6
+  net.Arrived #52 api.Query{Key "search", Id 9} from n4 to n6
+  sim.Changed db.Queries of n6 from 8 to 9
+@253.253ms receive n5
+  net.Arrived #46 api.Fill{Key "cart", Value "row for cart"} from n2 to n5
+@256.543ms receive n2
+  net.Arrived #49 api.CacheReply{Key "home", Id 10, Value "row for home", Found true} from n5 to n2
+  sim.Emitted api.Served{Id 10, Hit true, Latency 56.543ms} by n2
+@256.914ms timer n6
+  sim.Fired n6
+  net.Sent #54 api.Rows{Key "cart", Id 7, Value "row for cart"} from n6 to n2
+@259.012ms timer n6
+  sim.Fired n6
+  net.Sent #55 api.Rows{Key "profile", Id 8, Value "row for profile"} from n6 to n3
+@259.483ms receive n3
+  net.Arrived #47 api.Rows{Key "profile", Id 5, Value "row for profile"} from n6 to n3
+  net.Sent #56 api.Fill{Key "profile", Value "row for profile"} from n3 to n5
+  sim.Emitted api.Served{Id 5, Hit false, Latency 159.483ms} by n3
+@260ms timer nobody
+  sim.Injected api.Get{Key "profile", Id 13, Start 260ms} into n1
+@260ms deliver n1
+  net.Sent #57 api.Get{Key "profile", Id 13, Start 260ms} from n1 to n2
+@263.587ms receive n5
+  net.Arrived #48 api.Lookup{Key "cart", Id 11} from n3 to n5
+  net.Sent #58 api.CacheReply{Key "cart", Id 11, Value "row for cart", Found true} from n5 to n3
+@267.555ms receive n4
+  net.Arrived #51 api.Get{Key "help", Id 12, Start 240ms} from n1 to n4
+  net.Sent #59 api.Lookup{Key "help", Id 12} from n4 to n5
+@272.15ms receive n2
+  net.Arrived #54 api.Rows{Key "cart", Id 7, Value "row for cart"} from n6 to n2
+  net.Sent #60 api.Fill{Key "cart", Value "row for cart"} from n2 to n5
+  sim.Emitted api.Served{Id 7, Hit false, Latency 132.15ms} by n2
+@274.883ms receive n5
+  net.Arrived #53 api.Fill{Key "search", Value "row for search"} from n4 to n5
+  sim.Changed cache.Entries of n5 from {"cart": "row for cart", "help": "row for help", "home": "row for home"} to {"cart": "row for cart", "help": "row for help", "home": "row for home", "search": "row for search"}
+@275.413ms receive n3
+  net.Arrived #58 api.CacheReply{Key "cart", Id 11, Value "row for cart", Found true} from n5 to n3
+  sim.Emitted api.Served{Id 11, Hit true, Latency 55.413ms} by n3
+@277.122ms receive n5
+  net.Arrived #56 api.Fill{Key "profile", Value "row for profile"} from n3 to n5
+  sim.Changed cache.Entries of n5 from {"cart": "row for cart", "help": "row for help", "home": "row for home", "search": "row for search"} to {"cart": "row for cart", "help": "row for help", "home": "row for home", "profile": "row for profile", "search": "row for search"}
+@279.804ms receive n2
+  net.Arrived #57 api.Get{Key "profile", Id 13, Start 260ms} from n1 to n2
+  net.Sent #61 api.Lookup{Key "profile", Id 13} from n2 to n5
+@280ms timer nobody
+  sim.Injected api.Get{Key "search", Id 14, Start 280ms} into n1
+@280ms deliver n1
+  net.Sent #62 api.Get{Key "search", Id 14, Start 280ms} from n1 to n3
+@283.579ms receive n3
+  net.Arrived #55 api.Rows{Key "profile", Id 8, Value "row for profile"} from n6 to n3
+  net.Sent #63 api.Fill{Key "profile", Value "row for profile"} from n3 to n5
+  sim.Emitted api.Served{Id 8, Hit false, Latency 123.579ms} by n3
+@290.749ms receive n5
+  net.Arrived #60 api.Fill{Key "cart", Value "row for cart"} from n2 to n5
+@291.683ms receive n3
+  net.Arrived #62 api.Get{Key "search", Id 14, Start 280ms} from n1 to n3
+  net.Sent #64 api.Lookup{Key "search", Id 14} from n3 to n5
+@292.109ms timer n6
+  sim.Fired n6
+  net.Sent #65 api.Rows{Key "search", Id 9, Value "row for search"} from n6 to n4
+@293.802ms receive n5
+  net.Arrived #63 api.Fill{Key "profile", Value "row for profile"} from n3 to n5
+@295.473ms receive n5
+  net.Arrived #61 api.Lookup{Key "profile", Id 13} from n2 to n5
+  net.Sent #66 api.CacheReply{Key "profile", Id 13, Value "row for profile", Found true} from n5 to n2
+@297.477ms receive n5
+  net.Arrived #59 api.Lookup{Key "help", Id 12} from n4 to n5
+  net.Sent #67 api.CacheReply{Key "help", Id 12, Value "row for help", Found true} from n5 to n4
+@300ms timer nobody
+  sim.Injected api.Get{Key "home", Id 15, Start 300ms} into n1
+@300ms deliver n1
+  net.Sent #68 api.Get{Key "home", Id 15, Start 300ms} from n1 to n4
+@304.561ms receive n5
+  net.Arrived #64 api.Lookup{Key "search", Id 14} from n3 to n5
+  net.Sent #69 api.CacheReply{Key "search", Id 14, Value "row for search", Found true} from n5 to n3
+@316.241ms receive n4
+  net.Arrived #65 api.Rows{Key "search", Id 9, Value "row for search"} from n6 to n4
+  net.Sent #70 api.Fill{Key "search", Value "row for search"} from n4 to n5
+  sim.Emitted api.Served{Id 9, Hit false, Latency 136.241ms} by n4
+@319.266ms receive n3
+  net.Arrived #69 api.CacheReply{Key "search", Id 14, Value "row for search", Found true} from n5 to n3
+  sim.Emitted api.Served{Id 14, Hit true, Latency 39.266ms} by n3
+@320ms timer nobody
+  sim.Injected api.Get{Key "search", Id 16, Start 320ms} into n1
+@320ms deliver n1
+  net.Sent #71 api.Get{Key "search", Id 16, Start 320ms} from n1 to n2
+@320.229ms receive n4
+  net.Arrived #68 api.Get{Key "home", Id 15, Start 300ms} from n1 to n4
+  net.Sent #72 api.Lookup{Key "home", Id 15} from n4 to n5
+@320.278ms receive n2
+  net.Arrived #66 api.CacheReply{Key "profile", Id 13, Value "row for profile", Found true} from n5 to n2
+  sim.Emitted api.Served{Id 13, Hit true, Latency 60.278ms} by n2
+@322.694ms receive n4
+  net.Arrived #67 api.CacheReply{Key "help", Id 12, Value "row for help", Found true} from n5 to n4
+  sim.Emitted api.Served{Id 12, Hit true, Latency 82.694ms} by n4
+@332.469ms receive n5
+  net.Arrived #72 api.Lookup{Key "home", Id 15} from n4 to n5
+  net.Sent #73 api.CacheReply{Key "home", Id 15, Value "row for home", Found true} from n5 to n4
+@332.984ms receive n5
+  net.Arrived #70 api.Fill{Key "search", Value "row for search"} from n4 to n5
+@340ms timer nobody
+  sim.Injected api.Get{Key "help", Id 17, Start 340ms} into n1
+@340ms deliver n1
+  net.Sent #74 api.Get{Key "help", Id 17, Start 340ms} from n1 to n3
+@348.783ms receive n2
+  net.Arrived #71 api.Get{Key "search", Id 16, Start 320ms} from n1 to n2
+  net.Sent #75 api.Lookup{Key "search", Id 16} from n2 to n5
+@358.734ms receive n4
+  net.Arrived #73 api.CacheReply{Key "home", Id 15, Value "row for home", Found true} from n5 to n4
+  sim.Emitted api.Served{Id 15, Hit true, Latency 58.734ms} by n4
+@360ms timer nobody
+  sim.Injected api.Get{Key "cart", Id 18, Start 360ms} into n1
+@360ms deliver n1
+  net.Sent #76 api.Get{Key "cart", Id 18, Start 360ms} from n1 to n4
+@363.701ms receive n3
+  net.Arrived #74 api.Get{Key "help", Id 17, Start 340ms} from n1 to n3
+  net.Sent #77 api.Lookup{Key "help", Id 17} from n3 to n5
+@366.295ms receive n5
+  net.Arrived #75 api.Lookup{Key "search", Id 16} from n2 to n5
+  net.Sent #78 api.CacheReply{Key "search", Id 16, Value "row for search", Found true} from n5 to n2
+@380ms timer nobody
+  sim.Injected api.Get{Key "home", Id 19, Start 380ms} into n1
+@380ms deliver n1
+  net.Sent #79 api.Get{Key "home", Id 19, Start 380ms} from n1 to n2
+@384.754ms receive n4
+  net.Arrived #76 api.Get{Key "cart", Id 18, Start 360ms} from n1 to n4
+  net.Sent #80 api.Lookup{Key "cart", Id 18} from n4 to n5
+@389.057ms receive n5
+  net.Arrived #77 api.Lookup{Key "help", Id 17} from n3 to n5
+  net.Sent #81 api.CacheReply{Key "help", Id 17, Value "row for help", Found true} from n5 to n3
+@391.084ms receive n2
+  net.Arrived #78 api.CacheReply{Key "search", Id 16, Value "row for search", Found true} from n5 to n2
+  sim.Emitted api.Served{Id 16, Hit true, Latency 71.084ms} by n2
+@396.868ms receive n5
+  net.Arrived #80 api.Lookup{Key "cart", Id 18} from n4 to n5
+  net.Sent #82 api.CacheReply{Key "cart", Id 18, Value "row for cart", Found true} from n5 to n4
+@400ms timer nobody
+  sim.Injected api.Get{Key "home", Id 20, Start 400ms} into n1
+@400ms deliver n1
+  net.Sent #83 api.Get{Key "home", Id 20, Start 400ms} from n1 to n3
+@407.747ms receive n3
+  net.Arrived #81 api.CacheReply{Key "help", Id 17, Value "row for help", Found true} from n5 to n3
+  sim.Emitted api.Served{Id 17, Hit true, Latency 67.747ms} by n3
+@408.395ms receive n2
+  net.Arrived #79 api.Get{Key "home", Id 19, Start 380ms} from n1 to n2
+  net.Sent #84 api.Lookup{Key "home", Id 19} from n2 to n5
+@409.007ms receive n4
+  net.Arrived #82 api.CacheReply{Key "cart", Id 18, Value "row for cart", Found true} from n5 to n4
+  sim.Emitted api.Served{Id 18, Hit true, Latency 49.007ms} by n4
+@419.311ms receive n5
+  net.Arrived #84 api.Lookup{Key "home", Id 19} from n2 to n5
+  net.Sent #85 api.CacheReply{Key "home", Id 19, Value "row for home", Found true} from n5 to n2
+@420ms timer nobody
+  sim.Injected api.Get{Key "help", Id 21, Start 420ms} into n1
+@420ms deliver n1
+  net.Sent #86 api.Get{Key "help", Id 21, Start 420ms} from n1 to n4
+@423.622ms receive n3
+  net.Arrived #83 api.Get{Key "home", Id 20, Start 400ms} from n1 to n3
+  net.Sent #87 api.Lookup{Key "home", Id 20} from n3 to n5
+@438.835ms receive n5
+  net.Arrived #87 api.Lookup{Key "home", Id 20} from n3 to n5
+  net.Sent #88 api.CacheReply{Key "home", Id 20, Value "row for home", Found true} from n5 to n3
+… 520 steps omitted (full trace: out/trace.jsonl)
+@2633.695ms receive n3
+  net.Arrived #386 api.Get{Key "home", Id 131, Start 2620ms} from n1 to n3
+  net.Sent #387 api.Lookup{Key "home", Id 131} from n3 to n5
+@2640ms timer nobody
+  sim.Injected api.Get{Key "search", Id 132, Start 2640ms} into n1
+@2640ms deliver n1
+  net.Sent #388 api.Get{Key "search", Id 132, Start 2640ms} from n1 to n4
+@2644.404ms receive n5
+  net.Dropped #385 api.Lookup{Key "help", Id 130} from n2 to n5 (crashed)
+@2650.863ms receive n5
+  net.Dropped #387 api.Lookup{Key "home", Id 131} from n3 to n5 (crashed)
+@2660ms timer nobody
+  sim.Injected api.Get{Key "cart", Id 133, Start 2660ms} into n1
+@2660ms deliver n1
+  net.Sent #389 api.Get{Key "cart", Id 133, Start 2660ms} from n1 to n2
+@2661.399ms receive n4
+  net.Arrived #388 api.Get{Key "search", Id 132, Start 2640ms} from n1 to n4
+  net.Sent #390 api.Lookup{Key "search", Id 132} from n4 to n5
+@2680ms timer nobody
+  sim.Injected api.Get{Key "help", Id 134, Start 2680ms} into n1
+@2680ms deliver n1
+  net.Sent #391 api.Get{Key "help", Id 134, Start 2680ms} from n1 to n3
+@2680.93ms receive n2
+  net.Arrived #389 api.Get{Key "cart", Id 133, Start 2660ms} from n1 to n2
+  net.Sent #392 api.Lookup{Key "cart", Id 133} from n2 to n5
+@2682.48ms receive n5
+  net.Dropped #390 api.Lookup{Key "search", Id 132} from n4 to n5 (crashed)
+@2692.224ms receive n5
+  net.Dropped #392 api.Lookup{Key "cart", Id 133} from n2 to n5 (crashed)
+@2698.665ms receive n3
+  net.Arrived #391 api.Get{Key "help", Id 134, Start 2680ms} from n1 to n3
+  net.Sent #393 api.Lookup{Key "help", Id 134} from n3 to n5
+@2700ms timer nobody
+  sim.Injected api.Get{Key "home", Id 135, Start 2700ms} into n1
+@2700ms deliver n1
+  net.Sent #394 api.Get{Key "home", Id 135, Start 2700ms} from n1 to n4
+@2711.054ms receive n4
+  net.Arrived #394 api.Get{Key "home", Id 135, Start 2700ms} from n1 to n4
+  net.Sent #395 api.Lookup{Key "home", Id 135} from n4 to n5
+@2719.048ms receive n5
+  net.Dropped #393 api.Lookup{Key "help", Id 134} from n3 to n5 (crashed)
+@2720ms timer nobody
+  sim.Injected api.Get{Key "help", Id 136, Start 2720ms} into n1
+@2720ms deliver n1
+  net.Sent #396 api.Get{Key "help", Id 136, Start 2720ms} from n1 to n2
+@2721.96ms receive n5
+  net.Dropped #395 api.Lookup{Key "home", Id 135} from n4 to n5 (crashed)
+@2740ms timer nobody
+  sim.Injected api.Get{Key "search", Id 137, Start 2740ms} into n1
+@2740ms deliver n1
+  net.Sent #397 api.Get{Key "search", Id 137, Start 2740ms} from n1 to n3
+@2744.5ms receive n2
+  net.Arrived #396 api.Get{Key "help", Id 136, Start 2720ms} from n1 to n2
+  net.Sent #398 api.Lookup{Key "help", Id 136} from n2 to n5
+@2752.537ms receive n3
+  net.Arrived #397 api.Get{Key "search", Id 137, Start 2740ms} from n1 to n3
+  net.Sent #399 api.Lookup{Key "search", Id 137} from n3 to n5
+@2758.957ms receive n5
+  net.Dropped #398 api.Lookup{Key "help", Id 136} from n2 to n5 (crashed)
+@2760ms timer nobody
+  sim.Injected api.Get{Key "home", Id 138, Start 2760ms} into n1
+@2760ms deliver n1
+  net.Sent #400 api.Get{Key "home", Id 138, Start 2760ms} from n1 to n4
+@2772.372ms receive n4
+  net.Arrived #400 api.Get{Key "home", Id 138, Start 2760ms} from n1 to n4
+  net.Sent #401 api.Lookup{Key "home", Id 138} from n4 to n5
+@2780ms timer nobody
+  sim.Injected api.Get{Key "cart", Id 139, Start 2780ms} into n1
+@2780ms deliver n1
+  net.Sent #402 api.Get{Key "cart", Id 139, Start 2780ms} from n1 to n2
+@2782.062ms receive n5
+  net.Dropped #399 api.Lookup{Key "search", Id 137} from n3 to n5 (crashed)
+@2786.459ms receive n5
+  net.Dropped #401 api.Lookup{Key "home", Id 138} from n4 to n5 (crashed)
+@2800ms timer nobody
+  sim.Injected api.Get{Key "help", Id 140, Start 2800ms} into n1
+@2800ms deliver n1
+  net.Sent #403 api.Get{Key "help", Id 140, Start 2800ms} from n1 to n3
+@2803.183ms receive n2
+  net.Arrived #402 api.Get{Key "cart", Id 139, Start 2780ms} from n1 to n2
+  net.Sent #404 api.Lookup{Key "cart", Id 139} from n2 to n5
+@2815.517ms receive n5
+  net.Dropped #404 api.Lookup{Key "cart", Id 139} from n2 to n5 (crashed)
+@2818.918ms receive n3
+  net.Arrived #403 api.Get{Key "help", Id 140, Start 2800ms} from n1 to n3
+  net.Sent #405 api.Lookup{Key "help", Id 140} from n3 to n5
+@2820ms timer nobody
+  sim.Injected api.Get{Key "profile", Id 141, Start 2820ms} into n1
+@2820ms deliver n1
+  net.Sent #406 api.Get{Key "profile", Id 141, Start 2820ms} from n1 to n4
+@2833.128ms receive n4
+  net.Arrived #406 api.Get{Key "profile", Id 141, Start 2820ms} from n1 to n4
+  net.Sent #407 api.Lookup{Key "profile", Id 141} from n4 to n5
+@2840ms timer nobody
+  sim.Injected api.Get{Key "help", Id 142, Start 2840ms} into n1
+@2840ms deliver n1
+  net.Sent #408 api.Get{Key "help", Id 142, Start 2840ms} from n1 to n2
+@2842.465ms receive n5
+  net.Dropped #405 api.Lookup{Key "help", Id 140} from n3 to n5 (crashed)
+@2858.275ms receive n5
+  net.Dropped #407 api.Lookup{Key "profile", Id 141} from n4 to n5 (crashed)
+@2860ms timer nobody
+  sim.Injected api.Get{Key "home", Id 143, Start 2860ms} into n1
+@2860ms deliver n1
+  net.Sent #409 api.Get{Key "home", Id 143, Start 2860ms} from n1 to n3
+@2869.216ms receive n2
+  net.Arrived #408 api.Get{Key "help", Id 142, Start 2840ms} from n1 to n2
+  net.Sent #410 api.Lookup{Key "help", Id 142} from n2 to n5
+@2874.104ms receive n3
+  net.Arrived #409 api.Get{Key "home", Id 143, Start 2860ms} from n1 to n3
+  net.Sent #411 api.Lookup{Key "home", Id 143} from n3 to n5
+@2880ms timer nobody
+  sim.Injected api.Get{Key "search", Id 144, Start 2880ms} into n1
+@2880ms deliver n1
+  net.Sent #412 api.Get{Key "search", Id 144, Start 2880ms} from n1 to n4
+@2884.753ms receive n5
+  net.Dropped #411 api.Lookup{Key "home", Id 143} from n3 to n5 (crashed)
+@2892.43ms receive n5
+  net.Dropped #410 api.Lookup{Key "help", Id 142} from n2 to n5 (crashed)
+@2894.293ms receive n4
+  net.Arrived #412 api.Get{Key "search", Id 144, Start 2880ms} from n1 to n4
+  net.Sent #413 api.Lookup{Key "search", Id 144} from n4 to n5
+@2900ms timer nobody
+  sim.Injected api.Get{Key "home", Id 145, Start 2900ms} into n1
+@2900ms deliver n1
+  net.Sent #414 api.Get{Key "home", Id 145, Start 2900ms} from n1 to n2
+@2911.198ms receive n5
+  net.Dropped #413 api.Lookup{Key "search", Id 144} from n4 to n5 (crashed)
+@2913.648ms receive n2
+  net.Arrived #414 api.Get{Key "home", Id 145, Start 2900ms} from n1 to n2
+  net.Sent #415 api.Lookup{Key "home", Id 145} from n2 to n5
+@2920ms timer nobody
+  sim.Injected api.Get{Key "help", Id 146, Start 2920ms} into n1
+@2920ms deliver n1
+  net.Sent #416 api.Get{Key "help", Id 146, Start 2920ms} from n1 to n3
+@2932.213ms receive n3
+  net.Arrived #416 api.Get{Key "help", Id 146, Start 2920ms} from n1 to n3
+  net.Sent #417 api.Lookup{Key "help", Id 146} from n3 to n5
+@2940ms timer nobody
+  sim.Injected api.Get{Key "help", Id 147, Start 2940ms} into n1
+@2940ms deliver n1
+  net.Sent #418 api.Get{Key "help", Id 147, Start 2940ms} from n1 to n4
+@2942.638ms receive n5
+  net.Dropped #415 api.Lookup{Key "home", Id 145} from n2 to n5 (crashed)
+@2951.482ms receive n5
+  net.Dropped #417 api.Lookup{Key "help", Id 146} from n3 to n5 (crashed)
+@2960ms timer nobody
+  sim.Injected api.Get{Key "profile", Id 148, Start 2960ms} into n1
+@2960ms deliver n1
+  net.Sent #419 api.Get{Key "profile", Id 148, Start 2960ms} from n1 to n2
+@2967.283ms receive n4
+  net.Arrived #418 api.Get{Key "help", Id 147, Start 2940ms} from n1 to n4
+  net.Sent #420 api.Lookup{Key "help", Id 147} from n4 to n5
+@2980ms timer nobody
+  sim.Injected api.Get{Key "search", Id 149, Start 2980ms} into n1
+@2980ms deliver n1
+  net.Sent #421 api.Get{Key "search", Id 149, Start 2980ms} from n1 to n3
+@2982.252ms receive n2
+  net.Arrived #419 api.Get{Key "profile", Id 148, Start 2960ms} from n1 to n2
+  net.Sent #422 api.Lookup{Key "profile", Id 148} from n2 to n5
+@2988.838ms receive n5
+  net.Dropped #420 api.Lookup{Key "help", Id 147} from n4 to n5 (crashed)
+@2998.778ms receive n5
+  net.Dropped #422 api.Lookup{Key "profile", Id 148} from n2 to n5 (crashed)
+@3s timer nobody
+  sim.Injected api.Get{Key "search", Id 150, Start 3s} into n1
+@3s deliver n1
+  net.Sent #423 api.Get{Key "search", Id 150, Start 3s} from n1 to n4
+@3008.312ms receive n3
+  net.Arrived #421 api.Get{Key "search", Id 149, Start 2980ms} from n1 to n3
+  net.Sent #424 api.Lookup{Key "search", Id 149} from n3 to n5
+@3010.794ms receive n4
+  net.Arrived #423 api.Get{Key "search", Id 150, Start 3s} from n1 to n4
+  net.Sent #425 api.Lookup{Key "search", Id 150} from n4 to n5
+@3020.517ms receive n5
+  net.Dropped #424 api.Lookup{Key "search", Id 149} from n3 to n5 (crashed)
+@3031.281ms receive n5
+  net.Dropped #425 api.Lookup{Key "search", Id 150} from n4 to n5 (crashed)
+  sim.Ended empty
+final:
+  n1 up  lb.Backends {n2, n3, n4}
+  n2 up  app.Cache n5, app.Db n6
+  n3 up  app.Cache n5, app.Db n6
+  n4 up  app.Cache n5, app.Db n6
+  n5 down  cache.Entries {"cart": "row for cart", "help": "row for help", "home": "row for home", "profile": "row for profile", "search": "row for search"}
+  n6 up  db.Queries 9

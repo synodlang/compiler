@@ -5,7 +5,7 @@ use std/net
 use std/sim
 
 define main
-  sim.Seed 7
+  sim.Seed 105
   net.Latency between 10ms and 40ms
   set nodes to (sim.Cluster of 3 running paxos)
   paxos.Meet nodes

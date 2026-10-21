@@ -4,7 +4,7 @@ use std/lesson
 use std/sim
 
 define main
-  sim.Seed 4
+  sim.Seed 15
   set nodes to (sim.Cluster of 6 running gossip)
   each i, n in nodes
     if (i more than 0)

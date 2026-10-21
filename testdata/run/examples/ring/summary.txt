@@ -1,0 +1,32 @@
+run github.com/synodlang/examples/ring seed 1
+end: empty at 2s, 5 nodes, 7 steps, 20 events
+steps:
+@0s main
+  sim.Started
+  sim.Added n1 runs ring
+  sim.Added n2 runs ring
+  sim.Added n3 runs ring
+  sim.Added n4 runs ring
+  sim.Emitted ring.Placed{Key "ada", Owner n1} by nobody
+  sim.Emitted ring.Placed{Key "alan", Owner n4} by nobody
+  sim.Emitted ring.Placed{Key "bob", Owner n1} by nobody
+  sim.Emitted ring.Placed{Key "dave", Owner n4} by nobody
+  sim.Emitted ring.Placed{Key "grace", Owner n1} by nobody
+  sim.Emitted ring.Placed{Key "linus", Owner n1} by nobody
+@2s timer nobody
+  sim.Emitted lesson.Asked{Question "A fifth node joins the ring. How many keys move?"} by nobody
+  sim.Added n5 runs ring
+  sim.Emitted ring.Placed{Key "ada", Owner n1} by nobody
+  sim.Emitted ring.Placed{Key "alan", Owner n5} by nobody
+  sim.Emitted ring.Placed{Key "bob", Owner n1} by nobody
+  sim.Emitted ring.Placed{Key "dave", Owner n5} by nobody
+  sim.Emitted ring.Placed{Key "grace", Owner n1} by nobody
+  sim.Emitted ring.Placed{Key "linus", Owner n1} by nobody
+@2s start n5
+  sim.Ended empty
+final:
+  n1 up
+  n2 up
+  n3 up
+  n4 up
+  n5 up

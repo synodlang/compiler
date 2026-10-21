@@ -1,0 +1,133 @@
+run github.com/synodlang/examples/paxos seed 105
+end: empty at 134.285ms, 3 nodes, 37 steps, 90 events
+always:
+  holds          paxos/paxos.synod:109: always ((lists.Size ChosenValues) at most 1)
+steps:
+@0s main
+  sim.Started
+  sim.Added n1 runs paxos: paxos.Peers {}, paxos.Promised 0, paxos.AcceptedBallot 0, paxos.AcceptedValue "", paxos.Chosen ""
+  sim.Added n2 runs paxos: paxos.Peers {}, paxos.Promised 0, paxos.AcceptedBallot 0, paxos.AcceptedValue "", paxos.Chosen ""
+  sim.Added n3 runs paxos: paxos.Peers {}, paxos.Promised 0, paxos.AcceptedBallot 0, paxos.AcceptedValue "", paxos.Chosen ""
+  sim.Changed paxos.Peers of n1 from {} to {n1, n2, n3}
+  sim.Changed paxos.Peers of n2 from {} to {n1, n2, n3}
+  sim.Changed paxos.Peers of n3 from {} to {n1, n2, n3}
+  sim.Injected paxos.Start{Value "x"} into n1
+@0s deliver n1
+  net.Sent #1 paxos.Prepare{number 101} from n1 to n1
+  net.Sent #2 paxos.Prepare{number 101} from n1 to n2
+  net.Sent #3 paxos.Prepare{number 101} from n1 to n3
+@12.025ms receive n1
+  net.Arrived #1 paxos.Prepare{number 101} from n1 to n1
+  sim.Changed paxos.Promised of n1 from 0 to 101
+  net.Sent #4 paxos.Promise{number 101, prior 0, priorValue ""} from n1 to n1
+@13.534ms receive n3
+  net.Arrived #3 paxos.Prepare{number 101} from n1 to n3
+  sim.Changed paxos.Promised of n3 from 0 to 101
+  net.Sent #5 paxos.Promise{number 101, prior 0, priorValue ""} from n3 to n1
+@15ms timer nobody
+  sim.Injected paxos.Start{Value "y"} into n3
+  sim.Emitted lesson.Asked{Question "Two proposers are racing. Can both x and y be chosen?"} by nobody
+@15ms deliver n3
+  net.Sent #6 paxos.Prepare{number 103} from n3 to n1
+  net.Sent #7 paxos.Prepare{number 103} from n3 to n2
+  net.Sent #8 paxos.Prepare{number 103} from n3 to n3
+@16.899ms receive n2
+  net.Arrived #2 paxos.Prepare{number 101} from n1 to n2
+  sim.Changed paxos.Promised of n2 from 0 to 101
+  net.Sent #9 paxos.Promise{number 101, prior 0, priorValue ""} from n2 to n1
+@26.196ms receive n2
+  net.Arrived #7 paxos.Prepare{number 103} from n3 to n2
+  sim.Changed paxos.Promised of n2 from 101 to 103
+  net.Sent #10 paxos.Promise{number 103, prior 0, priorValue ""} from n2 to n3
+@37.062ms receive n1
+  net.Arrived #5 paxos.Promise{number 101, prior 0, priorValue ""} from n3 to n1
+@37.339ms receive n1
+  net.Arrived #6 paxos.Prepare{number 103} from n3 to n1
+  sim.Changed paxos.Promised of n1 from 101 to 103
+  net.Sent #11 paxos.Promise{number 103, prior 0, priorValue ""} from n1 to n3
+@39.177ms receive n1
+  net.Arrived #4 paxos.Promise{number 101, prior 0, priorValue ""} from n1 to n1
+  net.Sent #12 paxos.Accept{number 101, value "x"} from n1 to n1
+  net.Sent #13 paxos.Accept{number 101, value "x"} from n1 to n2
+  net.Sent #14 paxos.Accept{number 101, value "x"} from n1 to n3
+@45.965ms receive n1
+  net.Arrived #9 paxos.Promise{number 101, prior 0, priorValue ""} from n2 to n1
+@49.813ms receive n3
+  net.Arrived #14 paxos.Accept{number 101, value "x"} from n1 to n3
+  sim.Changed paxos.AcceptedBallot of n3 from 0 to 101
+  sim.Changed paxos.AcceptedValue of n3 from "" to "x"
+  net.Sent #15 paxos.Accepted{number 101, value "x"} from n3 to n1
+  net.Sent #16 paxos.Accepted{number 101, value "x"} from n3 to n2
+  net.Sent #17 paxos.Accepted{number 101, value "x"} from n3 to n3
+@50.032ms receive n2
+  net.Arrived #13 paxos.Accept{number 101, value "x"} from n1 to n2
+@50.24ms receive n3
+  net.Arrived #8 paxos.Prepare{number 103} from n3 to n3
+  sim.Changed paxos.Promised of n3 from 101 to 103
+  net.Sent #18 paxos.Promise{number 103, prior 101, priorValue "x"} from n3 to n3
+@50.671ms receive n3
+  net.Arrived #10 paxos.Promise{number 103, prior 0, priorValue ""} from n2 to n3
+@67.715ms receive n3
+  net.Arrived #18 paxos.Promise{number 103, prior 101, priorValue "x"} from n3 to n3
+  net.Sent #19 paxos.Accept{number 103, value "x"} from n3 to n1
+  net.Sent #20 paxos.Accept{number 103, value "x"} from n3 to n2
+  net.Sent #21 paxos.Accept{number 103, value "x"} from n3 to n3
+@69.025ms receive n3
+  net.Arrived #17 paxos.Accepted{number 101, value "x"} from n3 to n3
+@69.944ms receive n2
+  net.Arrived #16 paxos.Accepted{number 101, value "x"} from n3 to n2
+@70.58ms receive n1
+  net.Arrived #12 paxos.Accept{number 101, value "x"} from n1 to n1
+@74.711ms receive n3
+  net.Arrived #11 paxos.Promise{number 103, prior 0, priorValue ""} from n1 to n3
+@79.967ms receive n1
+  net.Arrived #15 paxos.Accepted{number 101, value "x"} from n3 to n1
+@85.01ms receive n3
+  net.Arrived #21 paxos.Accept{number 103, value "x"} from n3 to n3
+  sim.Changed paxos.AcceptedBallot of n3 from 101 to 103
+  net.Sent #22 paxos.Accepted{number 103, value "x"} from n3 to n1
+  net.Sent #23 paxos.Accepted{number 103, value "x"} from n3 to n2
+  net.Sent #24 paxos.Accepted{number 103, value "x"} from n3 to n3
+@87.398ms receive n1
+  net.Arrived #19 paxos.Accept{number 103, value "x"} from n3 to n1
+  sim.Changed paxos.AcceptedBallot of n1 from 0 to 103
+  sim.Changed paxos.AcceptedValue of n1 from "" to "x"
+  net.Sent #25 paxos.Accepted{number 103, value "x"} from n1 to n1
+  net.Sent #26 paxos.Accepted{number 103, value "x"} from n1 to n2
+  net.Sent #27 paxos.Accepted{number 103, value "x"} from n1 to n3
+@99.077ms receive n1
+  net.Arrived #25 paxos.Accepted{number 103, value "x"} from n1 to n1
+@102.011ms receive n2
+  net.Arrived #23 paxos.Accepted{number 103, value "x"} from n3 to n2
+@104.453ms receive n2
+  net.Arrived #26 paxos.Accepted{number 103, value "x"} from n1 to n2
+  sim.Changed paxos.Chosen of n2 from "" to "x"
+  sim.Emitted paxos.Learned{Value "x"} by n2
+@105.077ms receive n1
+  net.Arrived #22 paxos.Accepted{number 103, value "x"} from n3 to n1
+  sim.Changed paxos.Chosen of n1 from "" to "x"
+  sim.Emitted paxos.Learned{Value "x"} by n1
+@105.38ms receive n2
+  net.Arrived #20 paxos.Accept{number 103, value "x"} from n3 to n2
+  sim.Changed paxos.AcceptedBallot of n2 from 0 to 103
+  sim.Changed paxos.AcceptedValue of n2 from "" to "x"
+  net.Sent #28 paxos.Accepted{number 103, value "x"} from n2 to n1
+  net.Sent #29 paxos.Accepted{number 103, value "x"} from n2 to n2
+  net.Sent #30 paxos.Accepted{number 103, value "x"} from n2 to n3
+@108.453ms receive n3
+  net.Arrived #27 paxos.Accepted{number 103, value "x"} from n1 to n3
+@111.354ms receive n3
+  net.Arrived #24 paxos.Accepted{number 103, value "x"} from n3 to n3
+  sim.Changed paxos.Chosen of n3 from "" to "x"
+  sim.Emitted paxos.Learned{Value "x"} by n3
+@116.664ms receive n2
+  net.Arrived #29 paxos.Accepted{number 103, value "x"} from n2 to n2
+@117.695ms receive n3
+  net.Arrived #30 paxos.Accepted{number 103, value "x"} from n2 to n3
+@134.285ms receive n1
+  net.Arrived #28 paxos.Accepted{number 103, value "x"} from n2 to n1
+  sim.Ended empty
+final:
+  n1 up  paxos.Peers {n1, n2, n3}, paxos.Promised 103, paxos.AcceptedBallot 103, paxos.AcceptedValue "x", paxos.Chosen "x"
+  n2 up  paxos.Peers {n1, n2, n3}, paxos.Promised 103, paxos.AcceptedBallot 103, paxos.AcceptedValue "x", paxos.Chosen "x"
+  n3 up  paxos.Peers {n1, n2, n3}, paxos.Promised 103, paxos.AcceptedBallot 103, paxos.AcceptedValue "x", paxos.Chosen "x"

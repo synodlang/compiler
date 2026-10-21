@@ -1,5 +1,5 @@
 # package sim
-# Seed the run's PRNG (default 1)
+# Sets the seed of the run's PRNG; `n` is a whole number from 0 to 2^53, otherwise `bad-argument`. The `--seed` flag, when given, wins over `sim.Seed`; without either the seed is 1. The trace header records the seed in force when `define main` returns.
 define Seed [n: number] native "sim.seed"
 
 # End the run at simulated time `t`

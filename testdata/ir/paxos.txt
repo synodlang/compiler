@@ -3,7 +3,7 @@
   (main "main"
     (vars (0 nodes local list of paxos.Node))
     (body
-      (native "sim.seed" 7)
+      (native "sim.seed" 105)
       (native "net.latency" (time 10000) (time 40000))
       (set nodes#0 (native "sim.cluster" 3 (package "github.com/synodlang/examples/paxos")))
       (call "paxos.Meet" nodes#0)

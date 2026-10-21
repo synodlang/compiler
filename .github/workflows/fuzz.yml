@@ -65,3 +65,17 @@ jobs:
           name: check-crashers
           path: internal/driver/testdata/fuzz
           if-no-files-found: ignore
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: go test ./internal/runtest -run '^$' -fuzz '^FuzzRun$' -fuzztime 10m
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: run-crashers
+          path: internal/runtest/testdata/fuzz
+          if-no-files-found: ignore

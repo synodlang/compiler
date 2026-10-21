@@ -109,3 +109,56 @@ jobs:
         env:
           SYNOD_DSL: ${{ github.workspace }}/_dsl
           SYNOD_REQUIRE_DSL: "1"
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Build for WebAssembly
+        run: go build ./...
+        env:
+          GOOS: js
+          GOARCH: wasm
+
+  trace-hashes:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux
+            os: ubuntu-latest
+          - name: macos
+            os: macos-latest
+          - name: windows
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Hash the example traces
+        run: go test ./internal/runtest -run TestTraceHashes -count=1
+        env:
+          SYNOD_HASHES_OUT: ${{ github.workspace }}/hashes.txt
+      - uses: actions/upload-artifact@v7
+        with:
+          name: hashes-${{ matrix.name }}
+          path: hashes.txt
+
+  trace-hashes-compare:
+    needs: trace-hashes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: hashes-*
+          path: hashes
+      - name: Traces are byte-identical on Linux, macOS and Windows
+        run: |
+          wc -l hashes/hashes-*/hashes.txt
+          diff hashes/hashes-linux/hashes.txt hashes/hashes-macos/hashes.txt
+          diff hashes/hashes-linux/hashes.txt hashes/hashes-windows/hashes.txt

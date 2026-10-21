@@ -1,0 +1,17 @@
+run example.com/t/p seed 5
+end: empty at 22.315ms, 1 nodes, 4 steps, 7 events
+always:
+  holds          p/p.synod:18: always (1 is 1)
+steps:
+@0s main
+  sim.Started
+  sim.Added n1 runs p: p.Got 0
+  sim.Injected p.Ping{n 0} into n1
+@0s deliver n1
+  net.Sent #1 p.Ping{n 1} from n1 to n1
+@22.315ms receive n1
+  net.Arrived #1 p.Ping{n 1} from n1 to n1
+  sim.Changed p.Got of n1 from 0 to 670.7659733947366
+  sim.Ended empty
+final:
+  n1 up  p.Got 670.7659733947366

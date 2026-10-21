@@ -1,0 +1,9 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  sim.Seed 1
+  set nodes to (sim.Cluster of 6 running p)
+  p.Meet nodes
+  sim.StopAt 30s

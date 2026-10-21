@@ -6,7 +6,7 @@ use std/lesson
 use std/sim
 
 define main
-  sim.Seed 5
+  sim.Seed 4
   set nodes to (sim.Cluster of 6 running cassandra)
   each i, n in nodes
     if (i more than 0)

@@ -5,6 +5,47 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+`synod run` simulates a program deterministically and writes its trace.
+
+### Added
+
+- `synod run <folder>` checks the folder's main file and runs it in the
+  deterministic simulator: simulated time, nodes with crash and restart,
+  a network with latency, loss, partitions and targeted drops, per-node
+  disk, and the `always` invariants checked after every step. It writes
+  `out/trace.jsonl` (`synod-trace/1`) and prints one status line. The same
+  program and seed give a byte-identical trace on every platform.
+- `--seed n` (or `--seed=n`, a whole number from 0 to 2^53) replaces the
+  seed of the run; it wins over `sim.Seed`. Without either the seed is 1.
+- `--trace file` chooses the trace file (parents are created); `--trace -`
+  writes the trace to stdout and the status line to stderr.
+- `--summary` prints a compact text summary of the run (steps that
+  recorded facts, invariant results, final state of every node) instead of
+  the status line, for agents.
+- Every native phrase of the std catalog works: `sim`, `net`, `time`,
+  `random`, `lists`, `maps`, `math`, `text`, `disk`. The `look` phrases and
+  the observers wait for a later release; `--scene`, `--pace`, `--mode`,
+  `--watch` and `--json-events` are recognized and exit 2 with
+  `not implemented yet`.
+- Run-time errors, reported as the last `sim.Failed` line of the trace,
+  `failed at <time>: <pos>: error[<code>]: <message>` and exit 1:
+  `missing-key`, `index-range`, `division-by-zero`, `nobody`, `disk-type`,
+  `time-limit` (10 minutes of simulated time), `bad-argument`,
+  `number-range` and `run-limit` (steps at one instant, call depth,
+  collection size).
+- Exit codes of `synod run`: 0 for a run that ended (also when an `always`
+  broke, which is a result, not an error), 1 for diagnostics or a failed
+  run, 2 for usage and I/O errors.
+
+### Changed
+
+- `sim.Seed` and `math.Hash` are specified completely in the std catalog
+  (domain and precedence of the seed; the exact FNV-1a based hash).
+- Demo seeds that did not tell their story under the final simulator
+  semantics were changed (gossip 15, paxos 105, twopc 1, cassandra 4) and
+  the ring demo places other keys; see "Notes for implementers" in the
+  examples.
+
 ## v0.2.0 — 2026-10-21
 
 `synod check` now understands whole programs: it loads modules, finds the

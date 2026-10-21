@@ -1,0 +1,21 @@
+{"format":"synod-trace/1","synod":"0.2","seed":1,"program":"github.com/synodlang/examples/ring","packages":["github.com/synodlang/examples/ring","github.com/synodlang/examples/ringlook","std/lesson","std/lists","std/look","std/maps","std/math","std/sim","std/text","std/theme"]}
+{"seq":1,"t":0,"ev":"sim.Started"}
+{"seq":2,"t":0,"ev":"sim.Added","node":"n1","runs":["std/lists","std/maps","std/math","std/sim","std/text","github.com/synodlang/examples/ring"],"state":{}}
+{"seq":3,"t":0,"ev":"sim.Added","node":"n2","runs":["std/lists","std/maps","std/math","std/sim","std/text","github.com/synodlang/examples/ring"],"state":{}}
+{"seq":4,"t":0,"ev":"sim.Added","node":"n3","runs":["std/lists","std/maps","std/math","std/sim","std/text","github.com/synodlang/examples/ring"],"state":{}}
+{"seq":5,"t":0,"ev":"sim.Added","node":"n4","runs":["std/lists","std/maps","std/math","std/sim","std/text","github.com/synodlang/examples/ring"],"state":{}}
+{"seq":6,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"ada","Owner":{"node":"n1"}}}}
+{"seq":7,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"alan","Owner":{"node":"n4"}}}}
+{"seq":8,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"bob","Owner":{"node":"n1"}}}}
+{"seq":9,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"dave","Owner":{"node":"n4"}}}}
+{"seq":10,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"grace","Owner":{"node":"n1"}}}}
+{"seq":11,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"linus","Owner":{"node":"n1"}}}}
+{"seq":12,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"lesson.Asked","fields":{"Question":"A fifth node joins the ring. How many keys move?"}}}
+{"seq":13,"t":2000000,"ev":"sim.Added","node":"n5","runs":["std/lists","std/maps","std/math","std/sim","std/text","github.com/synodlang/examples/ring"],"state":{}}
+{"seq":14,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"ada","Owner":{"node":"n1"}}}}
+{"seq":15,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"alan","Owner":{"node":"n5"}}}}
+{"seq":16,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"bob","Owner":{"node":"n1"}}}}
+{"seq":17,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"dave","Owner":{"node":"n5"}}}}
+{"seq":18,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"grace","Owner":{"node":"n1"}}}}
+{"seq":19,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"linus","Owner":{"node":"n1"}}}}
+{"seq":20,"t":2000000,"ev":"sim.Ended","reason":"empty"}
