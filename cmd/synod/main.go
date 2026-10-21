@@ -20,7 +20,7 @@ const usage = `usage: synod <command> [arguments]
 commands:
   fmt [paths...] [--check] [--style rich|short] [--color auto|always|never]
   check [paths...] [--json] [--tokens] [--style rich|short] [--color auto|always|never]
-  run <folder> [--seed n] [--trace file] [--summary] [--style rich|short] [--color auto|always|never]
+  run <folder> [--seed n] [--trace file] [--scene file] [--pace x] [--mode m] [--summary] [--style rich|short] [--color auto|always|never]
   version
 `
 

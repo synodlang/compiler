@@ -5,3 +5,4 @@ failed at 0s: p/main.synod:7:29: error[index-range]: index 3 is out of range for
   |                                  - index 3
   |
   = note: valid indexes are 0 to 2
+scene 30ms, 1 shapes -> out/scene.json

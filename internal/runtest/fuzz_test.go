@@ -10,7 +10,9 @@ import (
 	"testing"
 
 	"github.com/synodlang/compiler/internal/driver"
+	"github.com/synodlang/compiler/internal/ir"
 	"github.com/synodlang/compiler/internal/load"
+	"github.com/synodlang/compiler/internal/scene"
 	"github.com/synodlang/compiler/internal/sim"
 	"github.com/synodlang/compiler/internal/trace"
 )
@@ -24,12 +26,12 @@ const (
 
 // runMap checks the module in fsys (rooted at /m) for the target folder and,
 // if it checks clean and has a main file, runs it twice with limits. It
-// asserts the properties of plan 5.8: no panic (a panic fails the caller), the
+// asserts the properties of plan 5.8 (and, for the scene, M5 5.5): no panic (a panic fails the caller), the
 // trace encodes, the second run is byte-identical, every line is a JSON
 // object and seq increases. It reports whether the program checked and ran.
 func runMap(t testing.TB, fsys load.MapFS, target string) (ran bool, diags string) {
 	t.Helper()
-	res := driver.Check(driver.Options{Load: load.Config{FS: fsys}}, []string{target})
+	res := driver.Check(driver.Options{Load: load.Config{FS: fsys}, DefaultLook: true}, []string{target})
 	if len(res.Diags) > 0 || res.Graph == nil {
 		var b strings.Builder
 		for _, d := range res.Diags {
@@ -48,7 +50,11 @@ func runMap(t testing.TB, fsys load.MapFS, target string) (ran bool, diags strin
 		return false, "no main program"
 	}
 	o := trace.Options{Paths: trace.FilePaths(res.Graph), Qual: trace.Qualifiers(prog)}
-	var out [2][]byte
+	var look *ir.Program
+	if !scene.UsesLook(prog) {
+		look = res.Programs[driver.DefaultLookPath]
+	}
+	var out, scenes [2][]byte
 	for i := range out {
 		r := sim.Run(prog, sim.Options{MaxSteps: fuzzMaxSteps, TimeLimit: fuzzTimeLimit})
 		var b bytes.Buffer
@@ -56,6 +62,8 @@ func runMap(t testing.TB, fsys load.MapFS, target string) (ran bool, diags strin
 			t.Fatalf("encode: %v", err)
 		}
 		out[i] = b.Bytes()
+		sc, fl := scene.Build(scene.Input{Prog: prog, Look: look, Facts: r.Facts, Trace: o}, scene.Options{})
+		scenes[i] = checkGeneratedScene(t, sc, fl, r.Facts)
 		if r.Failed != nil && r.Facts[len(r.Facts)-1].Ev != "sim.Failed" {
 			t.Fatalf("failure %v is not the last fact", r.Failed)
 		}
@@ -63,8 +71,52 @@ func runMap(t testing.TB, fsys load.MapFS, target string) (ran bool, diags strin
 	if !bytes.Equal(out[0], out[1]) {
 		t.Fatalf("two runs differ")
 	}
+	if !bytes.Equal(scenes[0], scenes[1]) {
+		t.Fatalf("two scenes differ")
+	}
 	checkTrace(t, out[0])
 	return true, ""
+}
+
+// lookFaults counts the look faults seen by checkGeneratedScene.
+var lookFaults int
+
+// checkGeneratedScene checks a scene built for a fuzzed or generated program:
+// it encodes, obeys the invariants of the format and respects the slot rules;
+// a look fault leaves a partial scene with a failed marker. It returns the
+// encoded scene.
+func checkGeneratedScene(t testing.TB, sc *trace.Scene, fl *scene.Failure, facts []trace.Fact) []byte {
+	t.Helper()
+	var b bytes.Buffer
+	if err := trace.EncodeScene(&b, sc); err != nil {
+		t.Fatalf("scene does not encode: %v", err)
+	}
+	if !json.Valid(b.Bytes()) {
+		t.Fatalf("scene.json is not valid JSON")
+	}
+	if fl != nil {
+		lookFaults++
+		failed := false
+		for _, m := range sc.Markers {
+			failed = failed || m.Kind == "failed"
+		}
+		if !failed || fl.Fault == nil {
+			t.Fatalf("look failure without a failed marker")
+		}
+		return b.Bytes()
+	}
+	checkSceneInvariants(t, sc, facts)
+	// Rules 1 to 4: the first fact is at 0, slots never go back and each
+	// later slot is at least 30ms after the previous one in ordered mode.
+	for i, e := range sc.Slots {
+		if i == 0 && e.At != 0 {
+			t.Fatalf("first slot at %d", e.At)
+		}
+		if i > 1 && e.At < sc.Slots[i-1].At+30 {
+			t.Fatalf("slot %d at %d, previous at %d", i, e.At, sc.Slots[i-1].At)
+		}
+	}
+	return b.Bytes()
 }
 
 // checkTrace checks that every line is a JSON object, the first is the

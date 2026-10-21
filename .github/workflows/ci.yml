@@ -140,7 +140,7 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-      - name: Hash the example traces
+      - name: Hash the example traces and scenes
         run: go test ./internal/runtest -run TestTraceHashes -count=1
         env:
           SYNOD_HASHES_OUT: ${{ github.workspace }}/hashes.txt
@@ -157,7 +157,7 @@ jobs:
         with:
           pattern: hashes-*
           path: hashes
-      - name: Traces are byte-identical on Linux, macOS and Windows
+      - name: Traces and scenes are byte-identical on Linux, macOS and Windows
         run: |
           wc -l hashes/hashes-*/hashes.txt
           diff hashes/hashes-linux/hashes.txt hashes/hashes-macos/hashes.txt

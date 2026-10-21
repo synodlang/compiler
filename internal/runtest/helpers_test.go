@@ -12,6 +12,7 @@ import (
 	"github.com/synodlang/compiler/internal/driver"
 	"github.com/synodlang/compiler/internal/ir"
 	"github.com/synodlang/compiler/internal/load"
+	"github.com/synodlang/compiler/internal/scene"
 	"github.com/synodlang/compiler/internal/sim"
 	"github.com/synodlang/compiler/internal/trace"
 )
@@ -26,6 +27,7 @@ type program struct {
 	Name  string
 	IPath string
 	Prog  *ir.Program
+	Look  *ir.Program // the default look, nil when Prog brings its own
 	Graph *load.Graph
 }
 
@@ -43,7 +45,7 @@ func check(t testing.TB, root string) map[string]*program {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res := driver.Check(driver.Options{}, targets)
+	res := driver.Check(driver.Options{DefaultLook: true}, targets)
 	if len(res.Diags) > 0 {
 		var b strings.Builder
 		for _, d := range res.Diags {
@@ -58,7 +60,11 @@ func check(t testing.TB, root string) map[string]*program {
 		}
 		ip := strings.TrimSuffix(k, "#main")
 		name := ip[strings.LastIndex(ip, "/")+1:]
-		out[name] = &program{Name: name, IPath: ip, Prog: p, Graph: res.Graph}
+		pr := &program{Name: name, IPath: ip, Prog: p, Graph: res.Graph}
+		if !scene.UsesLook(p) {
+			pr.Look = res.Programs[driver.DefaultLookPath]
+		}
+		out[name] = pr
 	}
 	return out
 }
@@ -108,6 +114,42 @@ func (p *program) encode(t testing.TB, r *sim.Result) []byte {
 		t.Fatal(err)
 	}
 	return []byte(b.String())
+}
+
+// scene builds the scene of the facts at the default pace and mode.
+func (p *program) scene(t testing.TB, facts []trace.Fact) (*trace.Scene, *scene.Failure) {
+	t.Helper()
+	return p.sceneWith(t, facts, scene.Options{})
+}
+
+func (p *program) sceneWith(t testing.TB, facts []trace.Fact, o scene.Options) (*trace.Scene, *scene.Failure) {
+	t.Helper()
+	return scene.Build(scene.Input{Prog: p.Prog, Look: p.Look, Facts: facts, Trace: p.opts()}, o)
+}
+
+// encodeScene renders a scene as scene.json.
+func encodeScene(t testing.TB, sc *trace.Scene) []byte {
+	t.Helper()
+	var b strings.Builder
+	if err := trace.EncodeScene(&b, sc); err != nil {
+		t.Fatal(err)
+	}
+	return []byte(b.String())
+}
+
+// sceneBytes runs the program with the seed and returns its scene.json; the
+// run and the look must not fail.
+func (p *program) sceneBytes(t testing.TB, seed *uint64) []byte {
+	t.Helper()
+	r := p.run(seed)
+	if r.Failed != nil {
+		t.Fatalf("failed: %v", r.Failed)
+	}
+	sc, fl := p.scene(t, r.Facts)
+	if fl != nil {
+		t.Fatalf("look failed at fact %d: %s", fl.Seq, fl.Fault.Error())
+	}
+	return encodeScene(t, sc)
 }
 
 // summary renders the --summary text of the result.

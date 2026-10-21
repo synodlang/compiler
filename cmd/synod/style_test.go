@@ -226,7 +226,8 @@ func TestFmtDetectsStderr(t *testing.T) {
 }
 
 func TestRunTraceDashFailureRendersOnStderr(t *testing.T) {
-	folder := "../../testdata/run/errors/division-by-zero/number/p"
+	folder, _ := filepath.Abs("../../testdata/run/errors/division-by-zero/number/p")
+	chdir(t, t.TempDir())
 	var o, e bytes.Buffer
 	onlyTTY(t, &e)
 	code := run([]string{"run", folder, "--trace", "-", "--color", "never"}, strings.NewReader(""), &o, &e)
@@ -246,7 +247,9 @@ func TestRunTraceDashFailureRendersOnStderr(t *testing.T) {
 // and compares stderr (the status stream with --trace -) with
 // expect-rich.txt.
 func TestRunErrorsRich(t *testing.T) {
-	root := "../../testdata/run/errors"
+	root, _ := filepath.Abs("../../testdata/run/errors")
+	root = filepath.ToSlash(root)
+	chdir(t, t.TempDir())
 	n := 0
 	err := filepath.WalkDir(root, func(p string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() || d.Name() != "expect.txt" {

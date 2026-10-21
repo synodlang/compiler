@@ -191,3 +191,72 @@ func TestGeneratedPrograms(t *testing.T) {
 		}
 	}
 }
+
+// lookStmt returns one random look statement over the shapes card (a card)
+// and c (a circle) and the node n. Some of them fault on purpose.
+func (g *gen) lookStmt() string {
+	return g.pick(
+		"look.Fill card with theme."+g.pick("Accent", "Good", "Critical", "Quiet"),
+		"look.Stroke c with theme."+g.pick("Ink", "Line", "Warning"),
+		fmt.Sprintf("look.Tween %s of card to %s over %s", g.pick(`"x"`, `"y"`, `"opacity"`, `"scale"`, `"rotation"`, `"nope"`), g.pick("0", "1", "-1", "0.5", "300", "900", "2"), g.dur()),
+		"look.Tween \"x\" of c to card over "+g.dur(),
+		"look.Fade card to "+g.pick("0", "1", "0.5", "2", "-1"),
+		"look.Pulse c",
+		"look.Effect "+g.pick(`"glow"`, `"blur"`, `"trail"`, `"nope"`)+" on card",
+		"look.Layout "+g.pick(`"ring"`, `"row"`, `"grid"`, `"nope"`),
+		"look.Place c "+g.pick("above", "below", "beside")+" card",
+		"look.Place card "+g.pick("above", "below", "beside")+" c",
+		"look.Remove c",
+		"look.Orbit c around card at "+g.pick("0", "0.25", "1.5"),
+		"draw (look.Label \"t\") as c for \"c\"",
+		"draw (look.Circle "+g.pick("4", "0", "-1", "30")+") as c2\n    look.Place c2 above c",
+		"draw (look.Line from c to card) as ln",
+		"look.Fill (card of \"nope\") with theme.Accent",
+	)
+}
+
+// lookPackage builds a look with random statements, in the shapes of the
+// default look: cards for nodes, a circle per message that flies.
+func (g *gen) lookPackage() string {
+	var b strings.Builder
+	b.WriteString("# package lk\nuse example.com/g/p\nuse std/look\nuse std/net\nuse std/sim\nuse std/theme\n\n")
+	b.WriteString("when (sim.Added n)\n  draw (look.Card for n) as card for n\n  draw (look.Circle 5) as c\n")
+	for i := 0; i < g.r.Intn(4); i++ {
+		b.WriteString("  " + g.lookStmt() + "\n")
+	}
+	b.WriteString("\nwhen (sim.Crashed n)\n  look.Fill (card of n) with theme.Quiet\n")
+	b.WriteString("\nwhen (net.Sent m from a to b)\n  draw (look.Circle 6) as dot for (net.Id m)\n  look.Flight dot from (card of a) to (card of b) for m\n")
+	if g.r.Intn(2) == 0 {
+		b.WriteString("\nwhen (net.Arrived m from a to b)\n  look.Remove (dot of (net.Id m))\n")
+	}
+	b.WriteString("\nwhen (sim.Emitted p.R by who)\n  draw (look.Circle 2) as c\n  draw (look.Rect 40 by 20) as card\n  " + g.lookStmt() + "\n")
+	return b.String()
+}
+
+// TestGeneratedLooks runs generated programs with generated looks: no panic,
+// scenes that encode, are stable and obey the invariants, or a look failure
+// with a partial scene.
+func TestGeneratedLooks(t *testing.T) {
+	g := &gen{r: rand.New(rand.NewSource(20260101))}
+	ran := 0
+	lookFaults = 0
+	for i := 0; i < 300; i++ {
+		src := strings.Replace(g.program(), "use example.com/g/p\n", "use example.com/g/lk\nuse example.com/g/p\n", 1)
+		lk := g.lookPackage()
+		fsys := load.MapFS{
+			"/m/synod.mod":       "module example.com/g\nsynod 0.2\n",
+			"/m/p/p.synod":       genLib,
+			"/m/lk/lk.synod":     lk,
+			"/m/main/main.synod": src,
+		}
+		ok, d := runMap(t, fsys, "/m/main")
+		if !ok {
+			t.Fatalf("program %d does not check:\n%s\n%s\n%s", i, src, lk, d)
+		}
+		ran++
+	}
+	t.Logf("%d programs with looks ran, %d look faults in the runs", ran, lookFaults)
+	if lookFaults == 0 {
+		t.Error("no generated look faulted")
+	}
+}

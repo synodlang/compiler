@@ -10,7 +10,9 @@ import (
 	"strings"
 
 	"github.com/synodlang/compiler/internal/driver"
+	"github.com/synodlang/compiler/internal/ir"
 	"github.com/synodlang/compiler/internal/render"
+	"github.com/synodlang/compiler/internal/scene"
 	"github.com/synodlang/compiler/internal/sim"
 	"github.com/synodlang/compiler/internal/source"
 	"github.com/synodlang/compiler/internal/trace"
@@ -26,22 +28,49 @@ const maxSeed = 1 << 53
 // defaultTrace is where the trace goes without --trace.
 const defaultTrace = "out/trace.jsonl"
 
+// defaultScene is where the scene goes without --scene.
+const defaultScene = "out/scene.json"
+
 // runArgs are the parsed arguments of `synod run`.
 type runArgs struct {
 	folder  string
 	seed    *uint64
 	trace   string
+	scene   string
+	pace    int // thousandths
+	mode    scene.Mode
 	summary bool
 	style   styleFlags
 }
 
 // notYet are the flags of later milestones: recognized and rejected.
-var notYet = map[string]bool{"scene": true, "pace": true, "mode": true, "watch": true, "json-events": true}
+var notYet = map[string]bool{"watch": true, "json-events": true}
+
+// parsePace reads a decimal number of at most three fraction digits from 0.25
+// to 4 as thousandths.
+func parsePace(v string) (int, bool) {
+	whole, frac, dot := strings.Cut(v, ".")
+	if len(whole) != 1 || len(frac) > 3 || dot && frac == "" {
+		return 0, false
+	}
+	for _, part := range []string{whole, frac} {
+		for _, c := range part {
+			if c < '0' || c > '9' {
+				return 0, false
+			}
+		}
+	}
+	n := int(whole[0]-'0') * 1000
+	for i := 0; i < len(frac); i++ {
+		n += int(frac[i]-'0') * [3]int{100, 10, 1}[i]
+	}
+	return n, n >= 250 && n <= 4000
+}
 
 // parseRunArgs parses `synod run` arguments: one folder, --seed (n or =n),
 // --trace (file or =file) and --summary, in any order. "--" ends the flags.
 func parseRunArgs(args []string) (runArgs, error) {
-	ra := runArgs{trace: defaultTrace}
+	ra := runArgs{trace: defaultTrace, scene: defaultScene, pace: 1000}
 	var pos []string
 	flags := true
 	for i := 0; i < len(args); i++ {
@@ -109,6 +138,38 @@ func parseRunArgs(args []string) (runArgs, error) {
 				return ra, fmt.Errorf("--trace needs a file name")
 			}
 			ra.trace = v
+		case name == "scene":
+			v, err := value()
+			if err != nil {
+				return ra, err
+			}
+			if v == "" {
+				return ra, fmt.Errorf("--scene needs a file name")
+			}
+			ra.scene = v
+		case name == "pace":
+			v, err := value()
+			if err != nil {
+				return ra, err
+			}
+			n, ok := parsePace(v)
+			if !ok {
+				return ra, fmt.Errorf("--pace needs a number from 0.25 to 4, not %q", v)
+			}
+			ra.pace = n
+		case name == "mode":
+			v, err := value()
+			if err != nil {
+				return ra, err
+			}
+			switch v {
+			case "ordered":
+				ra.mode = scene.Ordered
+			case "proportional":
+				ra.mode = scene.Proportional
+			default:
+				return ra, fmt.Errorf("--mode needs ordered or proportional, not %q", v)
+			}
 		default:
 			return ra, fmt.Errorf("unknown flag %q", a)
 		}
@@ -120,6 +181,9 @@ func parseRunArgs(args []string) (runArgs, error) {
 		ra.folder = pos[0]
 	default:
 		return ra, fmt.Errorf("takes exactly one folder, got %d", len(pos))
+	}
+	if ra.trace == "-" && ra.scene == "-" {
+		return ra, fmt.Errorf("--trace and --scene cannot both be \"-\"")
 	}
 	return ra, nil
 }
@@ -147,7 +211,7 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 		return exitUsage
 	}
 	folder := filepath.ToSlash(filepath.Clean(ra.folder))
-	res := driver.Check(driver.Options{}, []string{folder})
+	res := driver.Check(driver.Options{DefaultLook: true}, []string{folder})
 	if diags := userDiags(res); len(diags) > 0 {
 		if err := writeDiags(stdout, diags, ra.style, &sources{known: res.Sources}); err != nil {
 			fmt.Fprintf(stderr, "synod run: %v\n", err)
@@ -184,24 +248,28 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 		fmt.Fprintf(stderr, "synod run: %v\n", err)
 		return exitUsage
 	}
+	var look *ir.Program
+	if !scene.UsesLook(prog) {
+		look = res.Programs[driver.DefaultLookPath]
+	}
+	sc, lfail := scene.Build(scene.Input{Prog: prog, Look: look, Facts: r.Facts, Trace: topts},
+		scene.Options{Pace: ra.pace, Mode: ra.mode})
+	var sbuf bytes.Buffer
+	if err := trace.EncodeScene(&sbuf, sc); err != nil {
+		fmt.Fprintf(stderr, "synod run: %v\n", err)
+		return exitUsage
+	}
 	status := stdout
-	if ra.trace == "-" {
+	if ra.trace == "-" || ra.scene == "-" {
 		status = stderr
-		if _, err := stdout.Write(buf.Bytes()); err != nil {
-			fmt.Fprintf(stderr, "synod run: %v\n", err)
-			return exitUsage
-		}
-	} else {
-		if dir := filepath.Dir(ra.trace); dir != "." {
-			if err := os.MkdirAll(dir, 0o755); err != nil {
-				fmt.Fprintf(stderr, "synod run: %v\n", err)
-				return exitUsage
-			}
-		}
-		if err := os.WriteFile(ra.trace, buf.Bytes(), 0o644); err != nil {
-			fmt.Fprintf(stderr, "synod run: %v\n", err)
-			return exitUsage
-		}
+	}
+	if err := writeOut(ra.trace, buf.Bytes(), stdout); err != nil {
+		fmt.Fprintf(stderr, "synod run: %v\n", err)
+		return exitUsage
+	}
+	if err := writeOut(ra.scene, sbuf.Bytes(), stdout); err != nil {
+		fmt.Fprintf(stderr, "synod run: %v\n", err)
+		return exitUsage
 	}
 
 	if ra.summary {
@@ -217,10 +285,54 @@ func runRun(args []string, stdout, stderr io.Writer) (code int) {
 	} else {
 		writeStatus(status, ra, r, topts, res.Sources)
 	}
+	if lfail != nil {
+		writeLookFailure(status, ra, lfail, topts, res.Sources)
+		return exitDiags
+	}
+	if !ra.summary {
+		dest := ra.scene
+		if dest == "-" {
+			dest = "stdout"
+		}
+		fmt.Fprintf(status, "scene %s, %d shapes -> %s\n", value.FormatTime(sc.Duration*1000), len(sc.Shapes), dest)
+	}
 	if r.Failed != nil {
 		return exitDiags
 	}
 	return exitOK
+}
+
+// writeOut writes data to the file, creating its folders, or to stdout for "-".
+func writeOut(path string, data []byte, stdout io.Writer) error {
+	if path == "-" {
+		_, err := stdout.Write(data)
+		return err
+	}
+	if dir := filepath.Dir(path); dir != "." {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+	}
+	return os.WriteFile(path, data, 0o644)
+}
+
+// writeLookFailure prints the failure of a look in place of the scene line.
+func writeLookFailure(w io.Writer, ra runArgs, lf *scene.Failure, o trace.Options, known map[string]*source.File) {
+	line := "look " + trace.FailedLine(lf.Fault, lf.T, o)
+	rich, color := ra.style.resolve(w)
+	if !rich {
+		fmt.Fprintln(w, line)
+		return
+	}
+	alias := map[string]string{}
+	for display, tp := range o.Paths {
+		alias[tp] = display
+	}
+	src := &sources{known: known, alias: alias}
+	d := trace.FaultDiagnostic(lf.Fault, o)
+	if err := render.Write(w, d, render.Options{Color: color, Source: src.get, Header: line}); err != nil {
+		fmt.Fprintln(w, line)
+	}
 }
 
 // writeStatus prints the status line and one line per broken always.

@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -67,5 +68,43 @@ func TestRealSyntaxErrorUntouched(t *testing.T) {
 	}
 	if read(t, p) != src {
 		t.Error("file changed")
+	}
+}
+
+// TestRunExamples runs every example through the CLI: the status line gets a
+// scene line, --summary is byte-identical to the golden summary, and the
+// scene file is written both ways.
+func TestRunExamples(t *testing.T) {
+	root, _ := filepath.Abs(examples)
+	root = filepath.ToSlash(root)
+	golden, _ := filepath.Abs("../../testdata/run/examples")
+	dirs, err := os.ReadDir(golden)
+	if err != nil || len(dirs) != 9 {
+		t.Fatalf("goldens: %v, %d", err, len(dirs))
+	}
+	for _, d := range dirs {
+		name := d.Name()
+		t.Run(name, func(t *testing.T) {
+			chdir(t, t.TempDir())
+			code, stdout, stderr := exec("run", root+"/"+name, "--style", "short")
+			if code != 0 || stderr != "" {
+				t.Fatalf("exit %d: %s%s", code, stdout, stderr)
+			}
+			if !regexp.MustCompile(`\nscene [0-9.]+m?s, [1-9]\d* shapes -> out/scene\.json\n$`).MatchString(stdout) {
+				t.Errorf("stdout %q", stdout)
+			}
+			want := read(t, filepath.Join(golden, name, "scene.json"))
+			if got := read(t, "out/scene.json"); got != want {
+				t.Errorf("scene differs from the golden")
+			}
+			os.RemoveAll("out")
+			code, stdout, _ = exec("run", root+"/"+name, "--summary")
+			if code != 0 || stdout != read(t, filepath.Join(golden, name, "summary.txt")) {
+				t.Errorf("--summary differs from the golden (exit %d)", code)
+			}
+			if got := read(t, "out/scene.json"); got != want {
+				t.Errorf("--summary scene differs")
+			}
+		})
 	}
 }

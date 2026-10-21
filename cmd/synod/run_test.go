@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -57,11 +58,17 @@ func TestRunOK(t *testing.T) {
 	dir := t.TempDir()
 	folder := runModule(t, dir, runLib, runMain)
 	out := filepath.Join(dir, "out", "t.jsonl")
-	code, stdout, stderr := exec("run", folder, "--trace", out)
+	sc := filepath.Join(dir, "out", "s.json")
+	code, stdout, stderr := exec("run", folder, "--trace", out, "--scene", sc)
 	if code != 0 || stderr != "" {
 		t.Fatalf("exit %d, stderr %q, stdout %q", code, stderr, stdout)
 	}
 	want := "ok seed 5: empty at 22.315ms, 1 nodes, 7 events -> " + out + "\n"
+	if i := strings.Index(stdout, "scene "); i < 0 || !strings.HasSuffix(stdout, " -> "+sc+"\n") {
+		t.Errorf("no scene line in %q", stdout)
+	} else {
+		stdout = stdout[:i]
+	}
 	if stdout != want {
 		t.Errorf("stdout %q, want %q", stdout, want)
 	}
@@ -77,6 +84,7 @@ func TestRunOK(t *testing.T) {
 
 func TestRunFlagForms(t *testing.T) {
 	dir := t.TempDir()
+	chdir(t, dir)
 	folder := runModule(t, dir, runLib, runMain)
 	traces := map[string]string{}
 	for name, args := range map[string][]string{
@@ -133,10 +141,19 @@ func TestRunUsageErrors(t *testing.T) {
 		{"summary value", []string{"run", folder, "--summary=1"}, "takes no value"},
 		{"missing folder", []string{"run", filepath.Join(dir, "nope")}, "nope"},
 		{"file not folder", []string{"run", filepath.Join(folder, "main.synod")}, "not a folder"},
-		{"scene", []string{"run", folder, "--scene", "x"}, "synod run: --scene is not implemented yet"},
-		{"scene equals", []string{"run", folder, "--scene=x"}, "synod run: --scene is not implemented yet"},
-		{"pace", []string{"run", folder, "--pace", "2"}, "synod run: --pace is not implemented yet"},
-		{"mode", []string{"run", folder, "--mode", "ordered"}, "synod run: --mode is not implemented yet"},
+		{"scene empty", []string{"run", folder, "--scene", ""}, "--scene needs a file name"},
+		{"scene missing", []string{"run", folder, "--scene"}, "--scene needs a value"},
+		{"both dash", []string{"run", folder, "--trace", "-", "--scene", "-"}, `synod run: --trace and --scene cannot both be "-"`},
+		{"pace low", []string{"run", folder, "--pace", "0.2"}, `synod run: --pace needs a number from 0.25 to 4, not "0.2"`},
+		{"pace high", []string{"run", folder, "--pace=5"}, `synod run: --pace needs a number from 0.25 to 4, not "5"`},
+		{"pace text", []string{"run", folder, "--pace", "abc"}, `synod run: --pace needs a number from 0.25 to 4, not "abc"`},
+		{"pace digits", []string{"run", folder, "--pace", "1.2345"}, `--pace needs a number from 0.25 to 4, not "1.2345"`},
+		{"pace sign", []string{"run", folder, "--pace", "+1"}, `--pace needs a number from 0.25 to 4, not "+1"`},
+		{"pace exp", []string{"run", folder, "--pace", "1e0"}, `--pace needs a number from 0.25 to 4, not "1e0"`},
+		{"pace dot", []string{"run", folder, "--pace", "1."}, `--pace needs a number from 0.25 to 4, not "1."`},
+		{"pace empty", []string{"run", folder, "--pace", ""}, `--pace needs a number from 0.25 to 4, not ""`},
+		{"mode", []string{"run", folder, "--mode", "fast"}, `synod run: --mode needs ordered or proportional, not "fast"`},
+		{"mode missing", []string{"run", folder, "--mode"}, "--mode needs a value"},
 		{"watch", []string{"run", folder, "--watch"}, "synod run: --watch is not implemented yet"},
 		{"json-events", []string{"run", folder, "--json-events"}, "synod run: --json-events is not implemented yet"},
 	}
@@ -180,8 +197,13 @@ func TestRunDefaultTracePath(t *testing.T) {
 	if code != 0 || stderr != "" {
 		t.Fatalf("exit %d: %s%s", code, stdout, stderr)
 	}
-	if !strings.HasSuffix(stdout, " events -> out/trace.jsonl\n") {
+	lines := strings.Split(strings.TrimSuffix(stdout, "\n"), "\n")
+	if len(lines) != 2 || !strings.HasSuffix(lines[0], " events -> out/trace.jsonl") ||
+		!regexp.MustCompile(`^scene [0-9.]+m?s, \d+ shapes -> out/scene\.json$`).MatchString(lines[1]) {
 		t.Errorf("stdout %q", stdout)
+	}
+	if sc := read(t, filepath.Join(dir, "out", "scene.json")); !strings.HasPrefix(sc, `{"format":"synod-scene/1",`) {
+		t.Errorf("scene %.60s", sc)
 	}
 	if tr := read(t, filepath.Join(dir, "out", "trace.jsonl")); !strings.HasPrefix(tr, `{"format":"synod-trace/1"`) {
 		t.Errorf("trace %.60s", tr)
@@ -196,6 +218,9 @@ func TestRunTraceToStdout(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit %d: %s", code, stderr)
 	}
+	if !strings.Contains(stderr, "\nscene ") || !strings.HasSuffix(stderr, " -> out/scene.json\n") {
+		t.Errorf("stderr %q", stderr)
+	}
 	if !strings.HasPrefix(stdout, `{"format":"synod-trace/1"`) || !strings.HasSuffix(stdout, "\n") {
 		t.Errorf("stdout %.80q", stdout)
 	}
@@ -205,14 +230,15 @@ func TestRunTraceToStdout(t *testing.T) {
 	if !strings.HasPrefix(stderr, "ok seed 5: ") {
 		t.Errorf("stderr %q", stderr)
 	}
-	if _, err := os.Stat(filepath.Join(dir, "out")); err == nil {
-		t.Error("--trace - wrote a file")
+	if _, err := os.Stat(filepath.Join(dir, "out", "trace.jsonl")); err == nil {
+		t.Error("--trace - wrote a trace file")
 	}
 }
 
 func TestRunSameFromAnyDirectory(t *testing.T) {
 	dir := t.TempDir()
 	folder := runModule(t, dir, runLib, runMain)
+	chdir(t, t.TempDir())
 	_, a, _ := exec("run", folder, "--trace", "-")
 	chdir(t, dir)
 	_, b, _ := exec("run", "p", "--trace", "-")
@@ -257,6 +283,7 @@ func TestRunLibraryFolder(t *testing.T) {
 
 func TestRunFailure(t *testing.T) {
 	dir := t.TempDir()
+	chdir(t, dir)
 	main := strings.Replace(runMain, "sim.StopAt 1s", "emit (message p.Ping with n (1 divided by (2 minus 2))) by sim.Nobody", 1)
 	folder := runModule(t, dir, runLib, main)
 	out := filepath.Join(dir, "out.jsonl")
@@ -286,12 +313,12 @@ define Fine
 	lib = strings.Replace(lib, "use std/sim\n", "use std/sim\nuse std/time\n", 1)
 	main := strings.Replace(runMain, "sim.StopAt 1s", "after 200ms\n    deliver (message p.Ping with n 0) to a\n  sim.StopAt 1s", 1)
 	folder := runModule(t, dir, lib, main)
-	code, stdout, stderr := exec("run", folder, "--trace", filepath.Join(dir, "t.jsonl"))
+	code, stdout, stderr := exec("run", folder, "--trace", filepath.Join(dir, "t.jsonl"), "--scene", filepath.Join(dir, "s.json"))
 	if code != 0 {
 		t.Fatalf("exit %d: %s%s", code, stdout, stderr)
 	}
 	lines := strings.Split(strings.TrimSuffix(stdout, "\n"), "\n")
-	if len(lines) != 2 || !strings.HasPrefix(lines[0], "ok seed 5: ") {
+	if len(lines) != 3 || !strings.HasPrefix(lines[0], "ok seed 5: ") || !strings.HasPrefix(lines[2], "scene ") {
 		t.Fatalf("stdout %q", stdout)
 	}
 	if !strings.HasPrefix(lines[1], "broken at ") || !strings.Contains(lines[1], " (1 time): p/p.synod:") || !strings.HasSuffix(lines[1], ": always Fine") && !strings.Contains(lines[1], "always") {
@@ -303,7 +330,8 @@ func TestRunSummary(t *testing.T) {
 	dir := t.TempDir()
 	folder := runModule(t, dir, runLib, runMain)
 	out := filepath.Join(dir, "t.jsonl")
-	code, stdout, stderr := exec("run", folder, "--summary", "--trace", out)
+	sc := filepath.Join(dir, "s.json")
+	code, stdout, stderr := exec("run", folder, "--summary", "--trace", out, "--scene", sc)
 	if code != 0 || stderr != "" {
 		t.Fatalf("exit %d: %s", code, stderr)
 	}
@@ -312,6 +340,12 @@ func TestRunSummary(t *testing.T) {
 	}
 	if _, err := os.Stat(out); err != nil {
 		t.Error("--summary did not write the trace")
+	}
+	if _, err := os.Stat(sc); err != nil {
+		t.Error("--summary did not write the scene")
+	}
+	if strings.Contains(stdout, "scene ") {
+		t.Error("--summary prints a scene line")
 	}
 	golden := filepath.Join("testdata", "run-summary.txt")
 	if *update {
@@ -338,7 +372,112 @@ func TestRunInternalError(t *testing.T) {
 
 func TestRunUsageListsRun(t *testing.T) {
 	code, stdout, _ := exec("help")
-	if code != 0 || !strings.Contains(stdout, "run <folder> [--seed n] [--trace file] [--summary]") {
+	if code != 0 || !strings.Contains(stdout, "run <folder> [--seed n] [--trace file] [--scene file] [--pace x] [--mode m] [--summary]") {
 		t.Errorf("usage %q", stdout)
+	}
+}
+
+func TestRunSceneToStdout(t *testing.T) {
+	dir := t.TempDir()
+	folder := runModule(t, dir, runLib, runMain)
+	chdir(t, dir)
+	code, stdout, stderr := exec("run", folder, "--scene", "-", "--trace", filepath.Join(dir, "t.jsonl"))
+	if code != 0 {
+		t.Fatalf("exit %d: %s", code, stderr)
+	}
+	if !strings.HasPrefix(stdout, `{"format":"synod-scene/1"`) || !strings.HasSuffix(stdout, "]}\n") || strings.Contains(stdout, "ok seed") {
+		t.Errorf("stdout %.80q", stdout)
+	}
+	if !strings.HasPrefix(stderr, "ok seed 5: ") || !strings.HasSuffix(stderr, " shapes -> stdout\n") {
+		t.Errorf("stderr %q", stderr)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "out")); err == nil {
+		t.Error("--scene - wrote a file")
+	}
+}
+
+func TestRunScenePaceAndMode(t *testing.T) {
+	dir := t.TempDir()
+	folder := runModule(t, dir, runLib, runMain)
+	tr := filepath.Join(dir, "t.jsonl")
+	dur := func(args ...string) string {
+		code, stdout, stderr := exec(append([]string{"run", folder, "--trace", tr, "--scene", "-"}, args...)...)
+		if code != 0 {
+			t.Fatalf("%v: exit %d: %s", args, code, stderr)
+		}
+		return stdout
+	}
+	a, b := dur(), dur("--pace", "1")
+	if a != b {
+		t.Error("--pace 1 differs from the default")
+	}
+	if dur("--pace", "2") == a || dur("--pace=0.25") == a || dur("--mode", "proportional") == a {
+		t.Error("pace or mode did not change the scene")
+	}
+	if dur("--mode", "ordered") != a {
+		t.Error("--mode ordered differs from the default")
+	}
+	if dur("--pace", "1.5") != dur("--pace", "1.50") {
+		t.Error("1.5 and 1.50 differ")
+	}
+}
+
+func TestRunSceneFileAndFolders(t *testing.T) {
+	dir := t.TempDir()
+	folder := runModule(t, dir, runLib, runMain)
+	sc := filepath.Join(dir, "deep", "er", "s.json")
+	code, stdout, _ := exec("run", folder, "--trace", filepath.Join(dir, "t.jsonl"), "--scene="+sc)
+	if code != 0 || !strings.HasSuffix(stdout, " -> "+sc+"\n") {
+		t.Fatalf("exit %d: %q", code, stdout)
+	}
+	if !strings.HasPrefix(read(t, sc), `{"format":"synod-scene/1","duration":`) {
+		t.Error("scene file")
+	}
+}
+
+func lookFault(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	if err := os.CopyFS(dir, os.DirFS("testdata/lookfault")); err != nil {
+		t.Fatal(err)
+	}
+	return filepath.Join(dir, "main")
+}
+
+func TestRunLookFault(t *testing.T) {
+	folder := lookFault(t)
+	dir := filepath.Dir(folder)
+	tr, sc := filepath.Join(dir, "t.jsonl"), filepath.Join(dir, "s.json")
+	code, stdout, stderr := exec("run", folder, "--trace", tr, "--scene", sc, "--style", "short")
+	if code != 1 || stderr != "" {
+		t.Fatalf("exit %d, stderr %q", code, stderr)
+	}
+	lines := strings.Split(strings.TrimSuffix(stdout, "\n"), "\n")
+	if len(lines) != 2 || !strings.HasPrefix(lines[0], "ok seed ") ||
+		!strings.HasPrefix(lines[1], "look failed at ") ||
+		!strings.Contains(lines[1], ": lk/lk.synod:") || !strings.HasSuffix(lines[1], `error[missing-key]: no shape is attached to "nope" under "card"`) {
+		t.Errorf("stdout %q", stdout)
+	}
+	if strings.Contains(stdout, "scene ") {
+		t.Error("scene line after a look fault")
+	}
+	if strings.Contains(read(t, tr), "look failed") {
+		t.Error("the look fault is in the trace")
+	}
+	if s := read(t, sc); !strings.Contains(s, `"kind":"failed"`) {
+		t.Errorf("no failed marker in %.200s", s)
+	}
+	// Rich style, no escapes with --color never.
+	code, stdout, _ = exec("run", folder, "--trace", tr, "--scene", sc, "--style", "rich", "--color", "never")
+	if code != 1 || !strings.Contains(stdout, "look failed at ") || !strings.Contains(stdout, "nope") || strings.Contains(stdout, "\x1b") ||
+		strings.Count(stdout, "\n") < 4 {
+		t.Errorf("rich stdout %q", stdout)
+	}
+	// --summary: the summary text, then the failure line.
+	_, plain, _ := exec("run", folder, "--trace", tr, "--scene", sc, "--summary", "--style", "short")
+	code, stdout, _ = exec("run", folder, "--trace", tr, "--scene", sc, "--summary", "--style", "short")
+	if code != 1 || !strings.HasPrefix(stdout, strings.TrimSuffix(plain, plain[strings.LastIndex(strings.TrimSuffix(plain, "\n"), "\n")+1:])) ||
+		!strings.Contains(stdout[strings.LastIndex(strings.TrimSuffix(stdout, "\n"), "\n"):], "look failed at") {
+		t.Errorf("summary stdout %q", stdout)
 	}
 }

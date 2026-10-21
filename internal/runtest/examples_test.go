@@ -32,6 +32,7 @@ func TestExampleGoldens(t *testing.T) {
 			}
 			golden(t, filepath.Join(goldenDir, n, "trace.jsonl"), p.encode(t, r))
 			golden(t, filepath.Join(goldenDir, n, "summary.txt"), []byte(p.summary(t, r)))
+			golden(t, filepath.Join(goldenDir, n, "scene.json"), p.sceneBytes(t, nil))
 		})
 	}
 }
@@ -60,6 +61,9 @@ func TestExamplesDeterministic(t *testing.T) {
 					t.Fatalf("seed %v failed: %v", s, r1.Failed)
 				}
 				checkLines(t, a)
+				if !bytes.Equal(p.sceneBytes(t, s), p.sceneBytes(t, s)) {
+					t.Fatalf("seed %v: scenes differ", s)
+				}
 			}
 		})
 	}
@@ -97,8 +101,8 @@ func checkLines(t testing.TB, trace []byte) {
 }
 
 // TestTraceHashes writes the SHA-256 of every example trace (own seed and
-// seeds 1 and 2) to the file named by SYNOD_HASHES_OUT, one "name seed hash"
-// line each. CI runs it on Linux, macOS and Windows and diffs the files
+// seeds 1 and 2) and of its scene.json to the file named by SYNOD_HASHES_OUT, one "name seed hash"
+// line each (traces and scenes). CI runs it on Linux, macOS and Windows and diffs the files
 // (plan 5.3). Without the variable it only checks the hashes are stable.
 func TestTraceHashes(t *testing.T) {
 	ex := examples(t)
@@ -113,6 +117,8 @@ func TestTraceHashes(t *testing.T) {
 				label = fmt.Sprint(*s)
 			}
 			fmt.Fprintf(&out, "%s seed=%s %s\n", n, label, hex.EncodeToString(sum[:]))
+			ssum := sha256.Sum256(p.sceneBytes(t, s))
+			fmt.Fprintf(&out, "%s seed=%s scene %s\n", n, label, hex.EncodeToString(ssum[:]))
 		}
 	}
 	if path := os.Getenv("SYNOD_HASHES_OUT"); path != "" {

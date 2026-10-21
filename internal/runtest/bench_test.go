@@ -33,8 +33,22 @@ func simAndEncode(t testing.TB, p *program) (facts int) {
 	return len(r.Facts)
 }
 
+// buildScene builds and encodes the scene of the facts into a discarding
+// writer: the work `synod run` does after the simulation.
+func buildScene(t testing.TB, p *program, facts []trace.Fact) (shapes int) {
+	sc, fl := p.scene(t, facts)
+	if fl != nil {
+		t.Fatal(fl.Fault.Error())
+	}
+	if err := trace.EncodeScene(io.Discard, sc); err != nil {
+		t.Fatal(err)
+	}
+	return len(sc.Shapes)
+}
+
 // TestPerformance is a loose guard: the target is below 50ms for each
-// benchmark, the test only fails above one second.
+// simulation benchmark and 100ms for the scene, the test only fails above
+// one second (two for the simulation and the scene together).
 func TestPerformance(t *testing.T) {
 	progs := map[string]*program{"ping5000": ping5000(t), "cassandra": examples(t)["cassandra"]}
 	for name, p := range progs {
@@ -45,6 +59,15 @@ func TestPerformance(t *testing.T) {
 		if d > time.Second {
 			t.Errorf("%s took %s", name, d)
 		}
+	}
+	p := progs["ping5000"]
+	r := p.run(nil)
+	start := time.Now()
+	n := buildScene(t, p, r.Facts)
+	d := time.Since(start)
+	t.Logf("ping5000 scene: %d shapes from %d facts in %s", n, len(r.Facts), d)
+	if d > time.Second {
+		t.Errorf("the scene took %s", d)
 	}
 }
 
@@ -63,5 +86,18 @@ func BenchmarkCassandra(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		simAndEncode(b, p)
+	}
+}
+
+func BenchmarkScenePing5000(b *testing.B) {
+	p := ping5000(b)
+	r := p.run(nil)
+	if r.Failed != nil {
+		b.Fatal(r.Failed)
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		buildScene(b, p, r.Facts)
 	}
 }

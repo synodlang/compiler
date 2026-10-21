@@ -5,3 +5,4 @@ failed at 0s: p/main.synod:8:29: error[missing-key]: key "b" is not in the map
   |                                  --- not in the map
   |
   = note: the map has 1 key
+scene 30ms, 1 shapes -> out/scene.json

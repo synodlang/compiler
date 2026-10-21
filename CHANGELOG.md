@@ -5,6 +5,23 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+M5, "Scene builder and looks": `synod run` now draws the run.
+
+### Added
+
+- `synod run` writes `out/scene.json` (`synod-scene/1`) next to the trace and prints `scene <length>, <n> shapes -> out/scene.json` after the existing status lines. The scene is written for every run, also after `sim.Failed`; `--summary` prints the same text as before and writes the scene silently.
+- `--scene file` (`-` for stdout, with the status lines on stderr; `--trace -` and `--scene -` together exit 2), `--pace x` (0.25 to 4, up to three decimals) and `--mode ordered|proportional`. `--watch` and `--json-events` still exit 2.
+- The scene builder runs the observers of the program's looks over the facts of the run. A program that does not use `std/look` is drawn by `std/look/basic`: node cards, state rows, message flights, the `sim.Broken` border and lesson captions.
+- A fault inside a look is a look failure, not part of the trace: `look failed at <time>: <pos>: error[<code>]: <message>`, exit 1, and a partial scene with a `failed` marker.
+- `trace.Decode` reads `trace.jsonl` back into facts; `Build(facts)` equals `Build(Decode(Encode(facts)))`.
+- std: `look.Flight`, `net.Id`, `net.Type`, `sim.StateRows`, and `look.Tween` of `"x"` and `"y"` to a shape; `look.Travel`, `look.Remove` and `std/look/basic` are ordinary Synod.
+- Golden `scene.json` for every example, scene determinism over 20 seeds, scene hashes in the cross-OS CI job, `FuzzScene` in the weekly fuzz run, and `BenchmarkScenePing5000`.
+- The `run` fuzz target and the generator now also build scenes, with generated looks.
+
+### Changed
+
+- The status of a failed run is followed by the scene line, so the rich `failed at …` goldens of `testdata/run/errors` end with it.
+
 ## v0.2.2 — 2026-10-21
 
 Implements Synod 0.2. Errors now look like a good compiler's: on a terminal,

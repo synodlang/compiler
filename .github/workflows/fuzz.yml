@@ -79,3 +79,17 @@ jobs:
           name: run-crashers
           path: internal/runtest/testdata/fuzz
           if-no-files-found: ignore
+  scene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: go test ./internal/scene -run '^$' -fuzz '^FuzzScene$' -fuzztime 10m
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: scene-crashers
+          path: internal/scene/testdata/fuzz
+          if-no-files-found: ignore

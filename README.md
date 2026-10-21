@@ -22,13 +22,13 @@ repository turns that specification into a tool.
 | `compiler` (this one) | `synod fmt`, `synod check`, `synod run` | Released (v0.2.2) |
 | [std](https://github.com/synodlang/std) | The standard library, embedded in the binary | Released |
 | [examples](https://github.com/synodlang/examples) | Sample programs; the acceptance tests | Released |
-| scene builder, `player`, Mac app, agent skills | Animation and tooling around the trace | Later milestones |
+| `player`, Mac app, agent skills | Playback and tooling around the trace and the scene | Later milestones |
 
 The pipeline, and how much of it exists today:
 
 ```
-.synod sources --> check --> simulate --> trace.jsonl --> scene builder --> player
-                   done      done         done            not yet          not yet
+.synod sources --> check --> simulate --> trace.jsonl --> scene builder --> scene.json --> player
+                   done      done         done            done             done          not yet
 ```
 
 ## Install
@@ -83,13 +83,16 @@ Check a program. A clean check prints nothing and exits 0.
 synod check ./tcp
 ```
 
-Run it. The simulator writes `out/trace.jsonl` and prints one line. `empty`
-means the run ended because nothing more could happen; `stop` would mean it
-reached `sim.StopAt`.
+Run it. The simulator writes `out/trace.jsonl`, the scene builder draws the
+run into `out/scene.json`, and two lines are printed. `empty` means the run
+ended because nothing more could happen; `stop` would mean it reached
+`sim.StopAt`. The scene line gives the length of the animation and the number
+of shapes.
 
 ```
 $ synod run ./tcp
 ok seed 1: empty at 100ms, 2 nodes, 19 events -> out/trace.jsonl
+scene 2186ms, 20 shapes -> out/scene.json
 ```
 
 Read the run as text with `--summary`. Facts are grouped per step, and the
@@ -163,7 +166,7 @@ form, which has that line and a `hint:` line, and nothing else. Exit code 1.
 | --- | --- |
 | `synod fmt [paths...] [--check]` | Rewrites `.synod` files into canonical form. With `--check` it changes nothing, lists the files that would change and exits 1. |
 | `synod check [paths...] [--json] [--tokens]` | Loads, resolves and checks packages, and prints every diagnostic. With no path it checks the current folder. `--json` prints the `synod-check/1` format. `--tokens` adds a token list per file, for editors (needs `--json`; without it the command exits 2). |
-| `synod run <folder> [--seed n] [--trace file] [--summary]` | Checks the folder's main file, then simulates it. Writes the trace and prints one status line. |
+| `synod run <folder> [--seed n] [--trace file] [--scene file] [--pace x] [--mode m] [--summary]` | Checks the folder's main file, simulates it and draws the run. Writes the trace and the scene and prints the status lines. |
 | `synod version` | Prints the language, compiler and format versions. |
 
 `fmt`, `check` and `run` also take `--style rich|short` and
@@ -181,10 +184,20 @@ Flags of `synod run`:
 | --- | --- |
 | `--seed n` | Seed of the run, a whole number from 0 to 2^53. It wins over `sim.Seed` in the program. Without either, the seed is 1. |
 | `--trace file` | Where to write the trace. The default is `out/trace.jsonl`; parent folders are created. `--trace -` writes the trace to stdout and the status line to stderr. |
-| `--summary` | Prints a text summary instead of the status line. The trace is still written. |
+| `--scene file` | Where to write the scene. The default is `out/scene.json`; parent folders are created. `--scene -` writes the scene to stdout and the status lines to stderr. `--trace -` and `--scene -` together exit 2. |
+| `--pace x` | Playback speed of the scene, a decimal number from 0.25 to 4 with at most three decimals (default 1). `--pace 2` makes the animation half as long. |
+| `--mode ordered\|proportional` | How facts are spaced in the scene. `ordered` (default) gives every fact its own moment; `proportional` spreads them over about 30 seconds in proportion to simulated time. |
+| `--summary` | Prints a text summary instead of the status lines. The trace and the scene are still written, silently. |
 
-`--scene`, `--pace`, `--mode`, `--watch` and `--json-events` are recognized
-but not built yet: they exit 2 with `not implemented yet`. Likewise `synod
+Programs that use `std/look` bring their own looks; every other program is
+drawn by `std/look/basic`. A run-time error in a look is a look failure: it
+is not in the trace and does not fail the simulation. The scene stops at that
+fact and gets a `failed` marker, and `synod run` prints `look failed at
+<time>: <pos>: error[<code>]: <message>` in place of the scene line and exits
+1. The partial scene is still written.
+
+`--watch` and `--json-events` are recognized but not built yet: they exit 2
+with `not implemented yet`. Likewise `synod
 new`, `get`, `doc` and `explain`, which the
 [CLI guide](https://github.com/synodlang/dsl/blob/main/implementation/05-cli.md)
 plans, do not exist yet.
@@ -194,7 +207,7 @@ plans, do not exist yet.
 | Code | Meaning |
 | --- | --- |
 | 0 | Success. A run that ended is 0, also when an `always` invariant broke: that is a result, not an error. |
-| 1 | Diagnostics, files that `fmt --check` would change, or a run that failed (the trace ends in `sim.Failed`). |
+| 1 | Diagnostics, files that `fmt --check` would change, a run that failed (the trace ends in `sim.Failed`), or a look that failed. |
 | 2 | Usage or I/O error. |
 
 ## Output formats
@@ -213,8 +226,10 @@ they do not know.
   `sim.Broken`, and so on). Times are integer microseconds of simulated
   time. The events are listed in
   [spec/08](https://github.com/synodlang/dsl/blob/main/spec/08-trace-events.md).
-- `scene.json` (`synod-scene/1`) is reserved for the scene builder and is not
-  written yet.
+- `scene.json` (`synod-scene/1`): the animation of a run as shapes with
+  keyframes, markers and one slot per trace fact. Times are integer
+  milliseconds of presentation time. The same program, seed, pace and mode
+  give the same bytes on every platform.
 
 A run-time error is the last line of the trace, a `sim.Failed` event, and
 `synod run` prints `failed at <time>: <pos>: error[<code>]: <message>` with
@@ -354,10 +369,13 @@ with the deterministic simulator, `trace.jsonl` and `--summary`. Every native
 phrase of `std/sim`, `net`, `time`, `random`, `lists`, `maps`, `math`, `text`
 and `disk` works.
 
-Not yet: the `look` phrases and observers, the scene builder and
-`scene.json` (M5, "Scene builder and looks"), the WebAssembly build (M6), and
-then the player, the Mac app, the editor modes and the agent skills (M7 to
-M11). The order and acceptance checks are in the
+On main (M5, unreleased): the `look` phrases and observers, the scene builder
+and `scene.json`. `synod run` writes `out/scene.json` and takes `--scene`,
+`--pace` and `--mode`.
+
+Not yet: `--watch` and `--json-events`, the WebAssembly release (M6), and then
+the player, the Mac app, the editor modes and the agent skills (M7 to M11).
+The order and acceptance checks are in the
 [roadmap](https://github.com/synodlang/dsl/blob/main/implementation/10-roadmap.md).
 The [change log](CHANGELOG.md) lists what each release added.
 

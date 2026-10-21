@@ -4,3 +4,4 @@ failed at 0s: p/p.synod:9:19: error[disk-type]: disk value at "pages" is a list 
   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
   = note: the default has type map of text to text
+scene 90ms, 5 shapes -> out/scene.json
