@@ -35,3 +35,18 @@ const (
 	ColorLiteral     Code = "color-literal"
 	NativeOutsideStd Code = "native-outside-std"
 )
+
+// Run-time error codes (spec/11 section 11.3), raised by the simulator and
+// recorded in the trace as the code of a sim.Failed event. They have no
+// check folder under testdata/check; testdata/run/errors covers them.
+const (
+	MissingKey     Code = "missing-key"
+	IndexRange     Code = "index-range"
+	DiskType       Code = "disk-type"
+	DivisionByZero Code = "division-by-zero"
+	Nobody         Code = "nobody"
+	TimeLimit      Code = "time-limit"
+	BadArgument    Code = "bad-argument"
+	NumberRange    Code = "number-range"
+	RunLimit       Code = "run-limit"
+)

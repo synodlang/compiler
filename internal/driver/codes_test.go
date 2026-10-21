@@ -16,8 +16,11 @@ func TestCodesCovered(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Only the compile-time codes are checked; run-time codes follow the
+	// marker comment.
+	text, _, _ := strings.Cut(string(src), "\n// Run-time error codes")
 	re := regexp.MustCompile(`(?m)^\s+\w+\s+Code = "([a-z-]+)"`)
-	ms := re.FindAllStringSubmatch(string(src), -1)
+	ms := re.FindAllStringSubmatch(text, -1)
 	if len(ms) != 29 {
 		t.Fatalf("found %d codes in codes.go, want 29", len(ms))
 	}
