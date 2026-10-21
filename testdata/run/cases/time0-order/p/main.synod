@@ -1,0 +1,10 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  set b to (sim.Spawn p)
+  set a.p.Name to "adjusted"
+  deliver (message p.Ping with seq 3) to b
+  sim.StopAt 1s

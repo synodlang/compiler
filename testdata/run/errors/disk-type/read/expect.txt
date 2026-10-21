@@ -1,0 +1,2 @@
+{"seq":4,"t":0,"ev":"sim.Failed","code":"disk-type","message":"disk value at \"pages\" is a list of text, not a map of text to text","pos":"p/p.synod:9:19"}
+failed at 0s: p/p.synod:9:19: error[disk-type]: disk value at "pages" is a list of text, not a map of text to text

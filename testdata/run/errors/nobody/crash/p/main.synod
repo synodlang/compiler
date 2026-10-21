@@ -1,0 +1,5 @@
+# package main
+use std/sim
+
+define main
+  sim.Crash sim.Nobody

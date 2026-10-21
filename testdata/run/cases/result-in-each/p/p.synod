@@ -1,0 +1,13 @@
+# package p
+Found has
+  set v to 0
+
+Rounded has
+  set t to 0s
+  set r to 0
+
+define FirstOver [limit: number] in [xs: list of number]
+  each x in xs
+    if (x more than limit)
+      result x
+  result 0

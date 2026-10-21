@@ -1,0 +1,6 @@
+# package main
+use std/sim
+
+define main
+  after (0s minus 1s)
+    sim.StopAt 1s

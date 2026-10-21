@@ -1,0 +1,2 @@
+{"seq":2,"t":0,"ev":"sim.Failed","code":"division-by-zero","message":"division by zero","pos":"p/main.synod:6:29"}
+failed at 0s: p/main.synod:6:29: error[division-by-zero]: division by zero

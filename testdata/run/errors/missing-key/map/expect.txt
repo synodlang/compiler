@@ -1,0 +1,2 @@
+{"seq":2,"t":0,"ev":"sim.Failed","code":"missing-key","message":"key \"b\" is not in the map","pos":"p/main.synod:8:29"}
+failed at 0s: p/main.synod:8:29: error[missing-key]: key "b" is not in the map

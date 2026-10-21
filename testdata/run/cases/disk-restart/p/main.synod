@@ -1,0 +1,12 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  after 1s
+    sim.Crash a
+  after 2s
+    sim.Restart a
+  after 3s
+    sim.Restart a

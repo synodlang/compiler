@@ -1,0 +1,12 @@
+{"format":"synod-trace/1","synod":"0.2","seed":1,"program":"example.com/t/p","packages":["example.com/t/p","std/net","std/sim"]}
+{"seq":1,"t":0,"ev":"sim.Started"}
+{"seq":2,"t":0,"ev":"sim.Added","node":"n1","runs":["std/net","std/sim","example.com/t/p"],"state":{"p.Peers":[{"node":null}],"p.Got":0}}
+{"seq":3,"t":0,"ev":"sim.Changed","node":"n1","field":"p.Peers","old":[{"node":null}],"new":[{"node":"n1"},{"node":"n1"}]}
+{"seq":4,"t":0,"ev":"sim.Injected","node":"n1","record":{"type":"p.Go","fields":{"k":"…"}}}
+{"seq":5,"t":0,"ev":"net.Sent","node":"n1","msg":{"id":1,"type":"p.Msg","fields":{"k":"…"}},"from":"n1","to":"n1"}
+{"seq":6,"t":0,"ev":"net.Sent","node":"n1","msg":{"id":2,"type":"p.Msg","fields":{"k":"…"}},"from":"n1","to":"n1"}
+{"seq":7,"t":10952,"ev":"net.Arrived","node":"n1","msg":{"id":2,"type":"p.Msg","fields":{"k":"…"}},"from":"n1","to":"n1"}
+{"seq":8,"t":10952,"ev":"sim.Changed","node":"n1","field":"p.Got","old":0,"new":1}
+{"seq":9,"t":22142,"ev":"net.Arrived","node":"n1","msg":{"id":1,"type":"p.Msg","fields":{"k":"…"}},"from":"n1","to":"n1"}
+{"seq":10,"t":22142,"ev":"sim.Changed","node":"n1","field":"p.Got","old":1,"new":2}
+{"seq":11,"t":22142,"ev":"sim.Ended","reason":"empty"}

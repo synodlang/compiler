@@ -1,0 +1,12 @@
+# package p
+use std/disk
+
+Node has
+  set Boots to 0
+  set Seen to {"z"}
+
+define [n: Node] start
+  set n.Boots to ((disk.Read "boots" on n or 0) plus 1)
+  disk.Write n.Boots at "boots" on n
+  disk.Write {"a"} at "list" on n
+  set n.Seen to (disk.Read "list" on n or {"z"})

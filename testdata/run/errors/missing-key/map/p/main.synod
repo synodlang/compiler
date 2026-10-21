@@ -1,0 +1,8 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set m to {}
+  set item "a" of m to 1
+  emit (message p.R with v (item "b" of m)) by sim.Nobody

@@ -1,0 +1,6 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  emit (message p.R with v (1 divided by (2 minus 2))) by sim.Nobody

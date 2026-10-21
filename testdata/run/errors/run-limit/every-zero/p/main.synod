@@ -1,0 +1,7 @@
+# package main
+use std/sim
+use std/time
+
+define main
+  time.Every 0s
+    sim.StopAt 1s

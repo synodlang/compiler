@@ -1,0 +1,5 @@
+# package main
+use example.com/t/p
+
+define main
+  p.Down

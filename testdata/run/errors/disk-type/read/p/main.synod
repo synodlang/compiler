@@ -1,0 +1,8 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  after 1s
+    sim.Remove a

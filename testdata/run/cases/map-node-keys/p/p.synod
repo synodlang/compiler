@@ -1,0 +1,19 @@
+# package p
+use std/sim
+
+Go has
+  set k to 0
+
+Row has
+  set who to sim.Nobody
+  set v to 0
+
+Node has
+  set Peers to {sim.Nobody}
+  set Seen to {}
+
+when [n: Node] (sim.Delivered Go)
+  each q in n.Peers
+    set item q of n.Seen to (sim.Id q)
+  each k, v in n.Seen
+    emit (message Row with who k, v v) by n

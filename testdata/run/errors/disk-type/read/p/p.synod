@@ -1,0 +1,10 @@
+# package p
+use std/disk
+
+Node has
+  set Pages to {}
+
+define [n: Node] start
+  disk.Write {"a"} at "pages" on n
+  set n.Pages to (disk.Read "pages" on n or {})
+  set item "k" of n.Pages to "v"

@@ -1,0 +1,10 @@
+{"format":"synod-trace/1","synod":"0.2","seed":1,"program":"example.com/t/p","packages":["example.com/t/p","std/sim"]}
+{"seq":1,"t":0,"ev":"sim.Started"}
+{"seq":2,"t":0,"ev":"sim.Added","node":"n1","runs":["std/sim","example.com/t/p"],"state":{"p.Name":"idle","p.Count":0}}
+{"seq":3,"t":0,"ev":"sim.Added","node":"n2","runs":["std/sim","example.com/t/p"],"state":{"p.Name":"idle","p.Count":0}}
+{"seq":4,"t":0,"ev":"sim.Changed","node":"n1","field":"p.Name","old":"idle","new":"adjusted"}
+{"seq":5,"t":0,"ev":"sim.Injected","node":"n2","record":{"type":"p.Ping","fields":{"seq":"…"}}}
+{"seq":6,"t":0,"ev":"sim.Changed","node":"n1","field":"p.Name","old":"adjusted","new":"started"}
+{"seq":7,"t":0,"ev":"sim.Changed","node":"n2","field":"p.Name","old":"idle","new":"started"}
+{"seq":8,"t":0,"ev":"sim.Changed","node":"n2","field":"p.Count","old":0,"new":3}
+{"seq":9,"t":0,"ev":"sim.Ended","reason":"empty"}

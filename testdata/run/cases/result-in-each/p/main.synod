@@ -1,0 +1,7 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  emit (message p.Found with v (p.FirstOver 2 in {1, 5, 7})) by sim.Nobody
+  emit (message p.Found with v (p.FirstOver 9 in {1, 5, 7})) by sim.Nobody

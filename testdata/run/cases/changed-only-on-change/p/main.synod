@@ -1,0 +1,9 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  deliver (message p.Ping with seq 0) to a
+  deliver (message p.Ping with seq 5) to a
+  deliver (message p.Ping with seq 5) to a

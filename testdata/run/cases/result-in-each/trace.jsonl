@@ -1,0 +1,5 @@
+{"format":"synod-trace/1","synod":"0.2","seed":1,"program":"example.com/t/p","packages":["example.com/t/p","std/sim"]}
+{"seq":1,"t":0,"ev":"sim.Started"}
+{"seq":2,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"p.Found","fields":{"v":"…"}}}
+{"seq":3,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"p.Found","fields":{"v":"…"}}}
+{"seq":4,"t":0,"ev":"sim.Ended","reason":"empty"}

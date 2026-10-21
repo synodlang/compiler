@@ -1,0 +1,11 @@
+# package p
+use std/sim
+
+Tick has
+  set k to 0
+
+Node has
+  set Seen to 0
+
+when [n: Node] (sim.Delivered Tick)
+  set n.Seen to (n.Seen plus 1)

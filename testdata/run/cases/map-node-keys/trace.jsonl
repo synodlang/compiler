@@ -1,0 +1,16 @@
+{"format":"synod-trace/1","synod":"0.2","seed":1,"program":"example.com/t/p","packages":["example.com/t/p","std/sim"]}
+{"seq":1,"t":0,"ev":"sim.Started"}
+{"seq":2,"t":0,"ev":"sim.Added","node":"n1","runs":["std/sim","example.com/t/p"],"state":{"p.Peers":[{"node":null}],"p.Seen":{"map":[]}}}
+{"seq":3,"t":0,"ev":"sim.Added","node":"n2","runs":["std/sim","example.com/t/p"],"state":{"p.Peers":[{"node":null}],"p.Seen":{"map":[]}}}
+{"seq":4,"t":0,"ev":"sim.Added","node":"n3","runs":["std/sim","example.com/t/p"],"state":{"p.Peers":[{"node":null}],"p.Seen":{"map":[]}}}
+{"seq":5,"t":0,"ev":"sim.Changed","node":"n1","field":"p.Peers","old":[{"node":null}],"new":[{"node":"n3"},{"node":"n1"},{"node":"n2"}]}
+{"seq":6,"t":0,"ev":"sim.Changed","node":"n2","field":"p.Peers","old":[{"node":null}],"new":[{"node":"n3"},{"node":"n1"},{"node":"n2"}]}
+{"seq":7,"t":0,"ev":"sim.Changed","node":"n3","field":"p.Peers","old":[{"node":null}],"new":[{"node":"n3"},{"node":"n1"},{"node":"n2"}]}
+{"seq":8,"t":0,"ev":"sim.Injected","node":"n2","record":{"type":"p.Go","fields":{"k":"…"}}}
+{"seq":9,"t":0,"ev":"sim.Changed","node":"n2","field":"p.Seen","old":{"map":[]},"new":{"map":[[{"node":"n3"},3]]}}
+{"seq":10,"t":0,"ev":"sim.Changed","node":"n2","field":"p.Seen","old":{"map":[[{"node":"n3"},3]]},"new":{"map":[[{"node":"n1"},1],[{"node":"n3"},3]]}}
+{"seq":11,"t":0,"ev":"sim.Changed","node":"n2","field":"p.Seen","old":{"map":[[{"node":"n1"},1],[{"node":"n3"},3]]},"new":{"map":[[{"node":"n1"},1],[{"node":"n2"},2],[{"node":"n3"},3]]}}
+{"seq":12,"t":0,"ev":"sim.Emitted","node":"n2","record":{"type":"p.Row","fields":{"who":"…","v":"…"}}}
+{"seq":13,"t":0,"ev":"sim.Emitted","node":"n2","record":{"type":"p.Row","fields":{"who":"…","v":"…"}}}
+{"seq":14,"t":0,"ev":"sim.Emitted","node":"n2","record":{"type":"p.Row","fields":{"who":"…","v":"…"}}}
+{"seq":15,"t":0,"ev":"sim.Ended","reason":"empty"}

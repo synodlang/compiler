@@ -1,0 +1,11 @@
+{"format":"synod-trace/1","synod":"0.2","seed":1,"program":"example.com/t/p","packages":["example.com/t/p","std/net","std/sim"]}
+{"seq":1,"t":0,"ev":"sim.Started"}
+{"seq":2,"t":0,"ev":"sim.Added","node":"n1","runs":["std/net","std/sim","example.com/t/p"],"state":{"p.Got":0,"p.Peer":{"node":null}}}
+{"seq":3,"t":0,"ev":"sim.Added","node":"n2","runs":["std/net","std/sim","example.com/t/p"],"state":{"p.Got":0,"p.Peer":{"node":null}}}
+{"seq":4,"t":0,"ev":"sim.Changed","node":"n1","field":"p.Peer","old":{"node":null},"new":{"node":"n2"}}
+{"seq":5,"t":0,"ev":"sim.Injected","node":"n1","record":{"type":"p.Hi","fields":{"k":"…"}}}
+{"seq":6,"t":0,"ev":"net.Sent","node":"n1","msg":{"id":1,"type":"p.Hi","fields":{"k":"…"}},"from":"n1","to":"n2"}
+{"seq":7,"t":10000,"ev":"sim.Crashed","node":"n2"}
+{"seq":8,"t":20000,"ev":"net.Dropped","node":"n2","msg":{"id":1,"type":"p.Hi","fields":{"k":"…"}},"from":"n1","to":"n2","reason":"crashed"}
+{"seq":9,"t":5000000,"ev":"sim.Removed","node":"n2"}
+{"seq":10,"t":5000000,"ev":"sim.Ended","reason":"empty"}

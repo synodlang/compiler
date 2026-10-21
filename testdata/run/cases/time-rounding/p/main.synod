@@ -1,0 +1,12 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  emit (message p.Rounded with t (0.001ms times 0.5)) by sim.Nobody
+  emit (message p.Rounded with t (0.003ms divided by 2)) by sim.Nobody
+  emit (message p.Rounded with t ((0s minus 0.003ms) divided by 2)) by sim.Nobody
+  emit (message p.Rounded with t (0.5 times 0.003ms)) by sim.Nobody
+  emit (message p.Rounded with r (10ms divided by 4ms)) by sim.Nobody
+  emit (message p.Rounded with t (1ms times 0.3333)) by sim.Nobody
+  emit (message p.Rounded with r (0 times -1)) by sim.Nobody

@@ -1,0 +1,2 @@
+{"seq":2,"t":0,"ev":"sim.Failed","code":"index-range","message":"index 3 is out of range for a list of 3 items","pos":"p/main.synod:7:29"}
+failed at 0s: p/main.synod:7:29: error[index-range]: index 3 is out of range for a list of 3 items

@@ -1,0 +1,9 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  after 10s
+    sim.Remove a
+  sim.StopAt 11s

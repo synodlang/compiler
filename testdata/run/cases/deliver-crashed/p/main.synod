@@ -1,0 +1,16 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  set b to (sim.Spawn p)
+  set a.p.Peers to {b}
+  set b.p.Peers to {a}
+  sim.Crash a
+  deliver (message p.Go with k 1) to a
+  deliver (message p.Go with k 2) to b
+  after 1s
+    sim.Restart a
+    set a.p.Peers to {b}
+    deliver (message p.Go with k 3) to a

@@ -1,0 +1,9 @@
+# package p
+use std/time
+
+Node has
+  set ticks to 0
+
+define [n: Node] start
+  time.Every 1ms
+    set n.ticks to (n.ticks plus 1)

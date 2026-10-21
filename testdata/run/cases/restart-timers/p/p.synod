@@ -1,0 +1,15 @@
+# package p
+use std/time
+
+Node has
+  set Ticks to 0
+  set Starts to 0
+  set scratch to 0
+
+define [n: Node] start
+  set n.Starts to (n.Starts plus 1)
+  set n.scratch to 9
+  after 300ms
+    set n.Ticks to (n.Ticks plus 1)
+  time.Every 400ms
+    set n.Ticks to (n.Ticks plus 100)

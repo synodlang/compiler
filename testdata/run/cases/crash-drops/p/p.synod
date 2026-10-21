@@ -1,0 +1,16 @@
+# package p
+use std/net
+use std/sim
+
+Hi has
+  set k to 0
+
+Node has
+  set Got to 0
+  set Peer to sim.Nobody
+
+when [n: Node] (sim.Delivered Hi)
+  net.Send (message Hi with k 1) from n to n.Peer
+
+when [n: Node] (net.Received Hi from x)
+  set n.Got to (n.Got plus 1)

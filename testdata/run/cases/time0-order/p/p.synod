@@ -1,0 +1,18 @@
+# package p
+use std/sim
+
+Ping has
+  set seq to 0
+
+Node has
+  set Name to "idle"
+  set Count to 0
+  set secret to 0
+
+define [n: Node] start
+  set n.Name to "started"
+  set n.secret to 1
+
+when [n: Node] (sim.Delivered Ping)
+  set n.Count to (n.Count plus Ping.seq)
+  set n.Count to (n.Count plus 0)

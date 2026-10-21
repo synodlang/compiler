@@ -1,0 +1,2 @@
+{"seq":2,"t":0,"ev":"sim.Failed","code":"run-limit","message":"more than 10000 nested calls","pos":"p/p.synod:3:3"}
+failed at 0s: p/p.synod:3:3: error[run-limit]: more than 10000 nested calls

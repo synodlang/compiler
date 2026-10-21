@@ -1,0 +1,2 @@
+{"seq":2,"t":0,"ev":"sim.Failed","code":"number-range","message":"the result is too large for a number","pos":"p/main.synod:6:29"}
+failed at 0s: p/main.synod:6:29: error[number-range]: the result is too large for a number

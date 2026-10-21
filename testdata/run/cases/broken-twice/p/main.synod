@@ -1,0 +1,14 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  after 1s
+    deliver (message p.Ping with seq 5) to a
+  after 2s
+    deliver (message p.Ping with seq 6) to a
+  after 3s
+    deliver (message p.Ping with seq 0) to a
+  after 4s
+    deliver (message p.Ping with seq 9) to a

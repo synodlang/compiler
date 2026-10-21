@@ -1,0 +1,9 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set nodes to (sim.Cluster of 3 running p)
+  each n in nodes
+    set n.p.Peers to {(item 2 of nodes), (item 0 of nodes), (item 1 of nodes)}
+  deliver (message p.Go with k 1) to (item 1 of nodes)

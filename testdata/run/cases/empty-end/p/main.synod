@@ -1,0 +1,12 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  after 5ms
+    deliver (message p.Tick with k 1) to a
+  after 20ms
+    sim.Crash a
+  after 30ms
+    sim.Crash a

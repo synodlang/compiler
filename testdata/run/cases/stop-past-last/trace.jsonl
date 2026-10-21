@@ -1,0 +1,7 @@
+{"format":"synod-trace/1","synod":"0.2","seed":1,"program":"example.com/t/p","packages":["example.com/t/p","std/sim"]}
+{"seq":1,"t":0,"ev":"sim.Started"}
+{"seq":2,"t":0,"ev":"sim.Added","node":"n1","runs":["std/sim","example.com/t/p"],"state":{"p.Seen":0}}
+{"seq":3,"t":5000,"ev":"sim.Injected","node":"n1","record":{"type":"p.Tick","fields":{"k":"…"}}}
+{"seq":4,"t":5000,"ev":"sim.Changed","node":"n1","field":"p.Seen","old":0,"new":1}
+{"seq":5,"t":9000,"ev":"sim.Crashed","node":"n1"}
+{"seq":6,"t":9000,"ev":"sim.Ended","reason":"empty"}

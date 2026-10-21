@@ -1,0 +1,20 @@
+# package p
+use std/sim
+
+Ping has
+  set seq to 0
+
+Node has
+  set Count to 0
+
+when [n: Node] (sim.Delivered Ping)
+  set n.Count to Ping.seq
+
+define Biggest
+  set best to 0
+  each n in (sim.NodesRunning p)
+    if (n.Count more than best)
+      set best to n.Count
+  result best
+
+always (Biggest at most 1)
