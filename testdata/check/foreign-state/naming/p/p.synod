@@ -1,0 +1,18 @@
+# package p
+use std/disk
+use std/net
+
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+
+define [n: Node] Go [other: node] and [third: node]
+  net.Send (message Ping with seq 1) from other to third
+  disk.Write 1 at "k" on other
+  set n.count to (disk.Read "k" on other or 0)
+  emit (message Ping with seq 1) by other
+  net.Send (message Ping with seq 1) from n to other
+  disk.Write 2 at "k" on n
+  emit (message Ping with seq 2) by n

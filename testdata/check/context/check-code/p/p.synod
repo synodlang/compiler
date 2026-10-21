@@ -1,0 +1,30 @@
+# package p
+use std/sim
+
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+
+define Loop [d: time]
+  after d
+    Loop d
+
+define Armed
+  Loop 1s
+  result true
+
+define Muddle [n: Node]
+  set n.count to 1
+  result true
+
+define Noisy
+  emit (message Ping with seq 1) by sim.Nobody
+  result true
+
+always Armed
+
+always Noisy
+
+always (Muddle (item 0 of (sim.NodesRunning p)))

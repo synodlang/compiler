@@ -1,0 +1,9 @@
+# package q
+Rec has
+  set Key to ""
+
+Node has
+  set Role to "follower"
+
+define [n: Node] Term
+  result 1

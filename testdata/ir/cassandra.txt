@@ -1,0 +1,332 @@
+(program "github.com/synodlang/examples/cassandra#main"
+  (packages "std/disk" "std/lists" "std/net" "std/random" "std/time" "github.com/synodlang/examples/gossip" "std/maps" "std/math" "std/sim" "std/text" "github.com/synodlang/examples/ring" "github.com/synodlang/examples/cassandra" "std/lesson" "github.com/synodlang/examples/cassandra#main")
+  (main "main"
+    (vars (0 nodes local list of cassandra.Node) (1 i each number) (2 n each cassandra.Node) (3 replicas local list of node) (4 coordinator local node) (5 victim local node))
+    (body
+      (native "sim.seed" 5)
+      (set nodes#0 (native "sim.cluster" 6 (package "github.com/synodlang/examples/cassandra")))
+      (each i#1 n#2 nodes#0
+        (if (more-than i#1 0)
+          (then
+            (call "gossip.Join … to" n#2 (item nodes#0 0)))))
+      (set replicas#3 (call "ring.Owners of … among … count" "user:42" nodes#0 3))
+      (set coordinator#4 (item replicas#3 0))
+      (set victim#5 (item replicas#3 1))
+      (after (time 5000000)
+        (deliver (message cassandra.Write (Key "user:42") (Value "Ada")) coordinator#4))
+      (after (time 6000000)
+        (native "sim.crash" victim#5))
+      (after (time 12000000)
+        (deliver (message cassandra.Write (Key "user:42") (Value "Grace")) coordinator#4)
+        (call "lesson.Ask" "One replica is down. Does the write succeed, and how will that replica catch up?"))
+      (after (time 14000000)
+        (deliver (message cassandra.Read (Key "user:42")) (item replicas#3 2)))
+      (after (time 18000000)
+        (native "sim.restart" victim#5)
+        (call "lesson.Note" "Data lives in memory here, so the restarted replica is refilled only by hints."))
+      (native "sim.stopAt" (time 30000000))))
+  (package "std/disk" std
+    (runs "std/disk"))
+  (package "std/lists" std
+    (runs "std/lists"))
+  (package "std/net" std
+    (runs "std/net"))
+  (package "std/random" std
+    (runs "std/random"))
+  (package "std/time" std
+    (runs "std/time")
+    (phrase "Every"
+      (vars (0 d param time) (1 b block))
+      (body
+        (run-block b#1)
+        (after d#0
+          (call "time.Every" d#0
+            (block
+              (run-block b#1)))))))
+  (package "github.com/synodlang/examples/gossip"
+    (uses "std/disk" "std/lists" "std/net" "std/random" "std/time")
+    (runs "std/disk" "std/lists" "std/net" "std/random" "std/time" "github.com/synodlang/examples/gossip")
+    (node-fields
+      (field Generation number exported 0)
+      (field Heartbeat number exported 0)
+      (field Known map of node to number exported (empty map of node to number))
+      (field Down list of node exported (empty list of node))
+      (field peers list of node (empty list of node))
+      (field seenAt map of node to time (empty map of node to time)))
+    (record digest
+      (field known map of node to number (empty map of node to number)))
+    (start "start"
+      (vars (0 n receiver gossip.Node))
+      (body
+        (set-field n#0 gossip.Generation (plus (native "disk.read" "generation" n#0 0) 1))
+        (native "disk.write" (nodefield n#0 gossip.Generation) "generation" n#0)
+        (call "time.Every" (time 1000000)
+          (block
+            (set-field n#0 gossip.Heartbeat (plus (nodefield n#0 gossip.Heartbeat) 1))
+            (call "gossip.Learn … at" (recv n#0) n#0 (call "gossip.Version" (recv n#0)))
+            (call "gossip.CheckPeers" (recv n#0))
+            (if (more-than (native "lists.size" (nodefield n#0 gossip.peers)) 0)
+              (then
+                (native "net.send" (message gossip.digest (known (nodefield n#0 gossip.Known))) n#0 (native "random.pick" (nodefield n#0 gossip.peers)))))))))
+    (phrase "Join … to"
+      (vars (0 n param gossip.Node) (1 seed param node))
+      (body
+        (set-field n#0 gossip.peers (list seed#1))))
+    (phrase "Version" (result number)
+      (vars (0 n receiver gossip.Node))
+      (body
+        (result (plus (times (nodefield n#0 gossip.Generation) 1000000) (nodefield n#0 gossip.Heartbeat)))))
+    (phrase "Learn … at"
+      (vars (0 n receiver gossip.Node) (1 k param node) (2 v param number))
+      (body
+        (set-item (nodefield n#0 gossip.Known) k#1 v#2 map)
+        (set-item (nodefield n#0 gossip.seenAt) k#1 (native "time.now") map)
+        (if (and (is-not k#1 n#0) (not-in k#1 (nodefield n#0 gossip.peers)))
+          (then
+            (set-field n#0 gossip.peers (native "lists.append" k#1 (nodefield n#0 gossip.peers)))))))
+    (phrase "CheckPeers"
+      (vars (0 n receiver gossip.Node) (1 suspects local list of node) (2 k each node) (3 t each time))
+      (body
+        (set suspects#1 (empty list of node))
+        (each k#2 t#3 (nodefield n#0 gossip.seenAt) map
+          (if (more-than (minus:time (native "time.now") t#3) (time 4000000))
+            (then
+              (set suspects#1 (native "lists.append" k#2 suspects#1)))))
+        (set-field n#0 gossip.Down suspects#1)))
+    (when-node "net.received"
+      (vars (0 n receiver gossip.Node) (1 digest binding gossip.digest) (2 sender binding node) (3 k each node) (4 v each number))
+      (match 0 record gossip.digest digest#1)
+      (match 1 bind sender#2)
+      (body
+        (each k#3 v#4 (recfield digest#1 known) map
+          (if (in k#3 (nodefield n#0 gossip.Known) map)
+            (then
+              (if (more-than v#4 (item (nodefield n#0 gossip.Known) k#3 map))
+                (then
+                  (call "gossip.Learn … at" (recv n#0) k#3 v#4))))
+            (else
+              (call "gossip.Learn … at" (recv n#0) k#3 v#4))))
+        (if (not-in sender#2 (nodefield n#0 gossip.peers))
+          (then
+            (set-field n#0 gossip.peers (native "lists.append" sender#2 (nodefield n#0 gossip.peers))))))))
+  (package "std/maps" std
+    (runs "std/maps"))
+  (package "std/math" std
+    (runs "std/math"))
+  (package "std/sim" std
+    (runs "std/sim"))
+  (package "std/text" std
+    (runs "std/text"))
+  (package "github.com/synodlang/examples/ring"
+    (uses "std/lists" "std/maps" "std/math" "std/sim" "std/text")
+    (runs "std/lists" "std/maps" "std/math" "std/sim" "std/text" "github.com/synodlang/examples/ring")
+    (record Placed exported
+      (field Key text exported "")
+      (field Owner node exported (native "sim.nobody")))
+    (phrase "Vnodes" (result number)
+      (vars)
+      (body
+        (result 8)))
+    (phrase "TokensOf" (result list of number)
+      (vars (0 n param node) (1 tokens local list of number) (2 i each number))
+      (body
+        (set tokens#1 (empty list of number))
+        (each _ i#2 (native "lists.range" 1 (call "ring.Vnodes"))
+          (set tokens#1 (native "lists.append" (native "math.hash" (native "text.join" (list (native "sim.name" n#0) "#" (native "text.from" i#2)))) tokens#1)))
+        (result tokens#1)))
+    (phrase "Distance from … to" (result number)
+      (vars (0 h param number) (1 n param node) (2 best local number) (3 t each number) (4 d local number))
+      (body
+        (set best#2 1)
+        (each _ t#3 (call "ring.TokensOf" n#1)
+          (set d#4 (native "math.remainder" (minus t#3 h#0) 1))
+          (if (less-than d#4 best#2)
+            (then
+              (set best#2 d#4))))
+        (result best#2)))
+    (phrase "Owners of … among … count" (result list of node)
+      (vars (0 k param text) (1 ns param list of node) (2 r param number) (3 h local number) (4 distances local map of node to number) (5 n each node))
+      (body
+        (set h#3 (native "math.hash" k#0))
+        (set distances#4 (empty map of node to number))
+        (each _ n#5 ns#1
+          (set-item distances#4 n#5 (call "ring.Distance from … to" h#3 n#5) map))
+        (result (native "lists.take" r#2 (native "maps.keysByValue" distances#4))))))
+  (package "github.com/synodlang/examples/cassandra"
+    (uses "github.com/synodlang/examples/gossip" "github.com/synodlang/examples/ring" "std/lists" "std/maps" "std/net" "std/sim" "std/text" "std/time")
+    (runs "std/disk" "std/lists" "std/net" "std/random" "std/time" "github.com/synodlang/examples/gossip" "std/maps" "std/math" "std/sim" "std/text" "github.com/synodlang/examples/ring" "github.com/synodlang/examples/cassandra")
+    (node-fields
+      (field Data map of text to text exported (empty map of text to text))
+      (field PendingHints number exported 0)
+      (field versions map of text to time (empty map of text to time))
+      (field hints list of cassandra.Hint (empty list of cassandra.Hint))
+      (field nextRequest number 0)
+      (field acks map of text to number (empty map of text to number))
+      (field keys map of text to text (empty map of text to text))
+      (field replies map of text to list of cassandra.FetchReply (empty map of text to list of cassandra.FetchReply)))
+    (record Write exported
+      (field Key text exported "")
+      (field Value text exported ""))
+    (record Read exported
+      (field Key text exported ""))
+    (record Written exported
+      (field Key text exported "")
+      (field Acks number exported 0))
+    (record ReadDone exported
+      (field Key text exported "")
+      (field Value text exported ""))
+    (record Mutation exported
+      (field key text "")
+      (field value text "")
+      (field stamp time (time 0))
+      (field request text ""))
+    (record MutationAck exported
+      (field request text ""))
+    (record Fetch exported
+      (field key text "")
+      (field request text ""))
+    (record FetchReply exported
+      (field request text "")
+      (field value text "")
+      (field stamp time (time 0)))
+    (record Hint exported
+      (field target node (native "sim.nobody"))
+      (field mutation cassandra.Mutation (message cassandra.Mutation (key ""))))
+    (start "start"
+      (vars (0 n receiver cassandra.Node) (1 waiting local list of cassandra.Hint) (2 h each cassandra.Hint))
+      (body
+        (call "time.Every" (time 1000000)
+          (block
+            (set waiting#1 (empty list of cassandra.Hint))
+            (each _ h#2 (nodefield n#0 cassandra.hints)
+              (if (in (recfield h#2 target) (nodefield n#0 gossip.Down))
+                (then
+                  (set waiting#1 (native "lists.append" h#2 waiting#1)))
+                (else
+                  (native "net.send" (recfield h#2 mutation) n#0 (recfield h#2 target)))))
+            (set-field n#0 cassandra.hints waiting#1)
+            (set-field n#0 cassandra.PendingHints (native "lists.size" (nodefield n#0 cassandra.hints)))))))
+    (phrase "Factor" (result number)
+      (vars)
+      (body
+        (result 3)))
+    (phrase "Quorum" (result number)
+      (vars)
+      (body
+        (result 2)))
+    (phrase "Members" (result list of node)
+      (vars (0 n receiver cassandra.Node))
+      (body
+        (result (native "maps.keys" (nodefield n#0 gossip.Known)))))
+    (phrase "ReplicasOf" (result list of node)
+      (vars (0 n receiver cassandra.Node) (1 k param text))
+      (body
+        (result (call "ring.Owners of … among … count" k#1 (call "cassandra.Members" (recv n#0)) (call "cassandra.Factor")))))
+    (phrase "NewRequest" (result text)
+      (vars (0 n receiver cassandra.Node) (1 k param text) (2 id local text))
+      (body
+        (set-field n#0 cassandra.nextRequest (plus (nodefield n#0 cassandra.nextRequest) 1))
+        (set id#2 (native "text.from" (nodefield n#0 cassandra.nextRequest)))
+        (set-item (nodefield n#0 cassandra.keys) id#2 k#1 map)
+        (result id#2)))
+    (phrase "Store"
+      (vars (0 n receiver cassandra.Node) (1 m param cassandra.Mutation))
+      (body
+        (set-item (nodefield n#0 cassandra.Data) (recfield m#1 key) (recfield m#1 value) map)
+        (set-item (nodefield n#0 cassandra.versions) (recfield m#1 key) (recfield m#1 stamp) map)))
+    (phrase "Apply"
+      (vars (0 n receiver cassandra.Node) (1 m param cassandra.Mutation) (2 k local text))
+      (body
+        (set k#2 (recfield m#1 key))
+        (if (in k#2 (nodefield n#0 cassandra.versions) map)
+          (then
+            (if (more-than (recfield m#1 stamp) (item (nodefield n#0 cassandra.versions) k#2 map))
+              (then
+                (call "cassandra.Store" (recv n#0) m#1))))
+          (else
+            (call "cassandra.Store" (recv n#0) m#1)))))
+    (when-node "sim.delivered"
+      (vars (0 n receiver cassandra.Node) (1 Write binding cassandra.Write) (2 id local text) (3 m local cassandra.Mutation) (4 r each node))
+      (match 0 record cassandra.Write Write#1)
+      (body
+        (set id#2 (call "cassandra.NewRequest" (recv n#0) (recfield Write#1 Key)))
+        (set-item (nodefield n#0 cassandra.acks) id#2 0 map)
+        (set m#3 (message cassandra.Mutation (key (recfield Write#1 Key)) (value (recfield Write#1 Value)) (stamp (native "time.now")) (request id#2)))
+        (each _ r#4 (call "cassandra.ReplicasOf" (recv n#0) (recfield Write#1 Key))
+          (if (in r#4 (nodefield n#0 gossip.Down))
+            (then
+              (set-field n#0 cassandra.hints (native "lists.append" (message cassandra.Hint (target r#4) (mutation m#3)) (nodefield n#0 cassandra.hints)))
+              (set-field n#0 cassandra.PendingHints (native "lists.size" (nodefield n#0 cassandra.hints))))
+            (else
+              (native "net.send" m#3 n#0 r#4))))))
+    (when-node "net.received"
+      (vars (0 n receiver cassandra.Node) (1 Mutation binding cassandra.Mutation) (2 coordinator binding node))
+      (match 0 record cassandra.Mutation Mutation#1)
+      (match 1 bind coordinator#2)
+      (body
+        (call "cassandra.Apply" (recv n#0) Mutation#1)
+        (native "net.send" (message cassandra.MutationAck (request (recfield Mutation#1 request))) n#0 coordinator#2)))
+    (when-node "net.received"
+      (vars (0 n receiver cassandra.Node) (1 MutationAck binding cassandra.MutationAck) (2 replica binding node) (3 id local text))
+      (match 0 record cassandra.MutationAck MutationAck#1)
+      (match 1 bind replica#2)
+      (body
+        (set id#3 (recfield MutationAck#1 request))
+        (set-item (nodefield n#0 cassandra.acks) id#3 (plus (item (nodefield n#0 cassandra.acks) id#3 map) 1) map)
+        (if (is (item (nodefield n#0 cassandra.acks) id#3 map) (call "cassandra.Quorum"))
+          (then
+            (emit (message cassandra.Written (Key (item (nodefield n#0 cassandra.keys) id#3 map)) (Acks (call "cassandra.Quorum"))) n#0)))))
+    (when-node "sim.delivered"
+      (vars (0 n receiver cassandra.Node) (1 Read binding cassandra.Read) (2 id local text) (3 r each node))
+      (match 0 record cassandra.Read Read#1)
+      (body
+        (set id#2 (call "cassandra.NewRequest" (recv n#0) (recfield Read#1 Key)))
+        (set-item (nodefield n#0 cassandra.replies) id#2 (empty list of cassandra.FetchReply) map)
+        (each _ r#3 (call "cassandra.ReplicasOf" (recv n#0) (recfield Read#1 Key))
+          (if (not-in r#3 (nodefield n#0 gossip.Down))
+            (then
+              (native "net.send" (message cassandra.Fetch (key (recfield Read#1 Key)) (request id#2)) n#0 r#3))))))
+    (when-node "net.received"
+      (vars (0 n receiver cassandra.Node) (1 Fetch binding cassandra.Fetch) (2 coordinator binding node) (3 k local text))
+      (match 0 record cassandra.Fetch Fetch#1)
+      (match 1 bind coordinator#2)
+      (body
+        (set k#3 (recfield Fetch#1 key))
+        (if (in k#3 (nodefield n#0 cassandra.Data) map)
+          (then
+            (native "net.send" (message cassandra.FetchReply (request (recfield Fetch#1 request)) (value (item (nodefield n#0 cassandra.Data) k#3 map)) (stamp (item (nodefield n#0 cassandra.versions) k#3 map))) n#0 coordinator#2))
+          (else
+            (native "net.send" (message cassandra.FetchReply (request (recfield Fetch#1 request))) n#0 coordinator#2)))))
+    (when-node "net.received"
+      (vars (0 n receiver cassandra.Node) (1 FetchReply binding cassandra.FetchReply) (2 replica binding node) (3 id local text) (4 best local cassandra.FetchReply) (5 r each cassandra.FetchReply))
+      (match 0 record cassandra.FetchReply FetchReply#1)
+      (match 1 bind replica#2)
+      (body
+        (set id#3 (recfield FetchReply#1 request))
+        (set-item (nodefield n#0 cassandra.replies) id#3 (native "lists.append" FetchReply#1 (item (nodefield n#0 cassandra.replies) id#3 map)) map)
+        (if (is (native "lists.size" (item (nodefield n#0 cassandra.replies) id#3 map)) (call "cassandra.Quorum"))
+          (then
+            (set best#4 (item (item (nodefield n#0 cassandra.replies) id#3 map) 0))
+            (each _ r#5 (item (nodefield n#0 cassandra.replies) id#3 map)
+              (if (more-than (recfield r#5 stamp) (recfield best#4 stamp))
+                (then
+                  (set best#4 r#5))))
+            (emit (message cassandra.ReadDone (Key (item (nodefield n#0 cassandra.keys) id#3 map)) (Value (recfield best#4 value))) n#0))))))
+  (package "std/lesson" std
+    (uses "std/sim")
+    (runs "std/sim" "std/lesson")
+    (record Asked exported
+      (field Question text exported ""))
+    (record Noted exported
+      (field Text text exported ""))
+    (phrase "Ask"
+      (vars (0 q param text))
+      (body
+        (emit (message lesson.Asked (Question q#0)) (native "sim.nobody"))))
+    (phrase "Note"
+      (vars (0 t param text))
+      (body
+        (emit (message lesson.Noted (Text t#0)) (native "sim.nobody")))))
+  (package "github.com/synodlang/examples/cassandra#main" main
+    (uses "github.com/synodlang/examples/cassandra" "github.com/synodlang/examples/gossip" "github.com/synodlang/examples/ring" "std/lesson" "std/sim")
+    (runs "std/disk" "std/lists" "std/net" "std/random" "std/time" "github.com/synodlang/examples/gossip" "std/maps" "std/math" "std/sim" "std/text" "github.com/synodlang/examples/ring" "github.com/synodlang/examples/cassandra" "std/lesson" "github.com/synodlang/examples/cassandra#main")))

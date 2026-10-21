@@ -1,0 +1,13 @@
+# package p
+use std/lists
+
+Node has
+  set peers to {}
+  set extra to {}
+  set count to 0
+
+define Takes [ns: list of node]
+  result (lists.Size ns)
+
+define [n: Node] Go
+  set n.count to (Takes n.peers)

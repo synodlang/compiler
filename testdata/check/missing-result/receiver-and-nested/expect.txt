@@ -1,0 +1,2 @@
+p/p.synod:5:1: error[missing-result]: "[n: Node] Leader" does not give a result on every path
+  hint: end every path with "result …"

@@ -1,0 +1,26 @@
+# package p
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+  set name to ""
+  set peers to {}
+
+define Pick [flag: bool]
+  if flag
+    result 1
+  result "one"
+
+define [n: Node] Go [m: node] and [x: number]
+  set v to 1
+  set v to "one"
+  set n.count to (v plus 1)
+  set n.count to "many"
+  set n.name to x
+  set n.peers to {m, x}
+  set ping to (message Ping with seq "one")
+  set item "k" of n.peers to 1
+  set item m of n.name to 2
+  set n.count to (Pick true)
+  set n.name to ping

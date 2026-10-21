@@ -1,0 +1,13 @@
+# package p
+use example.com/t/q
+
+Node has
+  set count to 0
+  set role to "x"
+
+define [n: Node] Go [r: q.Rec] and [m: q.Node]
+  set n.count to n.rol
+  set n.count to r.Kye
+  set n.count to m.q.Rol
+  set n.count to m.q.Tem
+  set n.count to m.rol

@@ -1,0 +1,12 @@
+p/p.synod:11:18: error[foreign-state]: node code reaches "other.count" through "other", not its receiver "n"
+  hint: other nodes learn through net.Send
+p/p.synod:12:7: error[foreign-state]: node code reaches "other.count" through "other", not its receiver "n"
+  hint: other nodes learn through net.Send
+p/p.synod:13:3: error[foreign-state]: node code reaches "other.Reset" through "other", not its receiver "n"
+  hint: other nodes learn through net.Send
+p/p.synod:14:18: error[foreign-state]: node code reaches "other.q.Val" through "other", not its receiver "n"
+  hint: other nodes learn through net.Send
+p/p.synod:16:20: error[foreign-state]: node code reaches "x.count" through "x", not its receiver "n"
+  hint: other nodes learn through net.Send
+p/p.synod:18:18: error[foreign-state]: node code reaches "me.count" through "me", not its receiver "n"
+  hint: other nodes learn through net.Send

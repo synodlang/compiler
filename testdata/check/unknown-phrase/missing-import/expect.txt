@@ -1,3 +1,5 @@
+p/p.synod:3:12: error[ambiguous-empty]: cannot tell the type of {}
+  hint: use it with std/lists or std/maps, or assign it where the type is known
 p/p.synod:6:15: error[unknown-phrase]: "lists" is not imported
   hint: add "use std/lists"
 p/p.synod:7:3: error[unknown-phrase]: "random" is not imported

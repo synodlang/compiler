@@ -1,0 +1,19 @@
+# package p
+use example.com/t/q
+
+Node has
+  set count to 0
+
+define [n: Node] Reset
+  set n.count to 0
+
+define [n: Node] Spy [other: Node] and [others: list of Node]
+  set n.count to other.count
+  set other.count to 1
+  other.Reset
+  set n.count to other.q.Val
+  each x in others
+    set n.count to x.count
+  set me to n
+  set n.count to me.count
+  set n.count to n.count

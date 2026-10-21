@@ -1,0 +1,16 @@
+# package p
+use std/lists
+
+Box has
+  set items to {}
+  set label to ""
+
+Node has
+  set box to (message Box with label "x")
+  set count to 0
+
+define [n: Node] Fill [v: number]
+  set n.box to (message Box with items {v})
+
+define [n: Node] Empty
+  set n.count to (lists.Size {})

@@ -1,0 +1,6 @@
+p/main.synod:22:26: error[type-mismatch]: "d" has type r.Node, expected q.Node
+p/main.synod:23:19: error[type-mismatch]: "c" has type list of q.Node, expected list of text
+p/main.synod:24:18: error[type-mismatch]: "d" has type r.Node, expected q.Node
+p/main.synod:24:24: error[type-mismatch]: "b" has type q.Node, expected r.Node
+p/main.synod:26:19: error[type-mismatch]: "sim.Nodes" has type list of node, expected list of text
+p/main.synod:27:20: error[type-mismatch]: "sim.NodesRunning r" has type list of r.Node, expected list of text

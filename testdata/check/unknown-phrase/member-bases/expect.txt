@@ -1,0 +1,4 @@
+p/main.synod:7:19: error[unknown-phrase]: "server" has no field "Val"
+  hint: name the package: "server.<package>.Val"
+p/main.synod:8:21: error[unknown-phrase]: "q.Node" has no field "Missing"
+p/main.synod:10:14: error[unknown-phrase]: "t" has no field "size"

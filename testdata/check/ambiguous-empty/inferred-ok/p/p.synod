@@ -1,0 +1,18 @@
+# package p
+use std/lists
+use std/maps
+
+Record has
+  set inner to {}
+  set tags to {}
+
+Node has
+  set known to {}
+  set seen to {}
+  set record to (message Record with tags {})
+  set count to 0
+
+define [n: Node] Go [k: text]
+  set item k of n.known to {}
+  set n.count to (lists.Size n.seen)
+  set n.count to (maps.Size n.known)

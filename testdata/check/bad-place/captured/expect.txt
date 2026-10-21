@@ -1,3 +1,5 @@
 p/p.synod:11:9: error[bad-place]: "total" is captured by after; it cannot be set here
 p/p.synod:16:9: error[bad-place]: "total" is captured by a block argument; it cannot be set here
+p/p.synod:17:16: error[ambiguous-empty]: cannot tell the type of {}
+  hint: use it with std/lists or std/maps, or assign it where the type is known
 p/p.synod:19:19: error[bad-place]: "items" is captured by after; it cannot be set here

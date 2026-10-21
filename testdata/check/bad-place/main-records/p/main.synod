@@ -1,0 +1,9 @@
+# package main
+use example.com/t/q
+use std/sim
+
+define main
+  set server to (sim.Spawn q)
+  set copy to (message q.Rec with Num 1)
+  set copy.Num to 2
+  set server.q.Val to copy.Num

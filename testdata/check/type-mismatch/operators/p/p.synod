@@ -1,0 +1,33 @@
+# package p
+Node has
+  set count to 0
+  set name to ""
+  set wait to 0s
+
+define Num [x: number]
+  result x
+
+define Wait [x: time]
+  result x
+
+define [n: Node] Ops [m: node]
+  set n.count to (Num (n.name plus 1))
+  set n.wait to (Wait (n.wait times n.wait))
+  set n.count to (Num (n.count divided by n.wait))
+  set n.wait to (Wait (n.wait minus 1))
+  if (n.name less than "z")
+    set n.count to 0
+  if (n.count is "zero")
+    set n.count to 0
+  if (n.count is in n.name)
+    set n.count to 0
+  if (n.count and true)
+    set n.count to 0
+  if (not n.count)
+    set n.count to 0
+  if (n.count is not in {"a"})
+    set n.count to 0
+  if (n.wait at least 1)
+    set n.count to 0
+  if ((m is n) and (n.wait more than 1s))
+    set n.count to 0

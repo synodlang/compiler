@@ -1,0 +1,160 @@
+(program "github.com/synodlang/examples/paxos#main"
+  (packages "std/lists" "std/math" "std/net" "std/sim" "std/text" "github.com/synodlang/examples/paxos" "std/lesson" "github.com/synodlang/examples/paxos#main")
+  (main "main"
+    (vars (0 nodes local list of paxos.Node))
+    (body
+      (native "sim.seed" 7)
+      (native "net.latency" (time 10000) (time 40000))
+      (set nodes#0 (native "sim.cluster" 3 (package "github.com/synodlang/examples/paxos")))
+      (call "paxos.Meet" nodes#0)
+      (deliver (message paxos.Start (Value "x")) (item nodes#0 0))
+      (after (time 15000)
+        (deliver (message paxos.Start (Value "y")) (item nodes#0 2))
+        (call "lesson.Ask" "Two proposers are racing. Can both x and y be chosen?"))
+      (native "sim.stopAt" (time 2000000))))
+  (package "std/lists" std
+    (runs "std/lists"))
+  (package "std/math" std
+    (runs "std/math"))
+  (package "std/net" std
+    (runs "std/net"))
+  (package "std/sim" std
+    (runs "std/sim"))
+  (package "std/text" std
+    (runs "std/text"))
+  (package "github.com/synodlang/examples/paxos"
+    (uses "std/lists" "std/math" "std/net" "std/sim" "std/text")
+    (runs "std/lists" "std/math" "std/net" "std/sim" "std/text" "github.com/synodlang/examples/paxos")
+    (node-fields
+      (field Peers list of paxos.Node exported (empty list of paxos.Node))
+      (field Promised number exported 0)
+      (field AcceptedBallot number exported 0)
+      (field AcceptedValue text exported "")
+      (field Chosen text exported "")
+      (field round number 0)
+      (field ballot number 0)
+      (field proposal text "")
+      (field promises list of paxos.Promise (empty list of paxos.Promise))
+      (field votes map of text to number (empty map of text to number)))
+    (record Start exported
+      (field Value text exported ""))
+    (record Learned exported
+      (field Value text exported ""))
+    (record Prepare exported
+      (field number number 0))
+    (record Promise exported
+      (field number number 0)
+      (field prior number 0)
+      (field priorValue text ""))
+    (record Accept exported
+      (field number number 0)
+      (field value text ""))
+    (record Accepted exported
+      (field number number 0)
+      (field value text ""))
+    (phrase "Meet"
+      (vars (0 ns param list of paxos.Node) (1 n each paxos.Node))
+      (body
+        (each _ n#1 ns#0
+          (set-field n#1 paxos.Peers ns#0))))
+    (phrase "Majority of" (result number)
+      (vars (0 n param number))
+      (body
+        (result (plus (native "math.floor" (divided-by n#0 2)) 1))))
+    (phrase "Propose"
+      (vars (0 n receiver paxos.Node) (1 v param text) (2 p each paxos.Node))
+      (body
+        (set-field n#0 paxos.round (plus (nodefield n#0 paxos.round) 1))
+        (set-field n#0 paxos.ballot (plus (times (nodefield n#0 paxos.round) 100) (native "sim.id" n#0)))
+        (set-field n#0 paxos.proposal v#1)
+        (set-field n#0 paxos.promises (empty list of paxos.Promise))
+        (each _ p#2 (nodefield n#0 paxos.Peers)
+          (native "net.send" (message paxos.Prepare (number (nodefield n#0 paxos.ballot))) n#0 p#2))))
+    (phrase "ChosenValues" (result list of text)
+      (vars (0 values local list of text) (1 n each paxos.Node) (2 c local text))
+      (body
+        (set values#0 (empty list of text))
+        (each _ n#1 (native "sim.nodesRunning" (package "github.com/synodlang/examples/paxos"))
+          (set c#2 (nodefield n#1 paxos.Chosen))
+          (if (and (is-not c#2 "") (not-in c#2 values#0))
+            (then
+              (set values#0 (native "lists.append" c#2 values#0)))))
+        (result values#0)))
+    (when-node "sim.delivered"
+      (vars (0 n receiver paxos.Node) (1 Start binding paxos.Start))
+      (match 0 record paxos.Start Start#1)
+      (body
+        (call "paxos.Propose" (recv n#0) (recfield Start#1 Value))))
+    (when-node "net.received"
+      (vars (0 n receiver paxos.Node) (1 Prepare binding paxos.Prepare) (2 proposer binding node))
+      (match 0 record paxos.Prepare Prepare#1)
+      (match 1 bind proposer#2)
+      (body
+        (if (more-than (recfield Prepare#1 number) (nodefield n#0 paxos.Promised))
+          (then
+            (set-field n#0 paxos.Promised (recfield Prepare#1 number))
+            (native "net.send" (message paxos.Promise (number (nodefield n#0 paxos.Promised)) (prior (nodefield n#0 paxos.AcceptedBallot)) (priorValue (nodefield n#0 paxos.AcceptedValue))) n#0 proposer#2)))))
+    (when-node "net.received"
+      (vars (0 n receiver paxos.Node) (1 Promise binding paxos.Promise) (2 acceptor binding node) (3 best local number) (4 p each paxos.Promise) (5 a each paxos.Node))
+      (match 0 record paxos.Promise Promise#1)
+      (match 1 bind acceptor#2)
+      (body
+        (if (is (recfield Promise#1 number) (nodefield n#0 paxos.ballot))
+          (then
+            (set-field n#0 paxos.promises (native "lists.append" Promise#1 (nodefield n#0 paxos.promises)))
+            (if (is (native "lists.size" (nodefield n#0 paxos.promises)) (call "paxos.Majority of" (native "lists.size" (nodefield n#0 paxos.Peers))))
+              (then
+                (set best#3 0)
+                (each _ p#4 (nodefield n#0 paxos.promises)
+                  (if (more-than (recfield p#4 prior) best#3)
+                    (then
+                      (set best#3 (recfield p#4 prior))
+                      (set-field n#0 paxos.proposal (recfield p#4 priorValue)))))
+                (each _ a#5 (nodefield n#0 paxos.Peers)
+                  (native "net.send" (message paxos.Accept (number (nodefield n#0 paxos.ballot)) (value (nodefield n#0 paxos.proposal))) n#0 a#5))))))))
+    (when-node "net.received"
+      (vars (0 n receiver paxos.Node) (1 Accept binding paxos.Accept) (2 proposer binding node) (3 p each paxos.Node))
+      (match 0 record paxos.Accept Accept#1)
+      (match 1 bind proposer#2)
+      (body
+        (if (at-least (recfield Accept#1 number) (nodefield n#0 paxos.Promised))
+          (then
+            (set-field n#0 paxos.Promised (recfield Accept#1 number))
+            (set-field n#0 paxos.AcceptedBallot (recfield Accept#1 number))
+            (set-field n#0 paxos.AcceptedValue (recfield Accept#1 value))
+            (each _ p#3 (nodefield n#0 paxos.Peers)
+              (native "net.send" (message paxos.Accepted (number (recfield Accept#1 number)) (value (recfield Accept#1 value))) n#0 p#3))))))
+    (when-node "net.received"
+      (vars (0 n receiver paxos.Node) (1 Accepted binding paxos.Accepted) (2 acceptor binding node) (3 key local text))
+      (match 0 record paxos.Accepted Accepted#1)
+      (match 1 bind acceptor#2)
+      (body
+        (set key#3 (native "text.from" (recfield Accepted#1 number)))
+        (if (in key#3 (nodefield n#0 paxos.votes) map)
+          (then
+            (set-item (nodefield n#0 paxos.votes) key#3 (plus (item (nodefield n#0 paxos.votes) key#3 map) 1) map))
+          (else
+            (set-item (nodefield n#0 paxos.votes) key#3 1 map)))
+        (if (is (item (nodefield n#0 paxos.votes) key#3 map) (call "paxos.Majority of" (native "lists.size" (nodefield n#0 paxos.Peers))))
+          (then
+            (set-field n#0 paxos.Chosen (recfield Accepted#1 value))
+            (emit (message paxos.Learned (Value (nodefield n#0 paxos.Chosen))) n#0)))))
+    (always "paxos/paxos.synod:109: always ((lists.Size ChosenValues) at most 1)" (at-most (native "lists.size" (call "paxos.ChosenValues")) 1) (slots 0)))
+  (package "std/lesson" std
+    (uses "std/sim")
+    (runs "std/sim" "std/lesson")
+    (record Asked exported
+      (field Question text exported ""))
+    (record Noted exported
+      (field Text text exported ""))
+    (phrase "Ask"
+      (vars (0 q param text))
+      (body
+        (emit (message lesson.Asked (Question q#0)) (native "sim.nobody"))))
+    (phrase "Note"
+      (vars (0 t param text))
+      (body
+        (emit (message lesson.Noted (Text t#0)) (native "sim.nobody")))))
+  (package "github.com/synodlang/examples/paxos#main" main
+    (uses "github.com/synodlang/examples/paxos" "std/lesson" "std/net" "std/sim")
+    (runs "std/lists" "std/math" "std/net" "std/sim" "std/text" "github.com/synodlang/examples/paxos" "std/lesson" "github.com/synodlang/examples/paxos#main")))

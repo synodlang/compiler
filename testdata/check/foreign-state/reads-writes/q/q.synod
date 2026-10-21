@@ -1,0 +1,6 @@
+# package q
+Node has
+  set Val to 0
+
+define [n: Node] Peek
+  result n.Val

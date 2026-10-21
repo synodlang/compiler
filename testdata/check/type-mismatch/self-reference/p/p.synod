@@ -1,0 +1,8 @@
+# package p
+Node has
+  set count to 0
+
+define [n: Node] Go
+  set l to {}
+  set l to {l}
+  set n.count to 1

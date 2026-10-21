@@ -1,0 +1,19 @@
+# package p
+use std/sim
+
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+
+define Inject [m: node]
+  deliver (message Ping with seq 1) to m
+
+define Spawn [k: number]
+  set x to (sim.Spawn p)
+  set x to x
+
+define [n: Node] start
+  Inject n
+  Spawn 1

@@ -1,0 +1,7 @@
+p/main.synod:10:5: error[context]: "n.Bump" is node code; it cannot run in main context
+p/main.synod:11:5: error[context]: "net.Send" is not allowed in main context
+p/main.synod:12:41: error[context]: main is not a node: write "emit … by sim.Nobody"
+p/main.synod:13:5: error[context]: "draw" is not allowed in main context
+p/main.synod:13:11: error[context]: "look.Circle" is not allowed in main context
+p/main.synod:14:5: error[context]: "look.Fade" is not allowed in main context
+p/main.synod:14:16: error[context]: "card of n" is not allowed in main context

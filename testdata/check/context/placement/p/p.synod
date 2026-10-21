@@ -1,0 +1,33 @@
+# package p
+use std/sim
+use std/time
+
+Ping has
+  set seq to 0
+
+set count to 1
+
+Node has
+  set count to 0
+  set bad to time.Now
+  set bad2 to (message Ping with seq time.Now)
+  look
+
+define [n: Node] Soon
+  after 1s
+    result 3
+  time.Every 1s
+    result 4
+  result 5
+
+define [n: Node] start
+  result 1
+  time.Every 1s
+    result 2
+  after 1s
+    result 3
+
+when [n: Node] (sim.Delivered Ping)
+  result 4
+
+always true

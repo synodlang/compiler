@@ -1,0 +1,21 @@
+# package d
+use example.com/t/a
+use example.com/t/b
+use example.com/t/c
+
+Node has
+  set total to 0
+
+define Tests [n: Node] with [an: a.Node] and [bn: b.Node] and [cn: c.Node]
+  set n.total to (b.TakeA bn)
+  set n.total to (b.TakeB an)
+  set n.total to (b.TakeA cn)
+  set n.total to (b.TakeB bn)
+  set n.total to bn.a.A
+  set n.total to an.b.B
+  set n.total to bn.c.C
+  set n.total to cn.a.A
+  set both to {an, cn}
+  each x in both
+    if (x is n)
+      set n.total to 0

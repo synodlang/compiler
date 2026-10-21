@@ -1,0 +1,187 @@
+(program "github.com/synodlang/examples/webapp#main"
+  (packages "github.com/synodlang/examples/webapp/api" "std/maps" "std/net" "std/sim" "std/time" "github.com/synodlang/examples/webapp/app" "github.com/synodlang/examples/webapp/cache" "std/text" "github.com/synodlang/examples/webapp/db" "std/lists" "github.com/synodlang/examples/webapp/lb" "std/lesson" "std/random" "github.com/synodlang/examples/webapp#main")
+  (main "main"
+    (vars (0 balancer local lb.Node) (1 servers local list of app.Node) (2 store local cache.Node) (3 database local db.Node) (4 s each app.Node) (5 keys local list of text) (6 i each number))
+    (body
+      (native "sim.seed" 9)
+      (set balancer#0 (native "sim.spawn" (package "github.com/synodlang/examples/webapp/lb")))
+      (set servers#1 (native "sim.cluster" 3 (package "github.com/synodlang/examples/webapp/app")))
+      (set store#2 (native "sim.spawn" (package "github.com/synodlang/examples/webapp/cache")))
+      (set database#3 (native "sim.spawn" (package "github.com/synodlang/examples/webapp/db")))
+      (call "lb.Balance … on" servers#1 balancer#0)
+      (each _ s#4 servers#1
+        (call "app.Wire … to … and" s#4 store#2 database#3))
+      (set keys#5 (list "home" "cart" "profile" "search" "help"))
+      (each _ i#6 (native "lists.range" 1 150)
+        (after (times:time i#6 (time 20000))
+          (deliver (message api.Get (Key (native "random.pick" keys#5)) (Id i#6) (Start (native "time.now"))) balancer#0)))
+      (call "lesson.Note" "Misses go to the database and fill the cache; hits come back fast.")
+      (after (time 2000000)
+        (native "sim.crash" store#2)
+        (call "lesson.Ask" "The cache just crashed. What happens to new requests?"))
+      (native "sim.stopAt" (time 4000000))))
+  (package "github.com/synodlang/examples/webapp/api"
+    (runs "github.com/synodlang/examples/webapp/api")
+    (record Get exported
+      (field Key text exported "")
+      (field Id number exported 0)
+      (field Start time exported (time 0)))
+    (record Lookup exported
+      (field Key text exported "")
+      (field Id number exported 0))
+    (record CacheReply exported
+      (field Key text exported "")
+      (field Id number exported 0)
+      (field Value text exported "")
+      (field Found bool exported false))
+    (record Query exported
+      (field Key text exported "")
+      (field Id number exported 0))
+    (record Rows exported
+      (field Key text exported "")
+      (field Id number exported 0)
+      (field Value text exported ""))
+    (record Fill exported
+      (field Key text exported "")
+      (field Value text exported ""))
+    (record Served exported
+      (field Id number exported 0)
+      (field Hit bool exported false)
+      (field Latency time exported (time 0))))
+  (package "std/maps" std
+    (runs "std/maps"))
+  (package "std/net" std
+    (runs "std/net"))
+  (package "std/sim" std
+    (runs "std/sim"))
+  (package "std/time" std
+    (runs "std/time")
+    (phrase "Every"
+      (vars (0 d param time) (1 b block))
+      (body
+        (run-block b#1)
+        (after d#0
+          (call "time.Every" d#0
+            (block
+              (run-block b#1)))))))
+  (package "github.com/synodlang/examples/webapp/app"
+    (uses "github.com/synodlang/examples/webapp/api" "std/maps" "std/net" "std/sim" "std/time")
+    (runs "github.com/synodlang/examples/webapp/api" "std/maps" "std/net" "std/sim" "std/time" "github.com/synodlang/examples/webapp/app")
+    (node-fields
+      (field Cache node exported (native "sim.nobody"))
+      (field Db node exported (native "sim.nobody"))
+      (field pending map of number to api.Get (empty map of number to api.Get)))
+    (phrase "Wire … to … and"
+      (vars (0 n param app.Node) (1 c param node) (2 d param node))
+      (body
+        (set-field n#0 app.Cache c#1)
+        (set-field n#0 app.Db d#2)))
+    (phrase "Finish … hit"
+      (vars (0 n receiver app.Node) (1 r param api.Get) (2 h param bool))
+      (body
+        (set-field n#0 app.pending (native "maps.without" (recfield r#1 Id) (nodefield n#0 app.pending)))
+        (emit (message api.Served (Id (recfield r#1 Id)) (Hit h#2) (Latency (minus:time (native "time.now") (recfield r#1 Start)))) n#0)))
+    (when-node "net.received"
+      (vars (0 n receiver app.Node) (1 api.Get binding api.Get) (2 balancer binding node))
+      (match 0 record api.Get api.Get#1)
+      (match 1 bind balancer#2)
+      (body
+        (set-item (nodefield n#0 app.pending) (recfield api.Get#1 Id) api.Get#1 map)
+        (native "net.send" (message api.Lookup (Key (recfield api.Get#1 Key)) (Id (recfield api.Get#1 Id))) n#0 (nodefield n#0 app.Cache))))
+    (when-node "net.received"
+      (vars (0 n receiver app.Node) (1 api.CacheReply binding api.CacheReply) (2 cache binding node) (3 request local api.Get))
+      (match 0 record api.CacheReply api.CacheReply#1)
+      (match 1 bind cache#2)
+      (body
+        (set request#3 (item (nodefield n#0 app.pending) (recfield api.CacheReply#1 Id) map))
+        (if (recfield api.CacheReply#1 Found)
+          (then
+            (call "app.Finish … hit" (recv n#0) request#3 true))
+          (else
+            (native "net.send" (message api.Query (Key (recfield request#3 Key)) (Id (recfield request#3 Id))) n#0 (nodefield n#0 app.Db))))))
+    (when-node "net.received"
+      (vars (0 n receiver app.Node) (1 api.Rows binding api.Rows) (2 db binding node) (3 request local api.Get))
+      (match 0 record api.Rows api.Rows#1)
+      (match 1 bind db#2)
+      (body
+        (set request#3 (item (nodefield n#0 app.pending) (recfield api.Rows#1 Id) map))
+        (native "net.send" (message api.Fill (Key (recfield api.Rows#1 Key)) (Value (recfield api.Rows#1 Value))) n#0 (nodefield n#0 app.Cache))
+        (call "app.Finish … hit" (recv n#0) request#3 false))))
+  (package "github.com/synodlang/examples/webapp/cache"
+    (uses "github.com/synodlang/examples/webapp/api" "std/net")
+    (runs "github.com/synodlang/examples/webapp/api" "std/net" "github.com/synodlang/examples/webapp/cache")
+    (node-fields
+      (field Entries map of text to text exported (empty map of text to text)))
+    (when-node "net.received"
+      (vars (0 n receiver cache.Node) (1 api.Lookup binding api.Lookup) (2 asker binding node) (3 k local text))
+      (match 0 record api.Lookup api.Lookup#1)
+      (match 1 bind asker#2)
+      (body
+        (set k#3 (recfield api.Lookup#1 Key))
+        (if (in k#3 (nodefield n#0 cache.Entries) map)
+          (then
+            (native "net.send" (message api.CacheReply (Key k#3) (Id (recfield api.Lookup#1 Id)) (Value (item (nodefield n#0 cache.Entries) k#3 map)) (Found true)) n#0 asker#2))
+          (else
+            (native "net.send" (message api.CacheReply (Key k#3) (Id (recfield api.Lookup#1 Id))) n#0 asker#2)))))
+    (when-node "net.received"
+      (vars (0 n receiver cache.Node) (1 api.Fill binding api.Fill) (2 filler binding node))
+      (match 0 record api.Fill api.Fill#1)
+      (match 1 bind filler#2)
+      (body
+        (set-item (nodefield n#0 cache.Entries) (recfield api.Fill#1 Key) (recfield api.Fill#1 Value) map))))
+  (package "std/text" std
+    (runs "std/text"))
+  (package "github.com/synodlang/examples/webapp/db"
+    (uses "github.com/synodlang/examples/webapp/api" "std/net" "std/text")
+    (runs "github.com/synodlang/examples/webapp/api" "std/net" "std/text" "github.com/synodlang/examples/webapp/db")
+    (node-fields
+      (field Queries number exported 0))
+    (when-node "net.received"
+      (vars (0 n receiver db.Node) (1 api.Query binding api.Query) (2 asker binding node))
+      (match 0 record api.Query api.Query#1)
+      (match 1 bind asker#2)
+      (body
+        (set-field n#0 db.Queries (plus (nodefield n#0 db.Queries) 1))
+        (after (time 40000)
+          (native "net.send" (message api.Rows (Key (recfield api.Query#1 Key)) (Id (recfield api.Query#1 Id)) (Value (native "text.join" (list "row for " (recfield api.Query#1 Key))))) n#0 asker#2)))))
+  (package "std/lists" std
+    (runs "std/lists"))
+  (package "github.com/synodlang/examples/webapp/lb"
+    (uses "github.com/synodlang/examples/webapp/api" "std/lists" "std/net" "std/sim")
+    (runs "github.com/synodlang/examples/webapp/api" "std/lists" "std/net" "std/sim" "github.com/synodlang/examples/webapp/lb")
+    (node-fields
+      (field Backends list of node exported (empty list of node))
+      (field next number 0))
+    (phrase "Balance … on"
+      (vars (0 servers param list of node) (1 n param lb.Node))
+      (body
+        (set-field n#1 lb.Backends servers#0)))
+    (when-node "sim.delivered"
+      (vars (0 n receiver lb.Node) (1 api.Get binding api.Get))
+      (match 0 record api.Get api.Get#1)
+      (body
+        (native "net.send" api.Get#1 n#0 (item (nodefield n#0 lb.Backends) (nodefield n#0 lb.next)))
+        (set-field n#0 lb.next (plus (nodefield n#0 lb.next) 1))
+        (if (is (nodefield n#0 lb.next) (native "lists.size" (nodefield n#0 lb.Backends)))
+          (then
+            (set-field n#0 lb.next 0))))))
+  (package "std/lesson" std
+    (uses "std/sim")
+    (runs "std/sim" "std/lesson")
+    (record Asked exported
+      (field Question text exported ""))
+    (record Noted exported
+      (field Text text exported ""))
+    (phrase "Ask"
+      (vars (0 q param text))
+      (body
+        (emit (message lesson.Asked (Question q#0)) (native "sim.nobody"))))
+    (phrase "Note"
+      (vars (0 t param text))
+      (body
+        (emit (message lesson.Noted (Text t#0)) (native "sim.nobody")))))
+  (package "std/random" std
+    (runs "std/random"))
+  (package "github.com/synodlang/examples/webapp#main" main
+    (uses "github.com/synodlang/examples/webapp/api" "github.com/synodlang/examples/webapp/app" "github.com/synodlang/examples/webapp/cache" "github.com/synodlang/examples/webapp/db" "github.com/synodlang/examples/webapp/lb" "std/lesson" "std/lists" "std/random" "std/sim" "std/time")
+    (runs "github.com/synodlang/examples/webapp/api" "std/maps" "std/net" "std/sim" "std/time" "github.com/synodlang/examples/webapp/app" "github.com/synodlang/examples/webapp/cache" "std/text" "github.com/synodlang/examples/webapp/db" "std/lists" "github.com/synodlang/examples/webapp/lb" "std/lesson" "std/random" "github.com/synodlang/examples/webapp#main")))

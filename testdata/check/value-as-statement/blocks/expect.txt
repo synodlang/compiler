@@ -1,0 +1,10 @@
+p/p.synod:9:3: error[value-as-statement]: "Sum 1 and 2" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:11:5: error[value-as-statement]: "Sum 3 and 4" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:13:5: error[value-as-statement]: "Sum 5 and 6" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:15:5: error[value-as-statement]: "Sum 7 and 8" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:17:5: error[value-as-statement]: "Sum i and i" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"

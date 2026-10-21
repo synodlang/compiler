@@ -1,0 +1,6 @@
+p/p.synod:11:3: error[context]: "after" is not allowed in check context
+  hint: "Loop" runs in check context because p/p.synod:15 calls it
+p/p.synod:19:7: error[context]: "set n.count" is not allowed in check context
+  hint: "Muddle" runs in check context because p/p.synod:30 calls it
+p/p.synod:23:3: error[context]: "emit" is not allowed in check context
+  hint: "Noisy" runs in check context because p/p.synod:28 calls it

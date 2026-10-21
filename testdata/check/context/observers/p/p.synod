@@ -1,0 +1,24 @@
+# package p
+use std/look
+use std/net
+use std/sim
+use std/text
+use std/time
+
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+  set hidden to 0
+
+when (sim.Added [n: Node])
+  set n.count to 1
+  look.Layout (text.From n.hidden)
+  look.Layout (text.From time.Now)
+  deliver (message Ping with seq 1) to n
+  emit (message Ping with seq 1) by n
+  net.Send (message Ping with seq 1) from n to n
+  after 1s
+    look.Layout "row"
+  look.Layout "ring"

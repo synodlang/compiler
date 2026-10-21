@@ -1,0 +1,8 @@
+# package q
+Rec has
+  set Key to ""
+  set secret to ""
+
+Node has
+  set Role to "follower"
+  set hidden to 0

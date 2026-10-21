@@ -1,0 +1,12 @@
+p/p.synod:6:16: error[ambiguous-empty]: cannot tell the type of {}
+  hint: use it with std/lists or std/maps, or assign it where the type is known
+p/p.synod:7:15: error[ambiguous-empty]: cannot tell the type of {}
+  hint: use it with std/lists or std/maps, or assign it where the type is known
+p/p.synod:10:16: error[ambiguous-empty]: cannot tell the item type of {}
+  hint: use it with std/lists or std/maps, or assign it where the type is known
+p/p.synod:11:15: error[ambiguous-empty]: cannot tell the item type of {}
+  hint: use it with std/lists or std/maps, or assign it where the type is known
+p/p.synod:12:43: error[ambiguous-empty]: cannot tell the type of {}
+  hint: use it with std/lists or std/maps, or assign it where the type is known
+p/p.synod:16:28: error[ambiguous-empty]: cannot tell the type of {}
+  hint: use it with std/lists or std/maps, or assign it where the type is known

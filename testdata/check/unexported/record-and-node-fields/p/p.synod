@@ -1,0 +1,12 @@
+# package p
+use example.com/t/q
+
+Node has
+  set name to ""
+  set count to 0
+
+define [n: Node] Go [r: q.Rec] and [m: q.Node]
+  set n.name to r.Key
+  set n.name to r.secret
+  set n.count to m.q.hidden
+  set m.q.hidden to 1

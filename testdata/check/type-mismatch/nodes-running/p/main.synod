@@ -1,0 +1,27 @@
+# package main
+use example.com/t/q
+use example.com/t/r
+use std/lists
+use std/net
+use std/sim
+
+define Count [ts: list of text]
+  result (lists.Size ts)
+
+define Same [a: q.Node] and [b: r.Node]
+  result 1
+
+define main
+  set a to (sim.Cluster of 2 running q)
+  set b to (sim.Spawn q)
+  set a to (lists.Append b to a)
+  set c to (sim.NodesRunning q)
+  sim.Crash (item 0 of c)
+  net.Partition a from c
+  set d to (sim.Spawn r)
+  set a to (lists.Append d to a)
+  sim.Seed (Count c)
+  sim.Seed (Same d and b)
+  sim.Seed (Same b and d)
+  sim.Seed (Count sim.Nodes)
+  sim.Seed (Count (sim.NodesRunning r))

@@ -1,0 +1,16 @@
+p/p.synod:20:3: error[value-as-statement]: "Twice 3" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:21:3: error[value-as-statement]: "lists.Size n.peers" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:22:3: error[value-as-statement]: "n.Version" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:23:3: error[value-as-statement]: "sim.Id m" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:24:3: error[value-as-statement]: "time.Now" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:25:3: error[value-as-statement]: "n.count" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:26:3: error[value-as-statement]: "3" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"
+p/p.synod:27:3: error[value-as-statement]: ""text"" gives a value but stands as a statement
+  hint: use it, as in "set x to (…)"

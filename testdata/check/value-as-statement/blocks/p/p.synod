@@ -1,0 +1,17 @@
+# package p
+Node has
+  set count to 0
+
+define Sum [a: number] and [b: number]
+  result (a plus b)
+
+define [n: Node] Go
+  Sum 1 and 2
+  after 1s
+    Sum 3 and 4
+  if (n.count is 0)
+    Sum 5 and 6
+  else
+    Sum 7 and 8
+  each i in {1, 2}
+    Sum i and i

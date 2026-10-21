@@ -1,0 +1,18 @@
+# package p
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+
+define Poke [k: number]
+  after 1s
+    Poke k
+
+define Go [n: Node] and [m: node]
+  set n.count to ((Poke 1) plus 1)
+  set items to {(Poke 2)}
+  set n.count to (item (Poke 3) of items)
+  set ping to (message Ping with seq (Poke 4))
+  deliver (Poke 5) to m
+  emit ping by (Poke 6)

@@ -1,0 +1,4 @@
+p/p.synod:18:19: error[action-as-value]: "Poke 1" gives no value
+p/p.synod:19:19: error[action-as-value]: "net.Send (message Ping with seq 1) from n to m" gives no value
+p/p.synod:20:18: error[action-as-value]: "n.Bump" gives no value
+p/p.synod:21:7: error[action-as-value]: "Poke 1" gives no value

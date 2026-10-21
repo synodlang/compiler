@@ -1,0 +1,8 @@
+p/p.synod:12:32: error[type-mismatch]: "1" has type number, expected text
+p/p.synod:13:45: error[type-mismatch]: "n.ages" has type map of text to number, expected list of value
+p/p.synod:14:31: error[type-mismatch]: "1" has type number, expected text
+p/p.synod:15:31: error[type-mismatch]: "{m}" has type list of node, expected a list of numbers, times or text
+p/p.synod:17:13: error[type-mismatch]: "1" has type number, expected text
+p/p.synod:19:13: error[type-mismatch]: ""a"" has type text, expected number
+p/p.synod:21:18: error[type-mismatch]: "item" takes a list or a map, not node
+p/p.synod:23:28: error[type-mismatch]: "item 0 of names" makes "names" a list of number, but it has type list of text

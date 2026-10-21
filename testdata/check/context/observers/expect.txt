@@ -1,0 +1,6 @@
+p/p.synod:16:7: error[context]: "set n.count" is not allowed in look context
+p/p.synod:17:28: error[context]: look context reads only exported fields
+p/p.synod:18:26: error[context]: "time.Now" is not allowed in look context
+p/p.synod:19:3: error[context]: "deliver" is not allowed in look context
+p/p.synod:20:3: error[context]: "emit" is not allowed in look context
+p/p.synod:21:3: error[context]: "net.Send" is not allowed in look context

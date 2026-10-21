@@ -1,0 +1,18 @@
+# package p
+Mutation has
+  set key to ""
+  set count to 0
+
+Node has
+  set count to 0
+  set mutation to (message Mutation with key "a")
+
+define [n: Node] Version
+  result n.count
+
+define [n: Node] Go [m: Mutation]
+  set m.key to "b"
+  set n.mutation.key to "c"
+  set n.Version to 3
+  set item 0 of n.Version to 1
+  set n.count to 1

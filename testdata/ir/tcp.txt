@@ -1,0 +1,87 @@
+(program "github.com/synodlang/examples/tcp#main"
+  (packages "std/net" "std/sim" "github.com/synodlang/examples/tcp" "std/lesson" "github.com/synodlang/examples/tcp#main")
+  (main "main"
+    (vars (0 client local tcp.Node) (1 server local tcp.Node))
+    (body
+      (set client#0 (native "sim.spawn" (package "github.com/synodlang/examples/tcp")))
+      (set server#1 (native "sim.spawn" (package "github.com/synodlang/examples/tcp")))
+      (set-field server#1 tcp.State "LISTEN")
+      (call "lesson.Note" "A connection needs three messages before data can flow.")
+      (deliver (message tcp.Open (Server server#1)) client#0)
+      (after (time 5000)
+        (call "lesson.Ask" "What does the server send back after a SYN?"))
+      (after (time 100000)
+        (call "lesson.Note" "Both ends are ESTABLISHED: data can now flow either way."))
+      (native "sim.stopAt" (time 200000))))
+  (package "std/net" std
+    (runs "std/net"))
+  (package "std/sim" std
+    (runs "std/sim"))
+  (package "github.com/synodlang/examples/tcp"
+    (uses "std/net" "std/sim")
+    (runs "std/net" "std/sim" "github.com/synodlang/examples/tcp")
+    (node-fields
+      (field State text exported "CLOSED")
+      (field seq number 0)
+      (field peerSeq number 0))
+    (record Open exported
+      (field Server node exported (native "sim.nobody")))
+    (record Syn exported
+      (field Seq number exported 0))
+    (record SynAck exported
+      (field Seq number exported 0)
+      (field AckNo number exported 0))
+    (record Ack exported
+      (field AckNo number exported 0))
+    (when-node "sim.delivered"
+      (vars (0 n receiver tcp.Node) (1 Open binding tcp.Open))
+      (match 0 record tcp.Open Open#1)
+      (body
+        (set-field n#0 tcp.seq 100)
+        (set-field n#0 tcp.State "SYN-SENT")
+        (native "net.send" (message tcp.Syn (Seq (nodefield n#0 tcp.seq))) n#0 (recfield Open#1 Server))))
+    (when-node "net.received"
+      (vars (0 n receiver tcp.Node) (1 Syn binding tcp.Syn) (2 client binding node))
+      (match 0 record tcp.Syn Syn#1)
+      (match 1 bind client#2)
+      (body
+        (set-field n#0 tcp.peerSeq (recfield Syn#1 Seq))
+        (set-field n#0 tcp.seq 300)
+        (set-field n#0 tcp.State "SYN-RECEIVED")
+        (native "net.send" (message tcp.SynAck (Seq (nodefield n#0 tcp.seq)) (AckNo (plus (nodefield n#0 tcp.peerSeq) 1))) n#0 client#2)))
+    (when-node "net.received"
+      (vars (0 n receiver tcp.Node) (1 SynAck binding tcp.SynAck) (2 server binding node))
+      (match 0 record tcp.SynAck SynAck#1)
+      (match 1 bind server#2)
+      (body
+        (if (is (recfield SynAck#1 AckNo) (plus (nodefield n#0 tcp.seq) 1))
+          (then
+            (set-field n#0 tcp.peerSeq (recfield SynAck#1 Seq))
+            (set-field n#0 tcp.State "ESTABLISHED")
+            (native "net.send" (message tcp.Ack (AckNo (plus (nodefield n#0 tcp.peerSeq) 1))) n#0 server#2)))))
+    (when-node "net.received"
+      (vars (0 n receiver tcp.Node) (1 Ack binding tcp.Ack) (2 client binding node))
+      (match 0 record tcp.Ack Ack#1)
+      (match 1 bind client#2)
+      (body
+        (if (is (recfield Ack#1 AckNo) (plus (nodefield n#0 tcp.seq) 1))
+          (then
+            (set-field n#0 tcp.State "ESTABLISHED"))))))
+  (package "std/lesson" std
+    (uses "std/sim")
+    (runs "std/sim" "std/lesson")
+    (record Asked exported
+      (field Question text exported ""))
+    (record Noted exported
+      (field Text text exported ""))
+    (phrase "Ask"
+      (vars (0 q param text))
+      (body
+        (emit (message lesson.Asked (Question q#0)) (native "sim.nobody"))))
+    (phrase "Note"
+      (vars (0 t param text))
+      (body
+        (emit (message lesson.Noted (Text t#0)) (native "sim.nobody")))))
+  (package "github.com/synodlang/examples/tcp#main" main
+    (uses "github.com/synodlang/examples/tcp" "std/lesson" "std/sim")
+    (runs "std/net" "std/sim" "github.com/synodlang/examples/tcp" "std/lesson" "github.com/synodlang/examples/tcp#main")))

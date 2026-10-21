@@ -1,0 +1,6 @@
+p/p.synod:4:8: error[unused-name]: "i" is never used
+  hint: write "each x in …"
+p/p.synod:6:11: error[unused-name]: "x" is never used
+p/p.synod:8:8: error[unused-name]: "k" is never used
+p/p.synod:10:11: error[unused-name]: "v" is never used
+  hint: write "each k in …"

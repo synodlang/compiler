@@ -1,0 +1,20 @@
+# package p
+Node has
+  set x to 0
+
+define Sign [v: number]
+  if (v less than 0)
+    result "negative"
+  else
+    if (v is 0)
+      result "zero"
+
+define Both [v: number]
+  if (v less than 0)
+    result 1
+  else
+    result 2
+
+define [n: Node] Level
+  if (n.x more than 5)
+    result "high"

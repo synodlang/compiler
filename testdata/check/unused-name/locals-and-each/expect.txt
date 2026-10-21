@@ -1,3 +1,5 @@
+p/p.synod:4:12: error[ambiguous-empty]: cannot tell the type of {}
+  hint: use it with std/lists or std/maps, or assign it where the type is known
 p/p.synod:7:7: error[unused-name]: "unused" is never used
 p/p.synod:8:7: error[unused-name]: "twice" is never used
 p/p.synod:10:8: error[unused-name]: "i" is never used

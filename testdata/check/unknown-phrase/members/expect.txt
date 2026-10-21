@@ -1,0 +1,8 @@
+p/p.synod:9:20: error[unknown-phrase]: "Node" has no field "rol"
+  hint: did you mean "role"?
+p/p.synod:10:20: error[unknown-phrase]: record "Rec" has no field "Kye"
+p/p.synod:11:22: error[unknown-phrase]: "q.Node" has no field "Rol"
+  hint: did you mean "Role"?
+p/p.synod:12:22: error[unknown-phrase]: "q.Node" has no field "Tem"
+  hint: did you mean "Term"?
+p/p.synod:13:18: error[type-mismatch]: "m" is a q.Node, which does not run p

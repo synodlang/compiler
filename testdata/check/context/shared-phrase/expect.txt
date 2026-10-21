@@ -1,0 +1,4 @@
+p/p.synod:11:3: error[context]: "deliver" is not allowed in node context
+  hint: "Inject" runs in node context because p/p.synod:18 calls it
+p/p.synod:14:13: error[context]: "sim.Spawn" is not allowed in node context
+  hint: "Spawn" runs in node context because p/p.synod:19 calls it

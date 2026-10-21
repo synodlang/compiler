@@ -1,0 +1,9 @@
+# package p
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+
+define [n: Node] Bump
+  set n.count to (n.count plus 1)

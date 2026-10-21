@@ -1,0 +1,296 @@
+(program "github.com/synodlang/examples/raftlook"
+  (packages "std/lists" "std/math" "std/net" "std/random" "std/sim" "std/time" "github.com/synodlang/examples/raft" "std/theme" "std/look" "std/lesson" "std/look/basic" "github.com/synodlang/examples/raftlook")
+  (package "std/lists" std
+    (runs "std/lists"))
+  (package "std/math" std
+    (runs "std/math"))
+  (package "std/net" std
+    (runs "std/net"))
+  (package "std/random" std
+    (runs "std/random"))
+  (package "std/sim" std
+    (runs "std/sim"))
+  (package "std/time" std
+    (runs "std/time")
+    (phrase "Every"
+      (vars (0 d param time) (1 b block))
+      (body
+        (run-block b#1)
+        (after d#0
+          (call "time.Every" d#0
+            (block
+              (run-block b#1)))))))
+  (package "github.com/synodlang/examples/raft"
+    (uses "std/lists" "std/math" "std/net" "std/random" "std/sim" "std/time")
+    (runs "std/lists" "std/math" "std/net" "std/random" "std/sim" "std/time" "github.com/synodlang/examples/raft")
+    (node-fields
+      (field Role text exported "follower")
+      (field Term number exported 0)
+      (field VotedFor node exported (native "sim.nobody"))
+      (field Peers list of raft.Node exported (empty list of raft.Node))
+      (field votes number 0)
+      (field lastHeard time (time 0)))
+    (record Elected exported
+      (field Term number exported 0))
+    (record RequestVote exported
+      (field term number 0))
+    (record Vote exported
+      (field term number 0)
+      (field granted bool false))
+    (record Heartbeat exported
+      (field term number 0))
+    (start "start"
+      (vars (0 n receiver raft.Node) (1 p each raft.Node))
+      (body
+        (call "raft.WatchElection" (recv n#0))
+        (call "time.Every" (time 50000)
+          (block
+            (if (is (nodefield n#0 raft.Role) "leader")
+              (then
+                (each _ p#1 (nodefield n#0 raft.Peers)
+                  (native "net.send" (message raft.Heartbeat (term (nodefield n#0 raft.Term))) n#0 p#1))))))))
+    (phrase "Meet"
+      (vars (0 ns param list of raft.Node) (1 n each raft.Node))
+      (body
+        (each _ n#1 ns#0
+          (set-field n#1 raft.Peers (native "lists.without" n#1 ns#0)))))
+    (phrase "Majority of" (result number)
+      (vars (0 n param number))
+      (body
+        (result (plus (native "math.floor" (divided-by n#0 2)) 1))))
+    (phrase "Leaders" (result list of raft.Node)
+      (vars (0 found local list of raft.Node) (1 n each raft.Node))
+      (body
+        (set found#0 (empty list of raft.Node))
+        (each _ n#1 (native "sim.nodesRunning" (package "github.com/synodlang/examples/raft"))
+          (if (and (is (nodefield n#1 raft.Role) "leader") (native "sim.isUp" n#1))
+            (then
+              (set found#0 (native "lists.append" n#1 found#0)))))
+        (result found#0)))
+    (phrase "LeadersAgree" (result bool)
+      (vars (0 terms local list of number) (1 n each raft.Node))
+      (body
+        (set terms#0 (empty list of number))
+        (each _ n#1 (native "sim.nodesRunning" (package "github.com/synodlang/examples/raft"))
+          (if (is (nodefield n#1 raft.Role) "leader")
+            (then
+              (if (in (nodefield n#1 raft.Term) terms#0)
+                (then
+                  (result false)))
+              (set terms#0 (native "lists.append" (nodefield n#1 raft.Term) terms#0)))))
+        (result true)))
+    (phrase "BecomeFollower"
+      (vars (0 n receiver raft.Node) (1 t param number))
+      (body
+        (set-field n#0 raft.Term t#1)
+        (set-field n#0 raft.Role "follower")
+        (set-field n#0 raft.VotedFor (native "sim.nobody"))))
+    (phrase "StartElection"
+      (vars (0 n receiver raft.Node) (1 p each raft.Node))
+      (body
+        (set-field n#0 raft.Role "candidate")
+        (set-field n#0 raft.Term (plus (nodefield n#0 raft.Term) 1))
+        (set-field n#0 raft.VotedFor n#0)
+        (set-field n#0 raft.votes 1)
+        (set-field n#0 raft.lastHeard (native "time.now"))
+        (each _ p#1 (nodefield n#0 raft.Peers)
+          (native "net.send" (message raft.RequestVote (term (nodefield n#0 raft.Term))) n#0 p#1))))
+    (phrase "WatchElection"
+      (vars (0 n receiver raft.Node))
+      (body
+        (after (native "random.timeBetween" (time 150000) (time 300000))
+          (if (and (is-not (nodefield n#0 raft.Role) "leader") (at-least (minus:time (native "time.now") (nodefield n#0 raft.lastHeard)) (time 150000)))
+            (then
+              (call "raft.StartElection" (recv n#0))))
+          (call "raft.WatchElection" (recv n#0)))))
+    (when-node "net.received"
+      (vars (0 n receiver raft.Node) (1 RequestVote binding raft.RequestVote) (2 candidate binding node) (3 grant local bool))
+      (match 0 record raft.RequestVote RequestVote#1)
+      (match 1 bind candidate#2)
+      (body
+        (if (more-than (recfield RequestVote#1 term) (nodefield n#0 raft.Term))
+          (then
+            (call "raft.BecomeFollower" (recv n#0) (recfield RequestVote#1 term))))
+        (set grant#3 (and (is (recfield RequestVote#1 term) (nodefield n#0 raft.Term)) (or (is (nodefield n#0 raft.VotedFor) (native "sim.nobody")) (is (nodefield n#0 raft.VotedFor) candidate#2))))
+        (if grant#3
+          (then
+            (set-field n#0 raft.VotedFor candidate#2)
+            (set-field n#0 raft.lastHeard (native "time.now"))))
+        (native "net.send" (message raft.Vote (term (nodefield n#0 raft.Term)) (granted grant#3)) n#0 candidate#2)))
+    (when-node "net.received"
+      (vars (0 n receiver raft.Node) (1 Vote binding raft.Vote) (2 voter binding node))
+      (match 0 record raft.Vote Vote#1)
+      (match 1 bind voter#2)
+      (body
+        (if (more-than (recfield Vote#1 term) (nodefield n#0 raft.Term))
+          (then
+            (call "raft.BecomeFollower" (recv n#0) (recfield Vote#1 term)))
+          (else
+            (if (and (and (is (nodefield n#0 raft.Role) "candidate") (recfield Vote#1 granted)) (is (recfield Vote#1 term) (nodefield n#0 raft.Term)))
+              (then
+                (set-field n#0 raft.votes (plus (nodefield n#0 raft.votes) 1))
+                (if (is (nodefield n#0 raft.votes) (call "raft.Majority of" (plus (native "lists.size" (nodefield n#0 raft.Peers)) 1)))
+                  (then
+                    (set-field n#0 raft.Role "leader")
+                    (emit (message raft.Elected (Term (nodefield n#0 raft.Term))) n#0)))))))))
+    (when-node "net.received"
+      (vars (0 n receiver raft.Node) (1 Heartbeat binding raft.Heartbeat) (2 leader binding node))
+      (match 0 record raft.Heartbeat Heartbeat#1)
+      (match 1 bind leader#2)
+      (body
+        (if (at-least (recfield Heartbeat#1 term) (nodefield n#0 raft.Term))
+          (then
+            (if (more-than (recfield Heartbeat#1 term) (nodefield n#0 raft.Term))
+              (then
+                (call "raft.BecomeFollower" (recv n#0) (recfield Heartbeat#1 term))))
+            (set-field n#0 raft.Role "follower")
+            (set-field n#0 raft.lastHeard (native "time.now"))))))
+    (always "raft/raft.synod:54: always LeadersAgree" (call "raft.LeadersAgree") (slots 0)))
+  (package "std/theme" std
+    (runs "std/theme")
+    (phrase "Paper" (result color)
+      (vars)
+      (body
+        (result #151A2E)))
+    (phrase "Ink" (result color)
+      (vars)
+      (body
+        (result #EDE9E1)))
+    (phrase "Line" (result color)
+      (vars)
+      (body
+        (result #3A4366)))
+    (phrase "Quiet" (result color)
+      (vars)
+      (body
+        (result #8A90A8)))
+    (phrase "Accent" (result color)
+      (vars)
+      (body
+        (result #F4A340)))
+    (phrase "Good" (result color)
+      (vars)
+      (body
+        (result #5CC8B8)))
+    (phrase "Warning" (result color)
+      (vars)
+      (body
+        (result #E8C35A)))
+    (phrase "Critical" (result color)
+      (vars)
+      (body
+        (result #E86F5A))))
+  (package "std/look" std
+    (uses "std/sim" "std/theme")
+    (runs "std/sim" "std/theme" "std/look")
+    (phrase "Card for" (result shape)
+      (vars (0 n param node) (1 box draw shape) (2 name draw shape))
+      (body
+        (draw (native "look.rect" 96 56) box#1)
+        (native "look.fill" box#1 (call "theme.Ink"))
+        (draw (native "look.label" (native "sim.name" n#0)) name#2)
+        (result (native "look.group" (list box#1 name#2)))))
+    (phrase "Travel … from … to … over"
+      (vars (0 s param shape) (1 a param shape) (2 b param shape) (3 d param time))
+      (body
+        (native "look.placeBeside" s#0 a#1)
+        (after d#3
+          (native "look.placeBeside" s#0 b#2))))
+    (phrase "Remove"
+      (vars (0 s param shape))
+      (body
+        (call "look.Fade … to" s#0 0)))
+    (phrase "Fade … to"
+      (vars (0 s param shape) (1 o param number))
+      (body
+        (native "look.tween" "opacity" s#0 o#1 (time 300000))))
+    (phrase "Pulse"
+      (vars (0 s param shape))
+      (body
+        (native "look.tween" "scale" s#0 1.15 (time 150000))
+        (after (time 150000)
+          (native "look.tween" "scale" s#0 1 (time 150000))))))
+  (package "std/lesson" std
+    (uses "std/sim")
+    (runs "std/sim" "std/lesson")
+    (record Asked exported
+      (field Question text exported ""))
+    (record Noted exported
+      (field Text text exported ""))
+    (phrase "Ask"
+      (vars (0 q param text))
+      (body
+        (emit (message lesson.Asked (Question q#0)) (native "sim.nobody"))))
+    (phrase "Note"
+      (vars (0 t param text))
+      (body
+        (emit (message lesson.Noted (Text t#0)) (native "sim.nobody")))))
+  (package "std/look/basic" std
+    (uses "std/lesson" "std/look" "std/net" "std/sim" "std/theme")
+    (runs "std/sim" "std/lesson" "std/theme" "std/look" "std/net" "std/look/basic")
+    (when-trace "sim.started"
+      (vars)
+      (body
+        (native "look.layout" "ring")))
+    (when-trace "sim.added"
+      (vars (0 n binding node) (1 card draw shape))
+      (match 0 bind n#0)
+      (body
+        (draw (call "look.Card for" n#0) card#1 (for "card" n#0))))
+    (when-trace "sim.crashed"
+      (vars (0 n binding node))
+      (match 0 bind n#0)
+      (body
+        (call "look.Fade … to" (attached "card" n#0) 0.3)))
+    (when-trace "sim.restarted"
+      (vars (0 n binding node))
+      (match 0 bind n#0)
+      (body
+        (call "look.Fade … to" (attached "card" n#0) 1)))
+    (when-trace "sim.removed"
+      (vars (0 n binding node))
+      (match 0 bind n#0)
+      (body
+        (call "look.Remove" (attached "card" n#0))))
+    (when-trace "net.sent"
+      (vars (0 m binding msg) (1 a binding node) (2 b binding node) (3 dot draw shape))
+      (match 0 bind m#0)
+      (match 1 bind a#1)
+      (match 2 bind b#2)
+      (body
+        (draw (native "look.circle" 6) dot#3)
+        (native "look.fill" dot#3 (call "theme.Accent"))
+        (call "look.Travel … from … to … over" dot#3 (attached "card" a#1) (attached "card" b#2) (time 400000))))
+    (when-trace "sim.emitted"
+      (vars (0 lesson.Noted binding lesson.Noted) (1 origin binding node) (2 caption draw shape))
+      (match 0 record lesson.Noted lesson.Noted#0)
+      (match 1 bind origin#1)
+      (body
+        (draw (native "look.label" (recfield lesson.Noted#0 Text)) caption#2 (for "caption" "caption")))))
+  (package "github.com/synodlang/examples/raftlook"
+    (uses "github.com/synodlang/examples/raft" "std/look" "std/look/basic" "std/sim" "std/theme")
+    (runs "std/lists" "std/math" "std/net" "std/random" "std/sim" "std/time" "github.com/synodlang/examples/raft" "std/theme" "std/look" "std/lesson" "std/look/basic" "github.com/synodlang/examples/raftlook")
+    (phrase "RoleColor" (result color)
+      (vars (0 r param text))
+      (body
+        (if (is r#0 "leader")
+          (then
+            (result (call "theme.Accent"))))
+        (if (is r#0 "candidate")
+          (then
+            (result (call "theme.Warning"))))
+        (result (call "theme.Ink"))))
+    (when-trace "sim.added"
+      (vars (0 n binding raft.Node) (1 card draw shape))
+      (match 0 node "github.com/synodlang/examples/raft" n#0)
+      (body
+        (draw (call "look.Card for" n#0) card#1 (for "card" n#0)
+          (reactive
+            (native "look.fill" card#1 (call "raftlook.RoleColor" (nodefield n#0 raft.Role)))))))
+    (when-trace "sim.emitted"
+      (vars (0 raft.Elected binding raft.Elected) (1 n binding node))
+      (match 0 record raft.Elected raft.Elected#0)
+      (match 1 bind n#1)
+      (body
+        (call "look.Pulse" (attached "card" n#1))
+        (native "look.effect" "glow" (attached "card" n#1))))))

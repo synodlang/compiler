@@ -1,0 +1,10 @@
+# package p
+Node has
+  set items to {}
+  set count to 0
+
+define [n: Node] Go
+  set scratch to {}
+  set n.count to 1
+  if (scratch is scratch)
+    set n.count to 2

@@ -33,6 +33,8 @@ type Expr interface {
 	Src() string
 	// Type is the type the checker gave the expression (nil before).
 	Type() types.Type
+	// SetType records the type (the checker).
+	SetType(types.Type)
 	expr()
 }
 
@@ -49,7 +51,10 @@ func (e *ExprBase) Src() string { return e.Text }
 
 // Type implements Expr.
 func (e *ExprBase) Type() types.Type { return e.Ty }
-func (*ExprBase) expr()              {}
+
+// SetType implements Expr.
+func (e *ExprBase) SetType(t types.Type) { e.Ty = t }
+func (*ExprBase) expr()                  {}
 
 // Block is a sequence of statements with its own scope.
 type Block struct {

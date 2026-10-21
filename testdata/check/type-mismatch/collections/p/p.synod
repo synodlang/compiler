@@ -1,0 +1,23 @@
+# package p
+use std/lists
+use std/maps
+
+Node has
+  set names to {"a"}
+  set ages to {}
+  set count to 0
+
+define [n: Node] Go [m: node]
+  set item "x" of n.ages to 1
+  set n.names to (lists.Append 1 to n.names)
+  set n.names to (lists.Extend n.names with n.ages)
+  set n.ages to (maps.Without 1 from n.ages)
+  if ((lists.Size (lists.Sort {m})) is 0)
+    set n.count to 1
+  if ((item 1 of n.ages) is 0)
+    set n.count to 1
+  if ((item "a" of n.names) is "a")
+    set n.count to 1
+  if ((item 0 of m) is 0)
+    set n.count to 1
+  set item 0 of n.names to 1

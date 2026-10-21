@@ -1,0 +1,16 @@
+# package p
+use std/net
+
+Ping has
+  set seq to 0
+  set tags to {1}
+
+Node has
+  set count to 0
+
+when [n: Node] (net.Received Ping from sender)
+  set Ping.seq to 3
+  set item 0 of Ping.tags to 4
+  set copy to Ping
+  set copy.seq to 5
+  set n.count to copy.seq

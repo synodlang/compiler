@@ -1,0 +1,6 @@
+p/p.synod:13:20: error[action-as-value]: "Poke 1" gives no value
+p/p.synod:14:18: error[action-as-value]: "Poke 2" gives no value
+p/p.synod:15:25: error[action-as-value]: "Poke 3" gives no value
+p/p.synod:16:39: error[action-as-value]: "Poke 4" gives no value
+p/p.synod:17:12: error[action-as-value]: "Poke 5" gives no value
+p/p.synod:18:17: error[action-as-value]: "Poke 6" gives no value

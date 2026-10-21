@@ -1,0 +1,11 @@
+# package p
+use std/lists
+
+Node has
+  set items to {}
+  set count to 0
+
+define [n: Node] Go
+  set n.count to (lists.Size n.items)
+  set n.count to (lists.Size {})
+  set n.items to (lists.Take 1 from {})

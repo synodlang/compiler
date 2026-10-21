@@ -1,0 +1,11 @@
+# package p
+Node has
+  set count to 0
+
+define Wrap [x: number] around [b: block]
+  set y to b
+  set y to y
+  b
+
+define [n: Node] Go
+  set n.count to (set n.count to 1)

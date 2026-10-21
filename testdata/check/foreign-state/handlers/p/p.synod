@@ -1,0 +1,18 @@
+# package p
+use std/net
+use std/sim
+
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+  set leader to sim.Nobody
+
+when [n: Node] (net.Received Ping from sender)
+  set n.count to Ping.seq
+  set n.leader to sender
+
+when [n: Node] (net.Received Ping from [peer: Node])
+  set n.count to peer.count
+  set peer.count to 1

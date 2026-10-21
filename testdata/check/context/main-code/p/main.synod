@@ -1,0 +1,15 @@
+# package main
+use example.com/t/p
+use std/look
+use std/net
+use std/sim
+
+define main
+  set nodes to (sim.Cluster of 2 running p)
+  each n in nodes
+    n.p.Bump
+    net.Send (message p.Ping with seq 1) from n to n
+    emit (message p.Ping with seq 1) by n
+    draw (look.Circle 3) as dot
+    look.Fade (card of n) to 0
+  emit (message p.Ping with seq 2) by sim.Nobody

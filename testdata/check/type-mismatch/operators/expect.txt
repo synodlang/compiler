@@ -1,0 +1,11 @@
+p/p.synod:14:31: error[type-mismatch]: "plus" takes number and number, or time and time, not text and number
+p/p.synod:15:31: error[type-mismatch]: "times" takes number and number, time and number, or number and time, not time and time
+p/p.synod:16:32: error[type-mismatch]: "divided by" takes number and number, time and number, or time and time, not number and time
+p/p.synod:17:31: error[type-mismatch]: "minus" takes number and number, or time and time, not time and number
+p/p.synod:18:14: error[type-mismatch]: "less than" takes number and number, or time and time, not text and text
+p/p.synod:20:7: error[type-mismatch]: cannot compare number with text
+p/p.synod:22:15: error[type-mismatch]: "is in" takes a value and a list or a map, not number and text
+p/p.synod:24:7: error[type-mismatch]: "n.count" has type number, expected bool
+p/p.synod:26:11: error[type-mismatch]: "n.count" has type number, expected bool
+p/p.synod:28:7: error[type-mismatch]: cannot compare number with the items of list of text
+p/p.synod:30:14: error[type-mismatch]: "at least" takes number and number, or time and time, not time and number

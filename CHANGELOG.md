@@ -16,6 +16,15 @@ section is the text of its GitHub release page.
   (`$SYNOD_CACHE` or `~/.synod/cache`), import cycles.
 - Fixes that need the package loaded, for `synod fmt`: record settings
   order, name case, and a dropped own-package qualifier.
+- `synod check` now checks whole programs, not just their form. It finds
+  the phrase every sentence calls, checks the types of values (arguments,
+  operands, list and map items, node types such as `raft.Node`, and
+  results), infers the type of `{}` from how it is used, and reports
+  every error code of the specification: `type-mismatch`, `ambiguous-empty`,
+  `missing-result`, `value-as-statement`, `action-as-value`, `context`
+  (what may run in node, main, check and look code) and `foreign-state`
+  (node code that touches another node's state). Every example and every
+  std package checks clean.
 
 ### Changed
 

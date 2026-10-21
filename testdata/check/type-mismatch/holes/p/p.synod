@@ -1,0 +1,27 @@
+# package p
+use std/lists
+use std/net
+
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+  set peers to {}
+
+define Twice [x: number]
+  result (x times 2)
+
+define [n: Node] Go [t: text] to [m: node]
+  set a to (Twice t)
+  set b to (Twice "five")
+  net.Send 1 from n to m
+  net.Send (message Ping with seq 1) from n to t
+  set n.peers to (lists.Append m to n.peers)
+  set n.peers to (lists.Append t to n.peers)
+  if t
+    set n.count to a
+  after 5
+    set n.count to b
+  each x in t
+    set n.count to x

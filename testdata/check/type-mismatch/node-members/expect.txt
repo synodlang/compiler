@@ -1,0 +1,7 @@
+p/p.synod:13:18: error[type-mismatch]: a node has no fields; use a Node or p.Node value
+p/p.synod:14:18: error[type-mismatch]: a msg has no readable fields; use a record type
+p/p.synod:15:20: error[unknown-phrase]: "t" has no field "size"
+p/p.synod:16:20: error[unknown-phrase]: "Node" has no field "Cuont"
+  hint: did you mean "Count"?
+p/p.synod:17:18: error[action-as-value]: "n.Bump" gives no value
+p/p.synod:18:18: error[type-mismatch]: "n.name" has type text, but "Count" has type number

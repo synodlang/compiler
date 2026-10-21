@@ -1,0 +1,4 @@
+p/p.synod:12:43: error[foreign-state]: "from other" must name the receiver "n"
+p/p.synod:13:26: error[foreign-state]: "on other" must name the receiver "n"
+p/p.synod:14:36: error[foreign-state]: "on other" must name the receiver "n"
+p/p.synod:15:37: error[foreign-state]: "by other" must name the receiver "n"

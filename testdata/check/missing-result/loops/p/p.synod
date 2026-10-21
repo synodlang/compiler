@@ -1,0 +1,10 @@
+# package p
+define First [ns: list of number]
+  each n in ns
+    result n
+
+define Last [ns: list of number]
+  each n in ns
+    if (n is 0)
+      result n
+  result 0

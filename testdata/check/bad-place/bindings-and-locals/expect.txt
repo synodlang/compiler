@@ -1,0 +1,3 @@
+p/p.synod:12:7: error[bad-place]: cannot set "Ping.seq": it is a record field
+p/p.synod:13:17: error[bad-place]: cannot set "Ping.tags": it is a record field
+p/p.synod:15:7: error[bad-place]: cannot set "copy.seq": it is a record field

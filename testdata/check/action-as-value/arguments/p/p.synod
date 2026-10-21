@@ -1,0 +1,22 @@
+# package p
+use std/net
+
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+
+define Poke [k: number]
+  after 1s
+    Poke k
+
+define [n: Node] Bump
+  set n.count to (n.count plus 1)
+
+define [n: Node] Go [m: node]
+  set n.count to (Poke 1)
+  set n.count to (net.Send (message Ping with seq 1) from n to m)
+  set n.count to n.Bump
+  if (Poke 1)
+    set n.count to 0

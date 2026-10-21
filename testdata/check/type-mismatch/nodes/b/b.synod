@@ -1,0 +1,14 @@
+# package b
+use example.com/t/a
+
+Node has
+  set B to 0
+
+define Same [n: number]
+  result n
+
+define TakeA [x: a.Node]
+  result (Same x.a.A)
+
+define TakeB [x: Node]
+  result (Same x.B)

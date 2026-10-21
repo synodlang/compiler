@@ -1,0 +1,27 @@
+# package p
+use std/lists
+use std/sim
+use std/time
+
+Ping has
+  set seq to 0
+
+Node has
+  set peers to {1}
+  set count to 0
+
+define Twice [x: number]
+  result (x times 2)
+
+define [n: Node] Version
+  result n.count
+
+define [n: Node] Go [m: node]
+  Twice 3
+  lists.Size n.peers
+  n.Version
+  sim.Id m
+  time.Now
+  n.count
+  3
+  "text"

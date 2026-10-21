@@ -1,0 +1,117 @@
+gossip.Generation: number
+gossip.Heartbeat: number
+gossip.Known: map of node to number
+gossip.Down: list of node
+gossip.peers: list of node
+gossip.seenAt: map of node to time
+gossip.digest.known: map of node to number
+ring.Placed.Key: text
+ring.Placed.Owner: node
+cassandra.Data: map of text to text
+cassandra.PendingHints: number
+cassandra.versions: map of text to time
+cassandra.hints: list of Hint
+cassandra.nextRequest: number
+cassandra.acks: map of text to number
+cassandra.keys: map of text to text
+cassandra.replies: map of text to list of FetchReply
+cassandra.Write.Key: text
+cassandra.Write.Value: text
+cassandra.Read.Key: text
+cassandra.Written.Key: text
+cassandra.Written.Acks: number
+cassandra.ReadDone.Key: text
+cassandra.ReadDone.Value: text
+cassandra.Mutation.key: text
+cassandra.Mutation.value: text
+cassandra.Mutation.stamp: time
+cassandra.Mutation.request: text
+cassandra.MutationAck.request: text
+cassandra.Fetch.key: text
+cassandra.Fetch.request: text
+cassandra.FetchReply.request: text
+cassandra.FetchReply.value: text
+cassandra.FetchReply.stamp: time
+cassandra.Hint.target: node
+cassandra.Hint.mutation: Mutation
+paxos.Peers: list of Node
+paxos.Promised: number
+paxos.AcceptedBallot: number
+paxos.AcceptedValue: text
+paxos.Chosen: text
+paxos.round: number
+paxos.ballot: number
+paxos.proposal: text
+paxos.promises: list of Promise
+paxos.votes: map of text to number
+paxos.Start.Value: text
+paxos.Learned.Value: text
+paxos.Prepare.number: number
+paxos.Promise.number: number
+paxos.Promise.prior: number
+paxos.Promise.priorValue: text
+paxos.Accept.number: number
+paxos.Accept.value: text
+paxos.Accepted.number: number
+paxos.Accepted.value: text
+raft.Role: text
+raft.Term: number
+raft.VotedFor: node
+raft.Peers: list of Node
+raft.votes: number
+raft.lastHeard: time
+raft.Elected.Term: number
+raft.RequestVote.term: number
+raft.Vote.term: number
+raft.Vote.granted: bool
+raft.Heartbeat.term: number
+tcp.State: text
+tcp.seq: number
+tcp.peerSeq: number
+tcp.Open.Server: node
+tcp.Syn.Seq: number
+tcp.SynAck.Seq: number
+tcp.SynAck.AckNo: number
+tcp.Ack.AckNo: number
+twopc.State: text
+twopc.Participants: list of Node
+twopc.tx: number
+twopc.yesVotes: number
+twopc.Begin.Tx: number
+twopc.Prepare.tx: number
+twopc.Vote.tx: number
+twopc.Vote.yes: bool
+twopc.Decision.tx: number
+twopc.Decision.commit: bool
+wal.Table: map of text to text
+wal.Lsn: number
+wal.Flushed: number
+wal.Put.Key: text
+wal.Put.Value: text
+wal.Recovered.Replayed: number
+api.Get.Key: text
+api.Get.Id: number
+api.Get.Start: time
+api.Lookup.Key: text
+api.Lookup.Id: number
+api.CacheReply.Key: text
+api.CacheReply.Id: number
+api.CacheReply.Value: text
+api.CacheReply.Found: bool
+api.Query.Key: text
+api.Query.Id: number
+api.Rows.Key: text
+api.Rows.Id: number
+api.Rows.Value: text
+api.Fill.Key: text
+api.Fill.Value: text
+api.Served.Id: number
+api.Served.Hit: bool
+api.Served.Latency: time
+app.Cache: node
+app.Db: node
+app.pending: map of number to api.Get
+cache.Entries: map of text to text
+db.Queries: number
+lb.Backends: list of node
+lb.next: number

@@ -1,0 +1,6 @@
+# package q
+Rec has
+  set Num to 0
+
+Node has
+  set Val to 0

@@ -3,5 +3,6 @@ p/p.synod:11:3: error[unknown-phrase]: no phrase matches "else if (n.x is 2)"
 p/p.synod:13:3: error[unknown-phrase]: no phrase matches "(set n.x to 1)"
   hint: remove the parentheses
 p/p.synod:14:3: error[unknown-phrase]: no phrase matches "Frob n.x"
+p/p.synod:15:5: error[unknown-phrase]: "Node" has no field "Nothing"
 p/p.synod:17:7: error[unknown-phrase]: no event phrase matches "net.Recieved m from a"
 p/p.synod:20:7: error[unknown-phrase]: no event phrase matches "sim.Added n m"

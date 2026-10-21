@@ -1,0 +1,18 @@
+# package p
+use std/net
+
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+
+define Reset [m: Node]
+  set m.count to 0
+
+define Tell [m: Node] to [t: node]
+  net.Send (message Ping with seq m.count) from m to t
+
+define [n: Node] start
+  Reset n
+  Tell n to n

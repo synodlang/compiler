@@ -1,0 +1,12 @@
+# package p
+define Sum [ns: list of number] and [m: map of text to number]
+  set t to 0
+  each i, x in ns
+    set t to (t plus x)
+  each i, x in ns
+    set t to (t plus i)
+  each k, v in m
+    set t to (t plus v)
+  each k, v in m
+    set t to (t plus (item k of m))
+  result t

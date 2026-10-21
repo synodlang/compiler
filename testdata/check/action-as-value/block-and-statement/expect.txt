@@ -1,0 +1,2 @@
+p/p.synod:6:12: error[action-as-value]: "b" gives no value
+p/p.synod:11:18: error[action-as-value]: "set n.count to 1" gives no value

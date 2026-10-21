@@ -1,0 +1,14 @@
+# package p
+use example.com/t/q
+use std/look
+use std/net
+use std/sim
+
+Node has
+  set x to 0
+
+when [n: Node] (net.Received [m: q.Node] from peer)
+  set n.x to 1
+
+when (sim.Added [k: q.Node])
+  look.Layout "row"

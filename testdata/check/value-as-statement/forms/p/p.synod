@@ -1,0 +1,16 @@
+# package p
+Ping has
+  set seq to 0
+
+Node has
+  set peers to {1}
+  set count to 0
+
+define [n: Node] Go [m: node]
+  n.count plus 1
+  n.count is 3
+  item 0 of n.peers
+  not ((n.count is 3) and (m is m))
+  message Ping with seq 1
+  {1, 2}
+  m

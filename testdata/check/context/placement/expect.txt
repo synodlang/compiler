@@ -1,0 +1,15 @@
+p/main.synod:3:3: error[context]: "result" stands only in a phrase definition
+p/p.synod:8:1: error[context]: only declarations stand at file root
+  hint: a file holds use, has, define, when and always
+p/p.synod:12:14: error[context]: initial values are constants
+  hint: use a literal, {}, a list, a message or sim.Nobody
+p/p.synod:13:38: error[context]: initial values are constants
+  hint: use a literal, {}, a list, a message or sim.Nobody
+p/p.synod:13:38: error[type-mismatch]: "time.Now" has type time, but "Ping.seq" has type number
+p/p.synod:14:3: error[context]: a has block holds only "set <field> to <value>" lines
+p/p.synod:18:5: error[context]: "result" cannot stand in an after block or a block argument
+p/p.synod:20:5: error[context]: "result" cannot stand in an after block or a block argument
+p/p.synod:24:3: error[context]: "result" stands only in a phrase definition
+p/p.synod:26:5: error[context]: "result" stands only in a phrase definition
+p/p.synod:28:5: error[context]: "result" stands only in a phrase definition
+p/p.synod:31:3: error[context]: "result" stands only in a phrase definition

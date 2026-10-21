@@ -1,0 +1,24 @@
+# package p
+use std/lesson
+use std/look
+use std/net
+use std/sim
+use std/text
+use std/time
+
+Ping has
+  set seq to 0
+
+Node has
+  set count to 0
+  set hidden to 0
+
+define [n: Node] start
+  deliver (message Ping with seq 1) to n
+  lesson.Note "started"
+  lesson.Ask "why?"
+  sim.Crash n
+  draw (look.Circle 4) as dot
+  emit (message Ping with seq 1) by n
+  net.Latency between 1ms and 2ms
+  set n.count to (text.Size (text.From time.Now))
