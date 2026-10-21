@@ -153,20 +153,35 @@ func emptySpanOK(d source.Diagnostic) bool {
 	return false
 }
 
+// compileCodes are the 29 compile-time codes.
+var compileCodes = []source.Code{
+	source.Syntax, source.Indent, source.NonCanonical, source.BadHeader, source.UnknownPhrase,
+	source.AmbiguousPhrase, source.DuplicateName, source.Shadowing, source.ReservedWord, source.BadPattern,
+	source.BadReceiver, source.BadPlace, source.TypeMismatch, source.AmbiguousEmpty, source.MissingResult,
+	source.ValueAsStatement, source.ActionAsValue, source.Unexported, source.UnusedName, source.UnusedImport,
+	source.UnneededAlias, source.UnknownImport, source.ImportCycle, source.MissingMain, source.ExtraMain,
+	source.Context, source.ForeignState, source.ColorLiteral, source.NativeOutsideStd,
+}
+
 // TestSpans checks the spans, labels and edits of the diagnostics of every
-// golden case: the primary spans of the stages before the checker (loader,
-// parser, resolver, canonical form) are non-empty, with a short allowlist,
+// golden case: the primary spans are non-empty, with a short allowlist,
 // and every span, label and edit lies within its file; the edits of one help
 // do not overlap.
 func TestSpans(t *testing.T) {
 	n := 0
+	seen := map[source.Code]bool{}
 	for _, c := range goldenCases(t) {
 		for _, d := range c.res.Diags {
 			f := c.res.Sources[d.File]
 			sp := source.Span{Start: source.Pos{Line: d.Line, Col: d.Col}, End: d.End}
 			where := c.name + ": " + d.Header()
+			seen[d.Code] = true
 			if f == nil {
 				continue
+			}
+			n++
+			if d.End == (source.Pos{Line: d.Line, Col: d.Col}) && !emptySpanOK(d) {
+				t.Errorf("%s: empty primary span", where)
 			}
 			if p := spanProblem(f, sp); p != "" {
 				t.Errorf("%s: primary span %v: %s", where, sp, p)
@@ -184,18 +199,14 @@ func TestSpans(t *testing.T) {
 				checkEdits(t, where, f, h.Edits)
 			}
 		}
-		for _, d := range c.pre {
-			if c.res.Sources[d.File] == nil {
-				continue
-			}
-			n++
-			if d.End == (source.Pos{Line: d.Line, Col: d.Col}) && !emptySpanOK(d) {
-				t.Errorf("%s: %s: empty primary span", c.name, d.Header())
-			}
-		}
 	}
-	if n < 100 {
-		t.Errorf("only %d diagnostics of the stages before the checker were checked", n)
+	if n < 300 {
+		t.Errorf("only %d diagnostics were checked", n)
+	}
+	for _, code := range compileCodes {
+		if !seen[code] {
+			t.Errorf("no golden case reports %s", code)
+		}
 	}
 }
 
@@ -295,15 +306,14 @@ func copyDir(t *testing.T, from, to string) {
 	}
 }
 
-// TestFixesApply applies the help edits of the diagnostics of the stages
-// before the checker to a copy of their case and checks again: the
+// TestFixesApply applies the help edits of the diagnostics to a copy of their case and checks again: the
 // diagnostic is gone (same code and line; same code and message when the
 // edit moves lines). The edit of "line is not canonical" gives the line that
 // the formatter prints.
 func TestFixesApply(t *testing.T) {
 	applied := map[string]int{}
 	for _, c := range goldenCases(t) {
-		for _, d := range c.pre {
+		for _, d := range c.res.Diags {
 			f := c.res.Sources[d.File]
 			if f == nil {
 				continue
@@ -352,6 +362,7 @@ func TestFixesApply(t *testing.T) {
 		"non-canonical: line", "bad-header: ", "unknown-import: ",
 		"unknown-phrase: parentheses", "unneeded-alias: ", "unused-import: ", "duplicate-name: import",
 		"non-canonical: lower-case", "bad-receiver: ", "unknown-phrase: use line",
+		"unused-name: each", "context: sim.Nobody", "foreign-state: receiver", "unknown-phrase: did you mean",
 	} {
 		if applied[want] == 0 {
 			t.Errorf("no fix of kind %q was applied; applied: %v", want, applied)
@@ -373,6 +384,14 @@ func kindOfFix(d source.Diagnostic, h source.Help) string {
 		return "use line"
 	case d.Code == source.DuplicateName && strings.Contains(d.Message, "already imported"):
 		return "import"
+	case d.Code == source.UnusedName:
+		return "each"
+	case d.Code == source.Context && strings.HasSuffix(h.Edits[0].New, "Nobody"):
+		return "sim.Nobody"
+	case d.Code == source.ForeignState:
+		return "receiver"
+	case d.Code == source.UnknownPhrase && strings.HasPrefix(h.Text, "did you mean"):
+		return "did you mean"
 	}
 	return ""
 }

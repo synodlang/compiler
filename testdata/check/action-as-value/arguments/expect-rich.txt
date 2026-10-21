@@ -1,19 +1,28 @@
 p/p.synod:18:19: error[action-as-value]: "Poke 1" gives no value
    |
+10 | define Poke [k: number]
+   | ----------------------- defined without a result
+...
 18 |   set n.count to (Poke 1)
-   |                   ^
+   |                   ^^^^^^
 
 p/p.synod:19:19: error[action-as-value]: "net.Send (message Ping with seq 1) from n to m" gives no value
    |
 19 |   set n.count to (net.Send (message Ping with seq 1) from n to m)
-   |                   ^
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 p/p.synod:20:18: error[action-as-value]: "n.Bump" gives no value
    |
+14 | define [n: Node] Bump
+   | --------------------- defined without a result
+...
 20 |   set n.count to n.Bump
-   |                  ^
+   |                  ^^^^^^
 
 p/p.synod:21:7: error[action-as-value]: "Poke 1" gives no value
    |
+10 | define Poke [k: number]
+   | ----------------------- defined without a result
+...
 21 |   if (Poke 1)
-   |       ^
+   |       ^^^^^^

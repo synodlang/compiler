@@ -1,6 +1,8 @@
 p/p.synod:2:1: error[missing-result]: "First [ns: list of number]" does not give a result on every path
   |
 2 | define First [ns: list of number]
-  | ^
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3 |   each n in ns
+  |   ------------ can end here without a result
   |
   = help: end every path with "result …"

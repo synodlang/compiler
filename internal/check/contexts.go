@@ -2,6 +2,7 @@ package check
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/synodlang/compiler/internal/resolve"
 	"github.com/synodlang/compiler/internal/source"
@@ -45,7 +46,8 @@ func Contexts(all []*resolve.Package, infos map[string]*Info) []source.Diagnosti
 				continue // bad-receiver was reported
 			}
 			w.file = h.File
-			w.ctx, w.recv, w.cause = stdlib.Look, nil, ""
+			w.ctx, w.recv = stdlib.Look, nil
+			w.clearCause()
 			if h.Kind == stdlib.NodeEvent {
 				w.ctx = stdlib.Node
 				if h.Receiver != nil {
@@ -61,7 +63,8 @@ func Contexts(all []*resolve.Package, infos map[string]*Info) []source.Diagnosti
 		}
 		for _, inv := range rp.Invariants {
 			w.file = inv.File
-			w.ctx, w.recv, w.cause = stdlib.Check, nil, ""
+			w.ctx, w.recv = stdlib.Check, nil
+			w.clearCause()
 			w.expr(inv.Cond)
 		}
 	}
@@ -74,6 +77,9 @@ func Contexts(all []*resolve.Package, infos map[string]*Info) []source.Diagnosti
 		w.file = q.ph.File
 		w.ctx, w.recv = q.ctx, nil
 		w.cause = `"` + q.ph.Head + `" runs in ` + ctxName(q.ctx) + ` context because ` + q.caller + ` calls it`
+		w.causeNote = `"` + q.ph.Head + `" runs in ` + ctxName(q.ctx) + ` context`
+		w.causeFile, w.causeSp = q.callerFile, q.callerSp
+		w.causeText = "called from " + ctxName(q.ctx) + " context here"
 		w.block(q.ph.Body)
 	}
 	return w.diags
@@ -86,7 +92,9 @@ type qkey struct {
 
 type qitem struct {
 	qkey
-	caller string
+	caller     string
+	callerFile *resolve.File
+	callerSp   source.Span
 }
 
 type ctxWalker struct {
@@ -102,6 +110,15 @@ type ctxWalker struct {
 	ctx   stdlib.Ctx
 	recv  resolve.Symbol
 	cause string
+	// The rich form of the cause: the note, and the label at the call site.
+	causeNote, causeText string
+	causeFile            *resolve.File
+	causeSp              source.Span
+}
+
+// clearCause forgets the cause: the walk is at an entry point.
+func (w *ctxWalker) clearCause() {
+	w.cause, w.causeNote, w.causeText, w.causeFile, w.causeSp = "", "", "", nil, source.Span{}
 }
 
 func ctxName(c stdlib.Ctx) string {
@@ -119,7 +136,8 @@ func ctxName(c stdlib.Ctx) string {
 }
 
 func (w *ctxWalker) entry(f *resolve.File, ctx stdlib.Ctx, recv *resolve.Param, b *resolve.Block) {
-	w.file, w.ctx, w.cause = f, ctx, ""
+	w.file, w.ctx = f, ctx
+	w.clearCause()
 	w.recv = nil
 	if recv != nil {
 		w.recv = recv
@@ -127,24 +145,51 @@ func (w *ctxWalker) entry(f *resolve.File, ctx stdlib.Ctx, recv *resolve.Param, 
 	w.block(b)
 }
 
-func (w *ctxWalker) errf(pos source.Pos, code source.Code, msg, hint string) {
-	key := w.file.Path + ":" + strconv.Itoa(pos.Line) + ":" + strconv.Itoa(pos.Col) + ":" + string(code)
+func (w *ctxWalker) errf(sp source.Span, code source.Code, msg, hint string, more ...source.Extra) {
+	key := w.file.Path + ":" + strconv.Itoa(sp.Start.Line) + ":" + strconv.Itoa(sp.Start.Col) + ":" + string(code)
 	if w.seen[key] {
 		return
 	}
 	w.seen[key] = true
+	own := hint
 	if w.cause != "" {
 		if hint != "" {
 			hint += "; "
 		}
 		hint += w.cause
 	}
-	w.diags = append(w.diags, source.New(w.file.Load.Src, pos, code, msg, hint))
+	d := source.NewSpan(w.file.Load.Src, sp, code, msg, hint, more...)
+	if w.cause != "" {
+		// The note stands for the cause; the hint's own part becomes help.
+		if own != "" && len(d.Help) == 0 {
+			d.Help = []source.Help{{Text: own}}
+		}
+		if w.causeFile != nil && !strings.HasPrefix(w.causeFile.Path, "std/") && w.causeSp.Start != w.causeSp.End {
+			source.Also(w.causeFile.Path, w.causeSp, w.causeText)(&d)
+		}
+		d.Notes = append(d.Notes, w.causeNote)
+	}
+	w.diags = append(w.diags, d)
+}
+
+// recvLabel is the label at the declaration of the receiver in scope.
+func (w *ctxWalker) recvLabel() source.Extra {
+	var sp source.Span
+	switch r := w.recv.(type) {
+	case *resolve.Param:
+		sp = r.HoleSp
+	case *resolve.Binding:
+		sp = r.Sp
+	}
+	if sp.Start == sp.End {
+		return func(*source.Diagnostic) {}
+	}
+	return source.Also(w.file.Path, sp, `the receiver is "`+w.recvName()+`"`)
 }
 
 // notAllowed reports a construct that the current context does not allow.
-func (w *ctxWalker) notAllowed(pos source.Pos, what string) {
-	w.errf(pos, source.Context, `"`+what+`" is not allowed in `+ctxName(w.ctx)+` context`, "")
+func (w *ctxWalker) notAllowed(sp source.Span, what string) {
+	w.errf(sp, source.Context, `"`+what+`" is not allowed in `+ctxName(w.ctx)+` context`, "")
 }
 
 // isRecv reports that e is a read of the receiver in scope.
@@ -153,6 +198,7 @@ func (w *ctxWalker) isRecv(e resolve.Expr) bool {
 	return ok && w.recv != nil && r.Sym == w.recv
 }
 
+// recvName is the name of the receiver in scope, or "".
 func (w *ctxWalker) recvName() string {
 	if w.recv == nil {
 		return ""
@@ -160,14 +206,21 @@ func (w *ctxWalker) recvName() string {
 	return w.recv.SymName()
 }
 
-func (w *ctxWalker) foreign(pos source.Pos, item, via string) {
+func (w *ctxWalker) foreign(sp source.Span, item, via string, base resolve.Expr) {
 	msg := `node code reaches "` + item + `" through "` + via + `"`
 	if r := w.recvName(); r != "" {
 		msg += `, not its receiver "` + r + `"`
 	} else {
 		msg += `; a phrase without a receiver reaches no node state`
 	}
-	w.errf(pos, source.ForeignState, msg, "other nodes learn through net.Send")
+	var more []source.Extra
+	if base != nil && base.Span().Start != base.Span().End {
+		more = append(more, source.Also(w.file.Path, base.Span(), "not the receiver"))
+	}
+	if w.recv != nil {
+		more = append(more, w.recvLabel())
+	}
+	w.errf(sp, source.ForeignState, msg, "other nodes learn through net.Send", more...)
 }
 
 func (w *ctxWalker) block(b *resolve.Block) {
@@ -195,13 +248,13 @@ func (w *ctxWalker) stmt(s resolve.Stmt) {
 		w.block(x.Body)
 	case *resolve.After:
 		if w.ctx == stdlib.Check {
-			w.notAllowed(x.Where(), "after")
+			w.notAllowed(x.Span(), "after")
 		}
 		w.expr(x.Delay)
 		w.block(x.Body)
 	case *resolve.Deliver:
 		if w.ctx != stdlib.Main {
-			w.notAllowed(x.Where(), "deliver")
+			w.notAllowed(x.Span(), "deliver")
 		}
 		w.expr(x.Rec)
 		w.expr(x.To)
@@ -209,7 +262,7 @@ func (w *ctxWalker) stmt(s resolve.Stmt) {
 		w.emit(x)
 	case *resolve.Draw:
 		if w.ctx != stdlib.Look {
-			w.notAllowed(x.Where(), "draw")
+			w.notAllowed(x.Span(), "draw")
 		}
 		w.expr(x.Shape)
 		if x.For != nil {
@@ -233,14 +286,22 @@ func (w *ctxWalker) emit(x *resolve.Emit) {
 			} else {
 				msg += `; a phrase without a receiver names none`
 			}
-			w.errf(x.By.Where(), source.ForeignState, msg, "")
+			var more []source.Extra
+			if r := w.recvName(); r != "" {
+				more = append(more, source.HelpEdit(`write "by `+r+`"`, source.EditAt(x.By.Span(), r)))
+			}
+			w.errf(x.By.Span(), source.ForeignState, msg, "", more...)
 		}
 	case stdlib.Main:
 		if c, ok := x.By.(*resolve.Call); !ok || c.Phrase == nil || c.Phrase.Native != "sim.nobody" {
-			w.errf(x.By.Where(), source.Context, `main is not a node: write "emit … by sim.Nobody"`, "")
+			var more []source.Extra
+			if q := w.simQual(); q != "" {
+				more = append(more, source.HelpEdit(`write "by `+q+`.Nobody"`, source.EditAt(x.By.Span(), q+".Nobody")))
+			}
+			w.errf(x.By.Span(), source.Context, `main is not a node: write "emit … by sim.Nobody"`, "", more...)
 		}
 	default:
-		w.notAllowed(x.Where(), "emit")
+		w.notAllowed(x.Span(), "emit")
 	}
 }
 
@@ -274,27 +335,31 @@ func (w *ctxWalker) nodeState(sel *resolve.Select, write bool) {
 		switch w.ctx {
 		case stdlib.Node:
 			if states > 1 || !w.isRecv(sel.Base) {
-				w.foreign(sel.Where(), sel.Src(), baseOf(sel, states))
+				var base resolve.Expr
+				if states <= 1 {
+					base = sel.Base
+				}
+				w.foreign(sel.Span(), sel.Src(), baseOf(sel, states), base)
 				return
 			}
 		case stdlib.Main:
 		case stdlib.Check:
 			if write {
-				w.notAllowed(sel.Where(), "set "+sel.Src())
+				w.notAllowed(sel.Span(), "set "+sel.Src())
 				return
 			}
 		case stdlib.Look:
 			if write {
-				w.notAllowed(sel.Where(), "set "+sel.Src())
+				w.notAllowed(sel.Span(), "set "+sel.Src())
 				return
 			}
 			if st.Kind == StepNodeField && !st.Field.Exported {
-				w.errf(st.Pos, source.Context, "look context reads only exported fields", "")
+				w.errf(st.Sp, source.Context, "look context reads only exported fields", "")
 				return
 			}
 		}
 		if st.Kind == StepRecvPhrase && w.ctx != stdlib.Node {
-			w.errf(sel.Where(), source.Context,
+			w.errf(sel.Span(), source.Context,
 				`"`+sel.Src()+`" is node code; it cannot run in `+ctxName(w.ctx)+` context`, "")
 			return
 		}
@@ -334,7 +399,7 @@ func (w *ctxWalker) expr(e resolve.Expr) {
 		w.expr(x.X)
 	case *resolve.Attachment:
 		if w.ctx != stdlib.Look {
-			w.notAllowed(x.Where(), x.Src())
+			w.notAllowed(x.Span(), x.Src())
 		}
 		w.expr(x.Key)
 	case *resolve.ActionExpr:
@@ -356,10 +421,10 @@ func (w *ctxWalker) call(e *resolve.Call) {
 		}
 		switch {
 		case w.ctx != stdlib.Node:
-			w.errf(e.Where(), source.Context,
+			w.errf(e.Span(), source.Context,
 				`"`+head+`" is node code; it cannot run in `+ctxName(w.ctx)+` context`, "")
 		case e.Receiver != nil && !w.isRecv(e.Receiver):
-			w.foreign(e.Where(), head, e.Receiver.Src())
+			w.foreign(e.Span(), head, e.Receiver.Src(), e.Receiver)
 		}
 		if e.Receiver != nil {
 			w.expr(e.Receiver)
@@ -372,7 +437,7 @@ func (w *ctxWalker) call(e *resolve.Call) {
 			} else if ph.Pkg != nil {
 				name = ph.Pkg.Name + "." + ph.Head
 			}
-			w.errf(e.Where(), source.Context, `"`+name+`" is not allowed in `+ctxName(w.ctx)+` context`, "")
+			w.errf(e.Span(), source.Context, `"`+name+`" is not allowed in `+ctxName(w.ctx)+` context`, "")
 		}
 		if ph.Sig != nil && ph.Sig.NamesNode >= 0 && w.ctx == stdlib.Node {
 			w.namesNode(e, ph)
@@ -381,7 +446,7 @@ func (w *ctxWalker) call(e *resolve.Call) {
 		k := qkey{ph, w.ctx}
 		if ph.Body != nil && !w.queued[k] {
 			w.queued[k] = true
-			w.queue = append(w.queue, qitem{k, w.file.Path + ":" + strconv.Itoa(e.Where().Line)})
+			w.queue = append(w.queue, qitem{k, w.file.Path + ":" + strconv.Itoa(e.Where().Line), w.file, e.Span()})
 		}
 	}
 	for _, a := range e.Args {
@@ -415,5 +480,20 @@ func (w *ctxWalker) namesNode(e *resolve.Call, ph *resolve.Phrase) {
 	} else {
 		msg += `; a phrase without a receiver names none`
 	}
-	w.errf(a.Where(), source.ForeignState, msg, "")
+	var more []source.Extra
+	if r := w.recvName(); r != "" {
+		more = append(more, source.HelpEdit(`name the receiver "`+r+`"`, source.EditAt(a.Span(), r)))
+	}
+	w.errf(a.Span(), source.ForeignState, msg, "", more...)
+}
+
+// simQual is the qualifier through which the current file imports std/sim,
+// or "".
+func (w *ctxWalker) simQual() string {
+	for _, imp := range w.file.Imports {
+		if imp.Pkg != nil && imp.Pkg.Path == "std/sim" {
+			return imp.Qual
+		}
+	}
+	return ""
 }

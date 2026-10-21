@@ -3,7 +3,11 @@ p/p.synod:4:8: error[unused-name]: "i" is never used
 4 |   each i, x in ns
   |        ^
   |
-  = help: write "each x in …"
+help: write "each x in …"
+  |
+4 |   each x in ns
+  |        ~
+  |
 
 p/p.synod:6:11: error[unused-name]: "x" is never used
   |
@@ -20,4 +24,8 @@ p/p.synod:10:11: error[unused-name]: "v" is never used
 10 |   each k, v in m
    |           ^
    |
-   = help: write "each k in …"
+help: write "each k in …"
+   |
+10 |   each k in m
+   |        ~
+   |

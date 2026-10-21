@@ -23,8 +23,11 @@ p/p.synod:14:3: error[unknown-phrase]: no phrase matches "Frob n.x"
 
 p/p.synod:15:5: error[unknown-phrase]: "Node" has no field "Nothing"
    |
+ 5 | Node has
+   | -------- the fields are defined here
+...
 15 |   n.Nothing
-   |     ^
+   |     ^^^^^^^
 
 p/p.synod:17:7: error[unknown-phrase]: no event phrase matches "net.Recieved m from a"
    |

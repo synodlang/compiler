@@ -46,7 +46,8 @@ func walkStmts(rp *resolve.Package, fn func(f *resolve.File, s resolve.Stmt)) {
 // Over a list the one-name form binds the item, so only an unused index can
 // be dropped; over a map it binds the key, so only an unused value can.
 // Where no one-name form helps, the hint is removed. The diagnostics are
-// changed in place.
+// changed in place; the help follows the hint, with the edit that writes the
+// one-name form.
 func AdjustHints(rp *resolve.Package, diags []source.Diagnostic) {
 	if len(diags) == 0 {
 		return
@@ -81,8 +82,14 @@ func AdjustHints(rp *resolve.Package, diags []source.Diagnostic) {
 			}
 			if droppable {
 				diags[i].Hint = `write "each ` + other.Name + ` in …"`
+				h := source.Help{Text: diags[i].Hint}
+				if l.Names.Start != l.Names.End {
+					h.Edits = []source.Edit{source.EditAt(l.Names, other.Name)}
+				}
+				diags[i].Help = []source.Help{h}
 			} else {
 				diags[i].Hint = ""
+				diags[i].Help = nil
 			}
 		}
 		fix(e.A, e.B, dropFirst)

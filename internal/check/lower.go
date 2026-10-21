@@ -87,6 +87,15 @@ func (f *fnc) pos(p source.Pos) ir.Pos {
 	return ir.Pos{File: path, Line: p.Line, Col: p.Col}
 }
 
+// span is the position of a node with its extent.
+func (f *fnc) span(sp source.Span) ir.Pos {
+	p := f.pos(sp.Start)
+	if sp.End.Line == sp.Start.Line && sp.End.Col > sp.Start.Col {
+		p.EndLine, p.EndCol = sp.End.Line, sp.End.Col
+	}
+	return p
+}
+
 func (l *lowerer) declarePackage(rp *resolve.Package) {
 	l.pk[rp] = &ir.Package{Path: rp.Path, Name: rp.Name, IsStd: rp.IsStd, IsMain: rp.IsMain}
 }

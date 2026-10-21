@@ -36,7 +36,8 @@ func (s *sim) exec(e *ex, st ir.Stmt) (bool, value.Value, *value.Fault) {
 			return false, none, f
 		}
 		if nv.NodeID() == 0 {
-			return false, none, fault(source.Nobody, st.Pos(), "set %s of sim.Nobody", st.Field.Name)
+			return false, none, fault(source.Nobody, st.Pos(), "set %s of sim.Nobody", st.Field.Name).
+				WithAlso(st.Node.Pos(), "this is sim.Nobody")
 		}
 		v, f := s.eval(e, st.X)
 		if f != nil {
@@ -99,11 +100,12 @@ func (s *sim) exec(e *ex, st ir.Stmt) (bool, value.Value, *value.Fault) {
 			return false, none, f
 		}
 		if d.Int < 0 {
-			return false, none, fault(source.BadArgument, st.Pos(), "after needs a delay of 0 or more, not %s", value.FormatTime(d.Int))
+			return false, none, fault(source.BadArgument, st.Pos(), "after needs a delay of 0 or more, not %s", value.FormatTime(d.Int)).
+				WithAlso(st.Delay.Pos(), "is "+value.FormatTime(d.Int))
 		}
 		at := s.now + d.Int
 		if at < s.now {
-			return false, none, fault(source.NumberRange, st.Pos(), "the result is too large for a number")
+			return false, none, fault(source.NumberRange, st.Pos(), "the result is too large for a number").WithLabel("too large")
 		}
 		ev := &event{at: at, kind: evTimer, node: e.node, body: st.Body, frame: append([]value.Value(nil), e.fr...), pos: st.Pos()}
 		if n := s.getNode(e.node); n != nil {
@@ -120,7 +122,7 @@ func (s *sim) exec(e *ex, st ir.Stmt) (bool, value.Value, *value.Fault) {
 			return false, none, f
 		}
 		if to.NodeID() == 0 {
-			return false, none, fault(source.Nobody, st.Pos(), "deliver to sim.Nobody")
+			return false, none, fault(source.Nobody, st.Pos(), "deliver to sim.Nobody").WithAlso(st.To.Pos(), "this is sim.Nobody")
 		}
 		s.rec(trace.Fact{Ev: "sim.Injected", Node: to.NodeID(), Record: rv.Record()})
 		s.q.push(&event{at: s.now, kind: evDeliver, node: to.NodeID(), rec: rv.Record(), pos: st.Pos()})
@@ -146,7 +148,8 @@ func (s *sim) exec(e *ex, st ir.Stmt) (bool, value.Value, *value.Fault) {
 // runClosure runs a block with a fresh copy of its captured frame.
 func (s *sim) runClosure(e *ex, cl *value.Closure, p ir.Pos) *value.Fault {
 	if s.depth >= s.o.MaxDepth {
-		return fault(source.RunLimit, p, "more than %d nested calls", s.o.MaxDepth)
+		return fault(source.RunLimit, p, "more than %d nested calls", s.o.MaxDepth).
+			WithLabel(fmt.Sprintf("nested call over %d", s.o.MaxDepth))
 	}
 	s.depth++
 	ne := &ex{fr: append([]value.Value(nil), cl.Frame...), node: e.node, kind: e.kind}
@@ -175,7 +178,8 @@ func (s *sim) setItem(e *ex, st *ir.SetItem) *value.Fault {
 			return f
 		}
 		if nv.NodeID() == 0 {
-			return fault(source.Nobody, st.Pos(), "set %s of sim.Nobody", b.Field.Name)
+			return fault(source.Nobody, st.Pos(), "set %s of sim.Nobody", b.Field.Name).
+				WithAlso(b.Node.Pos(), "this is sim.Nobody")
 		}
 		nodeID, fp = nv.NodeID(), b.Field
 	}
@@ -201,7 +205,8 @@ func (s *sim) setItem(e *ex, st *ir.SetItem) *value.Fault {
 		items := cur.List().Items
 		i, ok := index(k, len(items))
 		if !ok {
-			return fault(source.IndexRange, st.Pos(), "index %s is out of range for a list of %s", value.FormatNumber(k.Num), plural(len(items)))
+			return indexFault(fault(source.IndexRange, st.Pos(), "index %s is out of range for a list of %s", value.FormatNumber(k.Num), plural(len(items))),
+				st.Key.Pos(), k, len(items))
 		}
 		cp := append([]value.Value(nil), items...)
 		cp[i] = x
@@ -267,7 +272,8 @@ func (s *sim) call(e *ex, c *ir.Call) (value.Value, *value.Fault) {
 		blocks[i] = closureFor(e, b)
 	}
 	if s.depth >= s.o.MaxDepth {
-		return value.Value{}, fault(source.RunLimit, c.Pos(), "more than %d nested calls", s.o.MaxDepth)
+		return value.Value{}, fault(source.RunLimit, c.Pos(), "more than %d nested calls", s.o.MaxDepth).
+			WithLabel(fmt.Sprintf("nested call over %d", s.o.MaxDepth))
 	}
 	fr := make([]value.Value, p.Slots)
 	if p.Receiver != nil && c.Recv != nil {

@@ -1,34 +1,34 @@
 p/p.synod:17:3: error[context]: "deliver" is not allowed in node context
    |
 17 |   deliver (message Ping with seq 1) to n
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 p/p.synod:18:3: error[context]: "lesson.Note" is not allowed in node context
    |
 18 |   lesson.Note "started"
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^^^^^
 
 p/p.synod:19:3: error[context]: "lesson.Ask" is not allowed in node context
    |
 19 |   lesson.Ask "why?"
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^
 
 p/p.synod:20:3: error[context]: "sim.Crash" is not allowed in node context
    |
 20 |   sim.Crash n
-   |   ^
+   |   ^^^^^^^^^^^
 
 p/p.synod:21:3: error[context]: "draw" is not allowed in node context
    |
 21 |   draw (look.Circle 4) as dot
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 p/p.synod:21:9: error[context]: "look.Circle" is not allowed in node context
    |
 21 |   draw (look.Circle 4) as dot
-   |         ^
+   |         ^^^^^^^^^^^^^
 
 p/p.synod:23:3: error[context]: "net.Latency" is not allowed in node context
    |
 23 |   net.Latency between 1ms and 2ms
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

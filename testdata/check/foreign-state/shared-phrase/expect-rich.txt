@@ -1,20 +1,33 @@
 p/p.synod:11:7: error[foreign-state]: node code reaches "m.count" through "m"; a phrase without a receiver reaches no node state
    |
 11 |   set m.count to 0
-   |       ^
+   |       ^^^^^^^
+   |       - not the receiver
+...
+17 |   Reset n
+   |   ------- called from node context here
    |
-   = help: other nodes learn through net.Send; "Reset" runs in node context because p/p.synod:17 calls it
+   = note: "Reset" runs in node context
+   = help: other nodes learn through net.Send
 
 p/p.synod:14:35: error[foreign-state]: node code reaches "m.count" through "m"; a phrase without a receiver reaches no node state
    |
 14 |   net.Send (message Ping with seq m.count) from m to t
-   |                                   ^
+   |                                   ^^^^^^^
+   |                                   - not the receiver
+...
+18 |   Tell n to n
+   |   ----------- called from node context here
    |
-   = help: other nodes learn through net.Send; "Tell" runs in node context because p/p.synod:18 calls it
+   = note: "Tell" runs in node context
+   = help: other nodes learn through net.Send
 
 p/p.synod:14:49: error[foreign-state]: "from m" must name the receiver; a phrase without a receiver names none
    |
 14 |   net.Send (message Ping with seq m.count) from m to t
    |                                                 ^
+...
+18 |   Tell n to n
+   |   ----------- called from node context here
    |
-   = help: "Tell" runs in node context because p/p.synod:18 calls it
+   = note: "Tell" runs in node context

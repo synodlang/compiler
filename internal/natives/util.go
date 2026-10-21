@@ -21,14 +21,27 @@ func fault(c *ir.Call, code source.Code, msg string) *value.Fault {
 	return &value.Fault{Code: code, Message: msg, Pos: c.Pos(), HasPos: true}
 }
 
+// withArg adds a label at argument i of the call (an index into args, which
+// starts with the receiver when there is one).
+func withArg(f *value.Fault, c *ir.Call, args []value.Value, i int, text string) *value.Fault {
+	j := i - (len(args) - len(c.Args))
+	if j < 0 || j >= len(c.Args) {
+		return f
+	}
+	return f.WithAlso(c.Args[j].Pos(), text)
+}
+
+// show formats v for a label.
+func show(v value.Value) string { return value.Format(v, value.FormatOpts{}) }
+
 // whole reports whether f is a finite whole number.
 func whole(f float64) bool { return !math.IsInf(f, 0) && f == math.Floor(f) }
 
 // nobody faults when the node argument is sim.Nobody; what names the use,
 // for example "sim.Crash of".
-func nobody(c *ir.Call, v value.Value, what string) *value.Fault {
-	if v.NodeID() == 0 {
-		return fault(c, source.Nobody, what+" sim.Nobody")
+func nobody(c *ir.Call, args []value.Value, i int, what string) *value.Fault {
+	if args[i].NodeID() == 0 {
+		return withArg(fault(c, source.Nobody, what+" sim.Nobody"), c, args, i, "this is sim.Nobody")
 	}
 	return nil
 }
@@ -43,12 +56,12 @@ func nodeList(ids []int) value.Value {
 }
 
 // nodeIDs reads a list of nodes; a Nobody item faults with what.
-func nodeIDs(c *ir.Call, v value.Value, what string) ([]int, *value.Fault) {
-	items := v.List().Items
+func nodeIDs(c *ir.Call, args []value.Value, argi int, what string) ([]int, *value.Fault) {
+	items := args[argi].List().Items
 	ids := make([]int, len(items))
 	for i, it := range items {
-		if f := nobody(c, it, what); f != nil {
-			return nil, f
+		if it.NodeID() == 0 {
+			return nil, withArg(fault(c, source.Nobody, what+" sim.Nobody"), c, args, argi, "has sim.Nobody")
 		}
 		ids[i] = it.NodeID()
 	}

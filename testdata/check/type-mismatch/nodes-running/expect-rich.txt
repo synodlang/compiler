@@ -1,29 +1,44 @@
 p/main.synod:22:26: error[type-mismatch]: "d" has type r.Node, expected q.Node
    |
 22 |   set a to (lists.Append d to a)
-   |                          ^
+   |                          ^ has type r.Node
 
 p/main.synod:23:19: error[type-mismatch]: "c" has type list of q.Node, expected list of text
    |
+ 8 | define Count [ts: list of text]
+   |              ------------------ expects list of text
+...
 23 |   sim.Seed (Count c)
-   |                   ^
+   |                   ^ has type list of q.Node
 
 p/main.synod:24:18: error[type-mismatch]: "d" has type r.Node, expected q.Node
    |
+11 | define Same [a: q.Node] and [b: r.Node]
+   |             ----------- expects q.Node
+...
 24 |   sim.Seed (Same d and b)
-   |                  ^
+   |                  ^ has type r.Node
 
 p/main.synod:24:24: error[type-mismatch]: "b" has type q.Node, expected r.Node
    |
+11 | define Same [a: q.Node] and [b: r.Node]
+   |                             ----------- expects r.Node
+...
 24 |   sim.Seed (Same d and b)
-   |                        ^
+   |                        ^ has type q.Node
 
 p/main.synod:26:19: error[type-mismatch]: "sim.Nodes" has type list of node, expected list of text
    |
+ 8 | define Count [ts: list of text]
+   |              ------------------ expects list of text
+...
 26 |   sim.Seed (Count sim.Nodes)
-   |                   ^
+   |                   ^^^^^^^^^ has type list of node
 
 p/main.synod:27:20: error[type-mismatch]: "sim.NodesRunning r" has type list of r.Node, expected list of text
    |
+ 8 | define Count [ts: list of text]
+   |              ------------------ expects list of text
+...
 27 |   sim.Seed (Count (sim.NodesRunning r))
-   |                    ^
+   |                    ^^^^^^^^^^^^^^^^^^ has type list of r.Node

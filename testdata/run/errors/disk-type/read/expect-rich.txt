@@ -1,4 +1,6 @@
 failed at 0s: p/p.synod:9:19: error[disk-type]: disk value at "pages" is a list of text, not a map of text to text
   |
 9 |   set n.Pages to (disk.Read "pages" on n or {})
-  |                   ^
+  |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: the default has type map of text to text

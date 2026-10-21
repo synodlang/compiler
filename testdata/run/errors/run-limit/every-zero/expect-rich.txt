@@ -1,4 +1,6 @@
 failed at 0s: std/time/every.synod:4:3: error[run-limit]: more than 100000 steps at 0s
   |
 4 |   after d
-  |   ^
+  |   ^^^^^^^
+  |
+  = note: at most 100000 steps run at one instant of simulated time

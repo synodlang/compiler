@@ -30,7 +30,7 @@ func (c *checker) pass(final bool) {
 			}
 			var t types.Type
 			c.quietly(f.Tainted || c.cycPlace[f], func() { t = c.expr(f.Init, c.ty[f]) })
-			c.addSrc(f, name, f.Init.Where(), t, f.Init.Src())
+			c.addSrc(f, name, f.Init.Span(), t, f.Init.Src())
 			c.refine(f.Init, c.ty[f])
 		}
 	}
@@ -47,9 +47,15 @@ func (c *checker) pass(final bool) {
 		c.block(ph.Body)
 		c.phrase = nil
 		if final && ph.IsValue && ph.Kind == resolve.PhraseNormal && !alwaysResults(ph.Body) && !hasBad(ph.Body) {
-			c.errf(ph.Pos, source.MissingResult,
+			var ends []source.Extra
+			for i, sp := range openEnds(ph.Body) {
+				if i < 3 {
+					ends = append(ends, c.alsoAt(sp, "can end here without a result"))
+				}
+			}
+			c.errf(ph.Sp, source.MissingResult,
 				`"`+ph.Describe("")+`" does not give a result on every path`,
-				`end every path with "result …"`)
+				`end every path with "result …"`, ends...)
 		}
 	}
 	for _, h := range rp.Handlers {
@@ -62,8 +68,9 @@ func (c *checker) pass(final bool) {
 			if h.Event != nil && m.Hole < len(h.Event.Params) {
 				ht := h.Event.Params[m.Hole].Type
 				if !c.accepts(t, ht) && !c.accepts(ht, t) {
-					c.errf(m.Value.Where(), source.TypeMismatch,
-						`"`+m.Value.Src()+`" has type `+c.fmtType(t)+`, expected `+c.fmtType(ht), "")
+					c.errf(m.Value.Span(), source.TypeMismatch,
+						`"`+m.Value.Src()+`" has type `+c.fmtType(t)+`, expected `+c.fmtType(ht), "",
+						c.hasType(t))
 				}
 			}
 		}
@@ -139,7 +146,7 @@ func (c *checker) stmt(s resolve.Stmt) {
 		c.set(x)
 	case *resolve.CallStmt:
 		if t := c.callExpr(x.Call, nil); t != nil && !isInvalid(t) {
-			c.valueAsStatement(x.Where(), x.Call.Src())
+			c.valueAsStatement(x.Span(), x.Call.Src(), t)
 		}
 	case *resolve.If:
 		c.arg(x.Cond, types.TBool)
@@ -163,22 +170,22 @@ func (c *checker) stmt(s resolve.Stmt) {
 		}
 		t := c.expr(x.Value, want)
 		if c.phrase != nil {
-			c.addSrc(c.phrase, c.phrase.Name, x.Value.Where(), t, x.Value.Src())
+			c.addSrc(c.phrase, c.phrase.Name, x.Value.Span(), t, x.Value.Src())
 		}
 	case *resolve.Draw:
 		c.draw(x)
 	case *resolve.ExprStmt:
 		if _, bad := x.X.(*resolve.Bad); !bad {
 			if t := c.expr(x.X, nil); !isInvalid(t) {
-				c.valueAsStatement(x.Where(), x.X.Src())
+				c.valueAsStatement(x.Span(), x.X.Src(), t)
 			}
 		}
 	}
 }
 
-func (c *checker) valueAsStatement(pos source.Pos, text string) {
-	c.errf(pos, source.ValueAsStatement, `"`+text+`" gives a value but stands as a statement`,
-		`use it, as in "set x to (…)"`)
+func (c *checker) valueAsStatement(sp source.Span, text string, t types.Type) {
+	c.errf(sp, source.ValueAsStatement, `"`+text+`" gives a value but stands as a statement`,
+		`use it, as in "set x to (…)"`, source.WithLabel("gives a "+c.fmtType(t)))
 }
 
 func (c *checker) each(x *resolve.Each) {
@@ -195,27 +202,27 @@ func (c *checker) each(x *resolve.Each) {
 		first, second = t.Key, t.Val
 	default:
 		if !isInvalid(ot) && !isEmpty(ot) {
-			c.errf(x.Over.Where(), source.TypeMismatch,
-				`"`+x.Over.Src()+`" has type `+c.fmtType(ot)+`, expected a list or a map`, "")
+			c.errf(x.Over.Span(), source.TypeMismatch,
+				`"`+x.Over.Src()+`" has type `+c.fmtType(ot)+`, expected a list or a map`, "", c.hasType(ot))
 		}
 	}
 	if x.A != nil {
-		c.addSrc(x.A, x.A.Name, x.A.Pos, first, "")
+		c.addSrc(x.A, x.A.Name, x.A.Sp, first, "")
 	}
 	if x.B != nil {
-		c.addSrc(x.B, x.B.Name, x.B.Pos, second, "")
+		c.addSrc(x.B, x.B.Name, x.B.Sp, second, "")
 	}
 	c.block(x.Body)
 }
 
 func (c *checker) draw(x *resolve.Draw) {
 	c.arg(x.Shape, types.TShape)
-	c.addSrc(x.Name, x.Name.Name, x.Name.Pos, types.TShape, "")
+	c.addSrc(x.Name, x.Name.Name, x.Name.Sp, types.TShape, "")
 	if x.For != nil {
 		kt := c.expr(x.For, nil)
 		if !c.accepts(kt, types.TNode) && !c.accepts(kt, types.TText) && !c.accepts(kt, types.TNumber) {
-			c.errf(x.For.Where(), source.TypeMismatch,
-				`"`+x.For.Src()+`" has type `+c.fmtType(kt)+`, expected node, text or number`, "")
+			c.errf(x.For.Span(), source.TypeMismatch,
+				`"`+x.For.Src()+`" has type `+c.fmtType(kt)+`, expected node, text or number`, "", c.hasType(kt))
 		}
 	}
 	c.block(x.Body)
@@ -240,7 +247,7 @@ func (c *checker) set(s *resolve.Set) {
 		c.note(l, l.Name)
 		var t types.Type
 		c.quietly(l.Tainted || c.cycPlace[l], func() { t = c.expr(s.Value, c.ty[l]) })
-		c.addSrc(l, l.Name, s.Value.Where(), t, s.Value.Src())
+		c.addSrc(l, l.Name, s.Value.Span(), t, s.Value.Src())
 	case *resolve.SelectPlace:
 		f := c.nodeFieldPlace(pl.Select)
 		if f == nil {
@@ -273,11 +280,13 @@ func (c *checker) nodeFieldPlace(sel *resolve.Select) *resolve.Field {
 		// be immutable, and the checker has settled the rest.
 		return last.Field
 	case StepRecordField:
-		c.errf(sel.Where(), source.BadPlace, `cannot set "`+sel.Src()+`": it is a record field`, "")
+		c.errf(sel.Span(), source.BadPlace, `cannot set "`+sel.Src()+`": it is a record field`, "",
+			source.WithLabel("a record field"))
 	case StepRecvPhrase:
-		c.errf(sel.Where(), source.BadPlace, `cannot set "`+sel.Src()+`": it is a phrase`, "")
+		c.errf(sel.Span(), source.BadPlace, `cannot set "`+sel.Src()+`": it is a phrase`, "",
+			source.WithLabel("a phrase"))
 	default:
-		c.errf(sel.Where(), source.BadPlace, `"`+sel.Src()+`" is not a node field`, "")
+		c.errf(sel.Span(), source.BadPlace, `"`+sel.Src()+`" is not a node field`, "")
 	}
 	return nil
 }
@@ -286,7 +295,7 @@ func (c *checker) nodeFieldPlace(sel *resolve.Select) *resolve.Field {
 // when f belongs to this package, a check against its type otherwise.
 func (c *checker) flow(f *resolve.Field, name string, x resolve.Expr, t types.Type) {
 	if f.Owner.Pkg == c.rp {
-		c.addSrc(f, name, x.Where(), t, x.Src())
+		c.addSrc(f, name, x.Span(), t, x.Src())
 		return
 	}
 	c.need(x, t, c.fieldType(f))
@@ -344,14 +353,15 @@ func (c *checker) itemPlace(s *resolve.Set, pl *resolve.ItemPlace) {
 		switch {
 		case isInvalid(kt):
 		case isT(kt, types.Number):
-			c.addWeak(key, name, s.Value.Where(), kt, vt, text)
+			c.addWeak(key, name, s.Value.Span(), kt, vt, text)
 		default:
 			if !validKey(kt) {
-				c.errf(pl.Key.Where(), source.TypeMismatch,
-					`"`+pl.Key.Src()+`" has type `+c.fmtType(kt)+`, but a map key is text, number, bool or a node`, "")
+				c.errf(pl.Key.Span(), source.TypeMismatch,
+					`"`+pl.Key.Src()+`" has type `+c.fmtType(kt)+`, but a map key is text, number, bool or a node`, "",
+					c.hasType(kt))
 				return
 			}
-			c.addItem(key, name, s.Value.Where(), types.Map{Key: kt, Val: vt}, text)
+			c.addItem(key, name, s.Value.Span(), types.Map{Key: kt, Val: vt}, text)
 		}
 		return
 	}
@@ -364,7 +374,33 @@ func (c *checker) itemPlace(s *resolve.Set, pl *resolve.ItemPlace) {
 		c.need(s.Value, vt, t.Val)
 	default:
 		if !isInvalid(pt) {
-			c.errf(pl.Where(), source.TypeMismatch, `"`+name+`" has type `+c.fmtType(pt)+`, expected a list or a map`, "")
+			c.errf(pl.Span(), source.TypeMismatch, `"`+name+`" has type `+c.fmtType(pt)+`, expected a list or a map`, "",
+				c.hasType(pt))
 		}
 	}
+}
+
+// openEnds returns the spans of the last statements of the paths of b that
+// can end without a result.
+func openEnds(b *resolve.Block) []source.Span {
+	if b == nil || alwaysResults(b) || len(b.Stmts) == 0 {
+		return nil
+	}
+	last := b.Stmts[len(b.Stmts)-1]
+	if x, ok := last.(*resolve.If); ok && x.Else != nil {
+		var out []source.Span
+		if !alwaysResults(x.Then) {
+			out = append(out, openEnds(x.Then)...)
+		}
+		if !alwaysResults(x.Else) {
+			out = append(out, openEnds(x.Else)...)
+		}
+		if len(out) > 0 {
+			return out
+		}
+	}
+	if _, bad := last.(*resolve.BadStmt); bad {
+		return nil
+	}
+	return []source.Span{last.Span()}
 }

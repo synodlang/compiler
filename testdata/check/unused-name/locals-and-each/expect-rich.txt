@@ -13,14 +13,22 @@ p/p.synod:10:8: error[unused-name]: "i" is never used
 10 |   each i, e in n.l
    |        ^
    |
-   = help: write "each e in …"
+help: write "each e in …"
+   |
+10 |   each e in n.l
+   |        ~
+   |
 
 p/p.synod:12:11: error[unused-name]: "v" is never used
    |
 12 |   each k, v in n.m
    |           ^
    |
-   = help: write "each k in …"
+help: write "each k in …"
+   |
+12 |   each k in n.m
+   |        ~
+   |
 
 p/p.synod:14:8: error[unused-name]: "j" is never used
    |

@@ -1,44 +1,68 @@
 p/p.synod:13:10: error[type-mismatch]: results of "Pick [flag: bool]" have types number and text
    |
+12 |     result 1
+   |            - "Pick" gets type number here
 13 |   result "one"
-   |          ^
+   |          ^^^^^ has type text
 
 p/p.synod:17:12: error[type-mismatch]: ""one"" has type text, but "v" has type number
    |
+16 |   set v to 1
+   |            - "v" gets type number here
 17 |   set v to "one"
-   |            ^
+   |            ^^^^^ has type text
 
 p/p.synod:19:18: error[type-mismatch]: ""many"" has type text, but "count" has type number
    |
+ 6 |   set count to 0
+   |                - "count" gets type number here
+...
 19 |   set n.count to "many"
-   |                  ^
+   |                  ^^^^^^ has type text
 
 p/p.synod:20:17: error[type-mismatch]: "x" has type number, but "name" has type text
    |
+ 7 |   set name to ""
+   |               -- "name" gets type text here
+...
 20 |   set n.name to x
-   |                 ^
+   |                 ^ has type number
 
 p/p.synod:21:22: error[type-mismatch]: "x" has type number, but the list has item type node
    |
 21 |   set n.peers to {m, x}
-   |                      ^
+   |                   -  ^ has type number
+   |                   |
+   |                   the first item has type node
 
 p/p.synod:22:38: error[type-mismatch]: ""one"" has type text, but "Ping.seq" has type number
    |
+ 3 |   set seq to 0
+   |              - "Ping.seq" gets type number here
+...
 22 |   set ping to (message Ping with seq "one")
-   |                                      ^
+   |                                      ^^^^^ has type text
 
 p/p.synod:23:30: error[type-mismatch]: "item "k" of peers" makes "peers" a map of text to number, but it has type list of node
    |
+ 8 |   set peers to {}
+   |                -- "peers" gets type list of node here
+...
 23 |   set item "k" of n.peers to 1
-   |                              ^
+   |                              ^ makes it a map of text to number
 
 p/p.synod:24:27: error[type-mismatch]: "item m of name" makes "name" a map of node to number, but it has type text
    |
+ 7 |   set name to ""
+   |               -- "name" gets type text here
+...
 24 |   set item m of n.name to 2
-   |                           ^
+   |                           ^ makes it a map of node to number
 
 p/p.synod:26:17: error[type-mismatch]: "ping" has type Ping, but "name" has type text
    |
+ 7 |   set name to ""
+   |               -- "name" gets type text here
+...
 26 |   set n.name to ping
-   |                 ^
+   |                 ^^^^ has type Ping

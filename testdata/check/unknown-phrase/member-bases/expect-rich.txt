@@ -1,16 +1,21 @@
 p/main.synod:7:19: error[unknown-phrase]: "server" has no field "Val"
   |
 7 |   set a to server.Val
-  |                   ^
+  |                   ^^^
   |
   = help: name the package: "server.<package>.Val"
 
 p/main.synod:8:21: error[unknown-phrase]: "q.Node" has no field "Missing"
   |
 8 |   set b to server.q.Missing
-  |                     ^
+  |                     ^^^^^^^
+  |
+ ::: q/q.synod:2:1
+  |
+2 | Node has
+  | -------- the fields are defined here
 
 p/main.synod:10:14: error[unknown-phrase]: "t" has no field "size"
    |
 10 |   set c to t.size
-   |              ^
+   |              ^^^^

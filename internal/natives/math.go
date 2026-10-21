@@ -28,12 +28,12 @@ func init() {
 func mathRemainder(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 	a, b := args[0].Num, args[1].Num
 	if b == 0 {
-		return value.Value{}, fault(c, source.DivisionByZero, "division by zero")
+		return value.Value{}, withArg(fault(c, source.DivisionByZero, "division by zero"), c, args, 1, "this is 0")
 	}
 	// The product is rounded before the subtraction (no fused multiply-add).
 	r := a - float64(b*math.Floor(a/b))
 	if math.IsInf(r, 0) || math.IsNaN(r) {
-		return value.Value{}, fault(c, source.NumberRange, "the result is too large for a number")
+		return value.Value{}, fault(c, source.NumberRange, "the result is too large for a number").WithLabel("too large")
 	}
 	return value.Number(r), nil
 }

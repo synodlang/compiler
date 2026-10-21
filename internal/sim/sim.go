@@ -175,7 +175,12 @@ func (s *sim) run() {
 			if s.o.TimeLimit != 600_000_000 {
 				msg = "the run reached the time limit of " + value.FormatTime(s.o.TimeLimit)
 			}
-			s.fail(&value.Fault{Code: source.TimeLimit, Message: msg})
+			limit := "10 minutes"
+			if s.o.TimeLimit != 600_000_000 {
+				limit = value.FormatTime(s.o.TimeLimit)
+			}
+			s.fail((&value.Fault{Code: source.TimeLimit, Message: msg}).
+				WithNote("runs stop after " + limit + " of simulated time"))
 			return
 		}
 		s.q.pop()
@@ -186,11 +191,13 @@ func (s *sim) run() {
 		s.instantN++
 		s.total++
 		if s.instantN > s.o.MaxStepsPerInstant {
-			s.fail(s.limit(ev, "more than %d steps at "+value.FormatTime(ev.at), s.o.MaxStepsPerInstant))
+			s.fail(s.limit(ev, "more than %d steps at "+value.FormatTime(ev.at), s.o.MaxStepsPerInstant).
+				WithNote(sprintf("at most %d steps run at one instant of simulated time", s.o.MaxStepsPerInstant)))
 			return
 		}
 		if s.o.MaxSteps > 0 && s.total > s.o.MaxSteps {
-			s.fail(s.limit(ev, "more than %d steps", s.o.MaxSteps))
+			s.fail(s.limit(ev, "more than %d steps", s.o.MaxSteps).
+				WithNote(sprintf("at most %d steps run in one run", s.o.MaxSteps)))
 			return
 		}
 		s.hostFault = nil

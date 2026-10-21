@@ -1,13 +1,20 @@
 p/p.synod:17:18: error[foreign-state]: node code reaches "peer.count" through "peer", not its receiver "n"
    |
+16 | when [n: Node] (net.Received Ping from [peer: Node])
+   |       - the receiver is "n"
 17 |   set n.count to peer.count
-   |                  ^
+   |                  ^^^^^^^^^^
+   |                  ---- not the receiver
    |
    = help: other nodes learn through net.Send
 
 p/p.synod:18:7: error[foreign-state]: node code reaches "peer.count" through "peer", not its receiver "n"
    |
+16 | when [n: Node] (net.Received Ping from [peer: Node])
+   |       - the receiver is "n"
+17 |   set n.count to peer.count
 18 |   set peer.count to 1
-   |       ^
+   |       ^^^^^^^^^^
+   |       ---- not the receiver
    |
    = help: other nodes learn through net.Send

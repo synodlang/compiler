@@ -1,29 +1,29 @@
 p/main.synod:7:23: error[type-mismatch]: ""x"" has type text, expected number
   |
 7 |   set server.q.Val to "x"
-  |                       ^
+  |                       ^^^ has type text
 
 p/main.synod:8:7: error[type-mismatch]: "Val" has type number, expected a list or a map
   |
 8 |   set item 0 of server.q.Val to 1
-  |       ^
+  |       ^^^^^^^^^^^^^^^^^^^^^^ has type number
 
 p/main.synod:9:12: error[type-mismatch]: ""k"" has type text, expected number
   |
 9 |   set item "k" of server.q.Names to "v"
-  |            ^
+  |            ^^^ has type text
 
 p/main.synod:10:35: error[type-mismatch]: "1" has type number, expected text
    |
 10 |   set item 0 of server.q.Names to 1
-   |                                   ^
+   |                                   ^ has type number
 
 p/main.synod:11:39: error[type-mismatch]: ""x"" has type text, expected number
    |
 11 |   set copy to (message q.Rec with Num "x")
-   |                                       ^
+   |                                       ^^^ has type text
 
 p/main.synod:12:12: error[type-mismatch]: "copy" has type q.Rec, expected number
    |
 12 |   sim.Seed copy
-   |            ^
+   |            ^^^^ has type q.Rec

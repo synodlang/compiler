@@ -75,6 +75,39 @@ type Fault struct {
 	// Pos is where the error was raised; it is only meaningful when HasPos.
 	Pos    ir.Pos
 	HasPos bool
+
+	// Rich diagnostics (spec/11 section 11.1): the text under the position,
+	// secondary labels, and notes. They are not part of the trace.
+	Label string
+	Also  []FaultLabel
+	Notes []string
+}
+
+// FaultLabel is a secondary label of a fault: the span of Pos, with a text.
+type FaultLabel struct {
+	Pos  ir.Pos
+	Text string
+}
+
+// WithLabel sets the text under the position and returns f.
+func (f *Fault) WithLabel(text string) *Fault {
+	f.Label = text
+	return f
+}
+
+// WithAlso adds a secondary label at p and returns f. A position with no
+// extent is left out.
+func (f *Fault) WithAlso(p ir.Pos, text string) *Fault {
+	if p.Line > 0 && (p.EndLine > p.Line || p.EndLine == p.Line && p.EndCol > p.Col) {
+		f.Also = append(f.Also, FaultLabel{p, text})
+	}
+	return f
+}
+
+// WithNote adds a note and returns f.
+func (f *Fault) WithNote(text string) *Fault {
+	f.Notes = append(f.Notes, text)
+	return f
 }
 
 // Error implements error.

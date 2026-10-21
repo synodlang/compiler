@@ -66,8 +66,9 @@ type Step struct {
 	Phrase *resolve.Phrase  // StepRecvPhrase
 	// Type is the type of the value after the step (nil for StepPkg).
 	Type types.Type
-	// Pos is the position of the part.
+	// Pos is the position of the part, Sp its span.
 	Pos source.Pos
+	Sp  source.Span
 }
 
 // SelInfo is how a Select settled.
@@ -113,6 +114,7 @@ func (a srcPos) less(b srcPos) bool {
 type src struct {
 	pos  srcPos
 	at   source.Pos
+	sp   source.Span
 	file *resolve.File
 	ty   types.Type
 	text string
@@ -234,16 +236,41 @@ func (c *checker) join(a, b types.Type) (types.Type, bool) { return types.Join(a
 
 // ---- diagnostics ----
 
-func (c *checker) errf(pos source.Pos, code source.Code, msg, hint string) {
+// errf reports a diagnostic whose primary span is sp, in the current file.
+// The start of sp is where the one-line form points; more adds the label,
+// secondary labels, help and notes of the rich form.
+func (c *checker) errf(sp source.Span, code source.Code, msg, hint string, more ...source.Extra) {
 	if !c.final || c.file == nil {
 		return
 	}
-	key := c.file.Path + ":" + strconv.Itoa(pos.Line) + ":" + strconv.Itoa(pos.Col) + ":" + string(code)
+	key := c.file.Path + ":" + strconv.Itoa(sp.Start.Line) + ":" + strconv.Itoa(sp.Start.Col) + ":" + string(code)
 	if c.seen[key] {
 		return
 	}
 	c.seen[key] = true
-	c.diags = append(c.diags, source.New(c.file.Load.Src, pos, code, msg, hint))
+	c.diags = append(c.diags, source.NewSpan(c.file.Load.Src, sp, code, msg, hint, more...))
+}
+
+// hasType is the label of an expression that has type t.
+func (c *checker) hasType(t types.Type) source.Extra {
+	return source.WithLabel("has type " + c.fmtType(t))
+}
+
+// alsoAt is a secondary label at sp of the current file.
+func (c *checker) alsoAt(sp source.Span, text string) source.Extra {
+	if sp.Start == sp.End || sp.Start.Line == 0 {
+		return func(*source.Diagnostic) {}
+	}
+	return source.Also(c.file.Path, sp, text)
+}
+
+// alsoIn is a secondary label at sp of file f, left out for the files of std
+// (whose sources a reader does not have at hand) and for empty spans.
+func alsoIn(f *resolve.File, sp source.Span, text string) source.Extra {
+	if f == nil || strings.HasPrefix(f.Path, "std/") || sp.Start == sp.End || sp.Start.Line == 0 {
+		return func(*source.Diagnostic) {}
+	}
+	return source.Also(f.Path, sp, text)
 }
 
 // fmtType prints t as the current file writes it.
@@ -285,20 +312,20 @@ func (c *checker) pos(f *resolve.File, p source.Pos) srcPos {
 }
 
 // addSrc adds a source to the type of place p.
-func (c *checker) addSrc(p any, name string, at source.Pos, ty types.Type, text string) {
+func (c *checker) addSrc(p any, name string, sp source.Span, ty types.Type, text string) {
 	c.note(p, name)
-	c.srcs[p] = append(c.srcs[p], src{pos: c.pos(c.file, at), at: at, file: c.file, ty: ty, text: text})
+	c.srcs[p] = append(c.srcs[p], src{pos: c.pos(c.file, sp.Start), at: sp.Start, sp: sp, file: c.file, ty: ty, text: text})
 }
 
-func (c *checker) addWeak(p any, name string, at source.Pos, k, v types.Type, text string) {
+func (c *checker) addWeak(p any, name string, sp source.Span, k, v types.Type, text string) {
 	c.note(p, name)
-	c.srcs[p] = append(c.srcs[p], src{pos: c.pos(c.file, at), at: at, file: c.file, weak: true, key: k, val: v, text: text, item: true})
+	c.srcs[p] = append(c.srcs[p], src{pos: c.pos(c.file, sp.Start), at: sp.Start, sp: sp, file: c.file, weak: true, key: k, val: v, text: text, item: true})
 }
 
 // addItem adds the map that "set item k of p to v" makes of p.
-func (c *checker) addItem(p any, name string, at source.Pos, t types.Type, text string) {
+func (c *checker) addItem(p any, name string, sp source.Span, t types.Type, text string) {
 	c.note(p, name)
-	c.srcs[p] = append(c.srcs[p], src{pos: c.pos(c.file, at), at: at, file: c.file, ty: t, text: text, item: true})
+	c.srcs[p] = append(c.srcs[p], src{pos: c.pos(c.file, sp.Start), at: sp.Start, sp: sp, file: c.file, ty: t, text: text, item: true})
 }
 
 func (c *checker) addHi(p any, t types.Type) {
@@ -415,7 +442,9 @@ func (c *checker) fold(p any) types.Type {
 	sort.SliceStable(ss, func(i, j int) bool { return ss[i].pos.less(ss[j].pos) })
 	acc := c.forced[p]
 	isMap := c.shapeOf(p, ss, acc)
-	for _, s := range ss {
+	var first *src // the source that gave acc its type
+	for i := range ss {
+		s := ss[i]
 		t := s.ty
 		if s.weak {
 			if isMap {
@@ -435,19 +464,20 @@ func (c *checker) fold(p any) types.Type {
 			if c.final {
 				save := c.file
 				c.file = s.file
-				c.errf(s.at, source.TypeMismatch, `"`+s.text+`" cannot contain itself`, "")
+				c.errf(s.sp, source.TypeMismatch, `"`+s.text+`" cannot contain itself`, "")
 				c.file = save
 			}
 			continue
 		}
 		if acc == nil {
 			acc = t
+			first = &ss[i]
 			continue
 		}
 		j, ok := c.join(acc, t)
 		if !ok {
 			if c.final {
-				c.joinErr(p, s, acc, t)
+				c.joinErr(p, s, first, acc, t)
 			}
 			continue
 		}
@@ -456,13 +486,18 @@ func (c *checker) fold(p any) types.Type {
 	return acc
 }
 
-func (c *checker) joinErr(p any, s src, have, got types.Type) {
+func (c *checker) joinErr(p any, s src, first *src, have, got types.Type) {
 	save := c.file
 	c.file = s.file
 	defer func() { c.file = save }()
+	var also source.Extra = func(*source.Diagnostic) {}
+	if first != nil && first.file != nil && (first.file != s.file || first.sp != s.sp) {
+		also = alsoIn(first.file, first.sp, `"`+c.names[p]+`" gets type `+c.fmtType(have)+` here`)
+	}
 	if ph, ok := p.(*resolve.Phrase); ok {
-		c.errf(s.at, source.TypeMismatch,
-			`results of "`+ph.Describe("")+`" have types `+c.fmtType(have)+` and `+c.fmtType(got), "")
+		c.errf(s.sp, source.TypeMismatch,
+			`results of "`+ph.Describe("")+`" have types `+c.fmtType(have)+` and `+c.fmtType(got), "",
+			c.hasType(got), also)
 		return
 	}
 	text := s.text
@@ -473,12 +508,14 @@ func (c *checker) joinErr(p any, s src, have, got types.Type) {
 		}
 	}
 	if s.item {
-		c.errf(s.at, source.TypeMismatch,
-			`"`+text+`" makes "`+c.names[p]+`" a `+c.fmtType(got)+`, but it has type `+c.fmtType(have), "")
+		c.errf(s.sp, source.TypeMismatch,
+			`"`+text+`" makes "`+c.names[p]+`" a `+c.fmtType(got)+`, but it has type `+c.fmtType(have), "",
+			source.WithLabel("makes it a "+c.fmtType(got)), also)
 		return
 	}
-	c.errf(s.at, source.TypeMismatch,
-		`"`+text+`" has type `+c.fmtType(got)+`, but "`+c.names[p]+`" has type `+c.fmtType(have), "")
+	c.errf(s.sp, source.TypeMismatch,
+		`"`+text+`" has type `+c.fmtType(got)+`, but "`+c.names[p]+`" has type `+c.fmtType(have), "",
+		c.hasType(got), also)
 }
 
 func isMapType(t types.Type) bool { _, ok := t.(types.Map); return ok }

@@ -36,12 +36,22 @@ func (c *checker) arg(e resolve.Expr, want types.Type) types.Type {
 }
 
 // need reports a type that is not accepted where want is expected.
-func (c *checker) need(e resolve.Expr, got, want types.Type) {
+func (c *checker) need(e resolve.Expr, got, want types.Type, more ...source.Extra) {
 	if want == nil || c.accepts(got, want) {
 		return
 	}
-	c.errf(e.Where(), source.TypeMismatch,
-		`"`+e.Src()+`" has type `+c.fmtType(got)+`, expected `+c.fmtType(want), "")
+	c.errf(e.Span(), source.TypeMismatch,
+		`"`+e.Src()+`" has type `+c.fmtType(got)+`, expected `+c.fmtType(want), "",
+		append([]source.Extra{c.hasType(got)}, more...)...)
+}
+
+// expects is the label at the hole of a phrase written in Synod that the
+// argument does not fit.
+func (c *checker) expects(ph *resolve.Phrase, prm *resolve.Param, want types.Type) source.Extra {
+	if ph == nil || prm == nil || ph.Pkg == nil || ph.Pkg.IsStd {
+		return func(*source.Diagnostic) {}
+	}
+	return alsoIn(ph.File, prm.HoleSp, "expects "+c.fmtType(want))
 }
 
 // refine records how a place is used: passing a read of a place to a hole
@@ -97,7 +107,7 @@ func (c *checker) emptyLit(e *resolve.EmptyLit, want types.Type) types.Type {
 		if want != nil && isCollection(want) {
 			msg = "cannot tell the item type of {}"
 		}
-		c.errf(e.Where(), source.AmbiguousEmpty, msg,
+		c.errf(e.Span(), source.AmbiguousEmpty, msg,
 			"use it with std/lists or std/maps, or assign it where the type is known")
 		e.SetType(types.TInvalid)
 	}
@@ -125,7 +135,7 @@ func (c *checker) expr1(e resolve.Expr, want types.Type) types.Type {
 	case *resolve.Call:
 		t := c.callExpr(x, want)
 		if t == nil {
-			c.errf(x.Where(), source.ActionAsValue, `"`+x.Src()+`" gives no value`, "")
+			c.errf(x.Span(), source.ActionAsValue, `"`+x.Src()+`" gives no value`, "", c.definedWithout(x.Phrase))
 			return types.TInvalid
 		}
 		return t
@@ -141,12 +151,12 @@ func (c *checker) expr1(e resolve.Expr, want types.Type) types.Type {
 	case *resolve.Attachment:
 		kt := c.expr(x.Key, nil)
 		if !c.accepts(kt, types.TNode) && !c.accepts(kt, types.TText) && !c.accepts(kt, types.TNumber) {
-			c.errf(x.Key.Where(), source.TypeMismatch,
-				`"`+x.Key.Src()+`" has type `+c.fmtType(kt)+`, expected node, text or number`, "")
+			c.errf(x.Key.Span(), source.TypeMismatch,
+				`"`+x.Key.Src()+`" has type `+c.fmtType(kt)+`, expected node, text or number`, "", c.hasType(kt))
 		}
 		return types.TShape
 	case *resolve.ActionExpr:
-		c.errf(x.Where(), source.ActionAsValue, `"`+x.Src()+`" gives no value`, "")
+		c.errf(x.Span(), source.ActionAsValue, `"`+x.Src()+`" gives no value`, "")
 		c.stmt(x.Stmt)
 		return types.TInvalid
 	}
@@ -163,7 +173,7 @@ func (c *checker) lit(x *resolve.Lit) types.Type {
 		if c.final {
 			if _, err := strconv.ParseFloat(x.Text, 64); err != nil {
 				if ne, ok := err.(*strconv.NumError); ok && ne.Err == strconv.ErrRange {
-					c.errf(x.Where(), source.Syntax, "number out of 64-bit float range", "")
+					c.errf(x.Span(), source.Syntax, "number out of 64-bit float range", "")
 				}
 			}
 		}
@@ -191,9 +201,9 @@ func (c *checker) checkDuration(x *resolve.Lit) {
 	r.Mul(r, new(big.Rat).SetInt64(mult))
 	switch {
 	case !r.IsInt():
-		c.errf(x.Where(), source.Syntax, `duration "`+x.Text+`" is not a whole number of microseconds`, "")
+		c.errf(x.Span(), source.Syntax, `duration "`+x.Text+`" is not a whole number of microseconds`, "")
 	case r.Num().BitLen() > 62:
-		c.errf(x.Where(), source.Syntax, `duration "`+x.Text+`" is out of range`, "")
+		c.errf(x.Span(), source.Syntax, `duration "`+x.Text+`" is out of range`, "")
 	}
 }
 
@@ -204,7 +214,8 @@ func (c *checker) ref(x *resolve.Ref) types.Type {
 		return c.placeType(s)
 	case *resolve.Param:
 		if s.Kind == resolve.ParamBlock {
-			c.errf(x.Where(), source.ActionAsValue, `"`+x.Src()+`" gives no value`, "")
+			c.errf(x.Span(), source.ActionAsValue, `"`+x.Src()+`" gives no value`, "",
+				alsoIn(c.file, s.HoleSp, "a block hole, it runs a block"))
 			return types.TInvalid
 		}
 		return s.Type
@@ -222,17 +233,18 @@ func (c *checker) listLit(x *resolve.ListLit, want types.Type) types.Type {
 	if l, ok := want.(types.List); ok {
 		ew = l.Elem
 	}
-	var acc types.Type
+	var acc, firstT types.Type
 	for _, it := range x.Items {
 		t := c.expr(it, ew)
 		if acc == nil {
-			acc = t
+			acc, firstT = t, t
 			continue
 		}
 		j, ok := c.join(acc, t)
 		if !ok {
-			c.errf(it.Where(), source.TypeMismatch,
-				`"`+it.Src()+`" has type `+c.fmtType(t)+`, but the list has item type `+c.fmtType(acc), "")
+			c.errf(it.Span(), source.TypeMismatch,
+				`"`+it.Src()+`" has type `+c.fmtType(t)+`, but the list has item type `+c.fmtType(acc), "",
+				c.hasType(t), c.alsoAt(x.Items[0].Span(), "the first item has type "+c.fmtType(firstT)))
 			continue
 		}
 		acc = j
@@ -252,7 +264,7 @@ func (c *checker) recordLit(x *resolve.RecordLit) types.Type {
 		}
 		t := c.expr(st.Value, want)
 		if st.Field.Owner.Pkg == c.rp {
-			c.addSrc(st.Field, st.Field.Owner.Name+"."+st.Field.Name, st.Value.Where(), t, st.Value.Src())
+			c.addSrc(st.Field, st.Field.Owner.Name+"."+st.Field.Name, st.Value.Span(), t, st.Value.Src())
 			c.refine(st.Value, want)
 		} else {
 			c.need(st.Value, t, want)
@@ -275,8 +287,8 @@ func (c *checker) item(x *resolve.Item) types.Type {
 		return types.TInvalid
 	}
 	if !isInvalid(ct) {
-		c.errf(x.Coll.Where(), source.TypeMismatch,
-			`"item" takes a list or a map, not `+c.fmtType(ct), "")
+		c.errf(x.Coll.Span(), source.TypeMismatch,
+			`"item" takes a list or a map, not `+c.fmtType(ct), "", c.hasType(ct))
 	}
 	return types.TInvalid
 }
@@ -314,8 +326,9 @@ func (c *checker) binary(x *resolve.Binary) types.Type {
 	bad := isInvalid(a) || isInvalid(b)
 	mismatch := func(forms string) types.Type {
 		if !bad {
-			c.errf(x.OpPos, source.TypeMismatch,
-				`"`+x.Op+`" takes `+forms+`, not `+c.fmtType(a)+` and `+c.fmtType(b), "")
+			c.errf(opSpan(x), source.TypeMismatch,
+				`"`+x.Op+`" takes `+forms+`, not `+c.fmtType(a)+` and `+c.fmtType(b), "",
+				c.alsoAt(x.A.Span(), "has type "+c.fmtType(a)), c.alsoAt(x.B.Span(), "has type "+c.fmtType(b)))
 		}
 		return types.TInvalid
 	}
@@ -363,18 +376,21 @@ func (c *checker) binary(x *resolve.Binary) types.Type {
 		return types.TBool
 	case "is", "is not":
 		if !bad && !c.accepts(a, b) && !c.accepts(b, a) {
-			c.errf(x.Where(), source.TypeMismatch, "cannot compare "+c.fmtType(a)+" with "+c.fmtType(b), "")
+			c.errf(x.Span(), source.TypeMismatch, "cannot compare "+c.fmtType(a)+" with "+c.fmtType(b), "",
+				c.alsoAt(x.A.Span(), "has type "+c.fmtType(a)), c.alsoAt(x.B.Span(), "has type "+c.fmtType(b)))
 		}
 		return types.TBool
 	case "is in", "is not in":
 		switch coll := b.(type) {
 		case types.List:
 			if !bad && !c.accepts(a, coll.Elem) && !c.accepts(coll.Elem, a) {
-				c.errf(x.Where(), source.TypeMismatch, "cannot compare "+c.fmtType(a)+" with the items of "+c.fmtType(b), "")
+				c.errf(x.Span(), source.TypeMismatch, "cannot compare "+c.fmtType(a)+" with the items of "+c.fmtType(b), "",
+					c.alsoAt(x.A.Span(), "has type "+c.fmtType(a)), c.alsoAt(x.B.Span(), "has type "+c.fmtType(b)))
 			}
 		case types.Map:
 			if !bad && !c.accepts(a, coll.Key) && !c.accepts(coll.Key, a) {
-				c.errf(x.Where(), source.TypeMismatch, "cannot compare "+c.fmtType(a)+" with the keys of "+c.fmtType(b), "")
+				c.errf(x.Span(), source.TypeMismatch, "cannot compare "+c.fmtType(a)+" with the keys of "+c.fmtType(b), "",
+					c.alsoAt(x.A.Span(), "has type "+c.fmtType(a)), c.alsoAt(x.B.Span(), "has type "+c.fmtType(b)))
 			}
 		default:
 			if !bad && !isEmpty(b) {
@@ -399,9 +415,40 @@ func (c *checker) recordOf(t types.Record) *resolve.Record {
 	return nil
 }
 
-func (c *checker) unexported(s *resolve.Select, pos source.Pos, pkg *resolve.Package) {
-	c.errf(pos, source.Unexported, `"`+s.Src()+`" is not exported by `+pkg.Name,
-		"only names starting upper-case are visible outside "+pkg.Name)
+func (c *checker) unexported(s *resolve.Select, sp source.Span, pkg *resolve.Package, defFile *resolve.File, def source.Span) {
+	c.errf(sp, source.Unexported, `"`+s.Src()+`" is not exported by `+pkg.Name,
+		"only names starting upper-case are visible outside "+pkg.Name,
+		alsoIn(defFile, def, "lower-case: stays inside "+pkg.Name))
+}
+
+// definedWithout is the label at the definition of an action that stands
+// where a value is needed.
+func (c *checker) definedWithout(ph *resolve.Phrase) source.Extra {
+	if ph == nil || ph.Pkg != c.rp || ph.Sig != nil || ph.IsValue {
+		return func(*source.Diagnostic) {}
+	}
+	return alsoIn(ph.File, ph.Sp, "defined without a result")
+}
+
+// opSpan is the span of the operator words of x.
+func opSpan(x *resolve.Binary) source.Span {
+	if x.OpSpan.Start != x.OpSpan.End {
+		return x.OpSpan
+	}
+	return source.At(x.OpPos)
+}
+
+// didYouMean is the help of a misspelled name: the hint, with the edit that
+// writes the candidate over sp when it is a single word.
+func didYouMean(sp source.Span, cn string) []source.Extra {
+	if cn == "" {
+		return nil
+	}
+	text := `did you mean "` + cn + `"?`
+	if strings.ContainsAny(cn, " \t") || sp.Start == sp.End {
+		return []source.Extra{source.HelpText(text)}
+	}
+	return []source.Extra{source.HelpEdit(text, source.EditAt(sp, cn))}
 }
 
 // selType settles a member read from the type of its base, part by part.
@@ -421,11 +468,11 @@ func (c *checker) selType(e *resolve.Select) types.Type {
 			if part.Pkg != nil {
 				target = part.Pkg
 				if !c.runs(t.Pkg, target.Path) {
-					c.errf(e.Where(), source.TypeMismatch,
-						`"`+e.Base.Src()+`" is a `+c.fmtType(t)+`, which does not run `+target.Name, "")
+					c.errf(e.Base.Span(), source.TypeMismatch,
+						`"`+e.Base.Src()+`" is a `+c.fmtType(t)+`, which does not run `+target.Name, "", c.hasType(t))
 					return fail()
 				}
-				si.Steps = append(si.Steps, Step{Kind: StepPkg, Pkg: target, Pos: part.Pos})
+				si.Steps = append(si.Steps, Step{Kind: StepPkg, Pkg: target, Pos: part.Pos, Sp: part.Sp})
 				i++
 				if i >= len(e.Path) {
 					return fail()
@@ -433,30 +480,30 @@ func (c *checker) selType(e *resolve.Select) types.Type {
 				part = e.Path[i]
 			} else {
 				if c.rp.IsMain {
-					c.errf(part.Pos, source.UnknownPhrase,
+					c.errf(part.Sp, source.UnknownPhrase,
 						`"`+e.Base.Src()+`" has no field "`+part.Name+`"`,
 						`name the package: "`+e.Base.Src()+`.<package>.`+part.Name+`"`)
 					return fail()
 				}
 				if !c.runs(t.Pkg, c.rp.Path) {
-					c.errf(e.Where(), source.TypeMismatch,
-						`"`+e.Base.Src()+`" is a `+c.fmtType(t)+`, which does not run `+c.rp.Name, "")
+					c.errf(e.Base.Span(), source.TypeMismatch,
+						`"`+e.Base.Src()+`" is a `+c.fmtType(t)+`, which does not run `+c.rp.Name, "", c.hasType(t))
 					return fail()
 				}
 			}
 			if fl := target.NodeField(part.Name); fl != nil {
 				if !fl.Exported && target != c.rp {
-					c.unexported(e, part.Pos, target)
+					c.unexported(e, part.Sp, target, fl.File, fl.Sp)
 					return fail()
 				}
 				cur = c.fieldType(fl)
-				si.Steps = append(si.Steps, Step{Kind: StepNodeField, Field: fl, Type: cur, Pos: part.Pos})
+				si.Steps = append(si.Steps, Step{Kind: StepNodeField, Field: fl, Type: cur, Pos: part.Pos, Sp: part.Sp})
 				c.mark(part.Pos, resolve.RoleField, fl.File, fl.Pos)
 				continue
 			}
 			if ph := target.ReceiverPhrase(part.Name); ph != nil && ph.Zero {
 				if !ph.Exported && target != c.rp {
-					c.unexported(e, part.Pos, target)
+					c.unexported(e, part.Sp, target, ph.File, ph.Sp)
 					return fail()
 				}
 				rt := c.resultType(ph)
@@ -464,15 +511,16 @@ func (c *checker) selType(e *resolve.Select) types.Type {
 					rt = nil
 				}
 				if rt == nil {
-					c.errf(e.Where(), source.ActionAsValue, `"`+e.Src()+`" gives no value`, "")
+					c.errf(e.Span(), source.ActionAsValue, `"`+e.Src()+`" gives no value`, "", c.definedWithout(ph))
 					return fail()
 				}
 				cur = rt
-				si.Steps = append(si.Steps, Step{Kind: StepRecvPhrase, Phrase: ph, Type: cur, Pos: part.Pos})
+				si.Steps = append(si.Steps, Step{Kind: StepRecvPhrase, Phrase: ph, Type: cur, Pos: part.Pos, Sp: part.Sp})
 				c.mark(part.Pos, resolve.RolePhrase, ph.File, ph.Pos)
 				continue
 			}
 			hint := ""
+			var more []source.Extra
 			var names []string
 			for _, f := range target.Node.Fields {
 				if f.Exported || target == c.rp {
@@ -486,8 +534,10 @@ func (c *checker) selType(e *resolve.Select) types.Type {
 			}
 			if cn := closeName(part.Name, names); cn != "" {
 				hint = `did you mean "` + cn + `"?`
+				more = didYouMean(part.Sp, cn)
 			}
-			c.errf(part.Pos, source.UnknownPhrase, `"`+c.fmtType(t)+`" has no field "`+part.Name+`"`, hint)
+			more = append(more, alsoIn(target.Node.File, target.Node.Sp, "the fields are defined here"))
+			c.errf(part.Sp, source.UnknownPhrase, `"`+c.fmtType(t)+`" has no field "`+part.Name+`"`, hint, more...)
 			return fail()
 		case types.Record:
 			rec := c.recordOf(t)
@@ -497,36 +547,39 @@ func (c *checker) selType(e *resolve.Select) types.Type {
 			fl := rec.Lookup(part.Name)
 			if fl == nil {
 				hint := ""
+				var more []source.Extra
 				var names []string
 				for _, f := range rec.Fields {
 					names = append(names, f.Name)
 				}
 				if cn := closeName(part.Name, names); cn != "" {
 					hint = `did you mean "` + cn + `"?`
+					more = didYouMean(part.Sp, cn)
 				}
-				c.errf(part.Pos, source.UnknownPhrase, `record "`+rec.Name+`" has no field "`+part.Name+`"`, hint)
+				more = append(more, alsoIn(rec.File, rec.Sp, "the fields are defined here"))
+				c.errf(part.Sp, source.UnknownPhrase, `record "`+rec.Name+`" has no field "`+part.Name+`"`, hint, more...)
 				return fail()
 			}
 			if !fl.Exported && rec.Pkg != c.rp {
-				c.unexported(e, part.Pos, rec.Pkg)
+				c.unexported(e, part.Sp, rec.Pkg, fl.File, fl.Sp)
 				return fail()
 			}
 			cur = c.fieldType(fl)
-			si.Steps = append(si.Steps, Step{Kind: StepRecordField, Field: fl, Type: cur, Pos: part.Pos})
+			si.Steps = append(si.Steps, Step{Kind: StepRecordField, Field: fl, Type: cur, Pos: part.Pos, Sp: part.Sp})
 			c.mark(part.Pos, resolve.RoleField, fl.File, fl.Pos)
 		case types.Basic:
 			switch t.K {
 			case types.AnyNode:
-				c.errf(e.Where(), source.TypeMismatch, "a node has no fields; use a Node or p.Node value", "")
+				c.errf(e.Base.Span(), source.TypeMismatch, "a node has no fields; use a Node or p.Node value", "", c.hasType(t))
 			case types.Msg:
-				c.errf(e.Where(), source.TypeMismatch, "a msg has no readable fields; use a record type", "")
+				c.errf(e.Base.Span(), source.TypeMismatch, "a msg has no readable fields; use a record type", "", c.hasType(t))
 			default:
-				c.errf(part.Pos, source.UnknownPhrase, `"`+e.Base.Src()+`" has no field "`+part.Name+`"`, "")
+				c.errf(part.Sp, source.UnknownPhrase, `"`+e.Base.Src()+`" has no field "`+part.Name+`"`, "")
 			}
 			return fail()
 		default:
 			if !isEmpty(cur) {
-				c.errf(part.Pos, source.UnknownPhrase, `"`+e.Base.Src()+`" has no field "`+part.Name+`"`, "")
+				c.errf(part.Sp, source.UnknownPhrase, `"`+e.Base.Src()+`" has no field "`+part.Name+`"`, "")
 			}
 			return fail()
 		}
@@ -609,7 +662,7 @@ func (c *checker) callExpr(e *resolve.Call, want types.Type) types.Type {
 	sig := ph.Sig
 	if ph.Receiver != nil && e.Receiver != nil {
 		rt := c.expr(e.Receiver, nil)
-		c.need(e.Receiver, rt, ph.Receiver.Type)
+		c.need(e.Receiver, rt, ph.Receiver.Type, c.expects(ph, ph.Receiver, ph.Receiver.Type))
 	}
 	argT := make([]types.Type, len(e.Args))
 	typeArg := func(i int, ew types.Type) {
@@ -623,7 +676,7 @@ func (c *checker) callExpr(e *resolve.Call, want types.Type) types.Type {
 		}
 		t := c.expr(a, ew)
 		argT[i] = t
-		c.need(a, t, prm.Type)
+		c.need(a, t, prm.Type, c.expects(ph, prm, prm.Type))
 		c.refine(a, prm.Type)
 	}
 	// A "{}" given where the items of another argument decide its type
@@ -682,31 +735,31 @@ func (c *checker) nativeResult(e *resolve.Call, sig *stdlib.Sig, argT []types.Ty
 			if l, ok := arg(r.B).(types.List); ok && !isEmpty(l.Elem) {
 				at := arg(r.A)
 				if !c.accepts(at, l.Elem) && !(sig.ID == "lists.without" && c.accepts(l.Elem, at)) {
-					c.errf(expr(r.A).Where(), source.TypeMismatch,
-						`"`+expr(r.A).Src()+`" has type `+c.fmtType(at)+`, expected `+c.fmtType(l.Elem), "")
+					c.errf(expr(r.A).Span(), source.TypeMismatch,
+						`"`+expr(r.A).Src()+`" has type `+c.fmtType(at)+`, expected `+c.fmtType(l.Elem), "", c.hasType(at))
 				}
 			}
 		case stdlib.RelKeyAccepts:
 			if m, ok := arg(r.B).(types.Map); ok && !isEmpty(m.Key) {
 				at := arg(r.A)
 				if !c.accepts(at, m.Key) && !c.accepts(m.Key, at) {
-					c.errf(expr(r.A).Where(), source.TypeMismatch,
-						`"`+expr(r.A).Src()+`" has type `+c.fmtType(at)+`, expected `+c.fmtType(m.Key), "")
+					c.errf(expr(r.A).Span(), source.TypeMismatch,
+						`"`+expr(r.A).Src()+`" has type `+c.fmtType(at)+`, expected `+c.fmtType(m.Key), "", c.hasType(at))
 				}
 			}
 		case stdlib.RelSameElem:
 			la, oka := arg(r.A).(types.List)
 			lb, okb := arg(r.B).(types.List)
 			if oka && okb && !isEmpty(la.Elem) && !c.accepts(lb.Elem, la.Elem) {
-				c.errf(expr(r.B).Where(), source.TypeMismatch,
-					`"`+expr(r.B).Src()+`" has type `+c.fmtType(arg(r.B))+`, expected `+c.fmtType(arg(r.A)), "")
+				c.errf(expr(r.B).Span(), source.TypeMismatch,
+					`"`+expr(r.B).Src()+`" has type `+c.fmtType(arg(r.B))+`, expected `+c.fmtType(arg(r.A)), "", c.hasType(arg(r.B)))
 			}
 		case stdlib.RelSortable:
 			if l, ok := arg(r.A).(types.List); ok {
 				el := l.Elem
 				if !isInvalid(el) && !isEmpty(el) && !isT(el, types.Number) && !isT(el, types.Time) && !isT(el, types.Text) {
-					c.errf(expr(r.A).Where(), source.TypeMismatch,
-						`"`+expr(r.A).Src()+`" has type `+c.fmtType(arg(r.A))+`, expected a list of numbers, times or text`, "")
+					c.errf(expr(r.A).Span(), source.TypeMismatch,
+						`"`+expr(r.A).Src()+`" has type `+c.fmtType(arg(r.A))+`, expected a list of numbers, times or text`, "", c.hasType(arg(r.A)))
 				}
 			}
 		}

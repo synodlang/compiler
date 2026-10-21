@@ -1,20 +1,20 @@
 p/p.synod:5:16: error[ambiguous-empty]: cannot tell the item type of {}
   |
 5 |   set items to {}
-  |                ^
+  |                ^^
   |
   = help: use it with std/lists or std/maps, or assign it where the type is known
 
 p/p.synod:10:30: error[ambiguous-empty]: cannot tell the item type of {}
    |
 10 |   set n.count to (lists.Size {})
-   |                              ^
+   |                              ^^
    |
    = help: use it with std/lists or std/maps, or assign it where the type is known
 
 p/p.synod:11:37: error[ambiguous-empty]: cannot tell the item type of {}
    |
 11 |   set n.items to (lists.Take 1 from {})
-   |                                     ^
+   |                                     ^^
    |
    = help: use it with std/lists or std/maps, or assign it where the type is known

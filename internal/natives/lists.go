@@ -62,7 +62,7 @@ func listsWithout(h Host, c *ir.Call, args []value.Value) (value.Value, *value.F
 func listsTake(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 	n := args[0].Num
 	if !whole(n) || n < 0 {
-		return value.Value{}, fault(c, source.BadArgument, "lists.Take needs a whole count of 0 or more")
+		return value.Value{}, withArg(fault(c, source.BadArgument, "lists.Take needs a whole count of 0 or more"), c, args, 0, "is "+show(args[0]))
 	}
 	old := args[1].List().Items
 	if n >= float64(len(old)) {
@@ -75,7 +75,7 @@ func listsTake(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Faul
 func listsRange(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 	a, b := args[0].Num, args[1].Num
 	if !whole(a) || !whole(b) {
-		return value.Value{}, fault(c, source.BadArgument, "lists.Range needs whole numbers")
+		return value.Value{}, withArg(withArg(fault(c, source.BadArgument, "lists.Range needs whole numbers"), c, args, 0, "is "+show(args[0])), c, args, 1, "is "+show(args[1]))
 	}
 	if a > b {
 		return value.ListOf([]value.Value{}), nil
@@ -97,7 +97,7 @@ func listsSort(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Faul
 	copy(items, old)
 	for _, it := range items {
 		if (it.K != value.KNumber && it.K != value.KTime && it.K != value.KText) || it.K != items[0].K {
-			return value.Value{}, fault(c, source.BadArgument, "lists.Sort needs items that are all numbers, all times or all text")
+			return value.Value{}, withArg(fault(c, source.BadArgument, "lists.Sort needs items that are all numbers, all times or all text"), c, args, 0, "has items that cannot be sorted together")
 		}
 	}
 	sort.SliceStable(items, func(i, j int) bool { return value.Compare(items[i], items[j]) < 0 })

@@ -1,29 +1,29 @@
 p/p.synod:16:7: error[context]: "set n.count" is not allowed in look context
    |
 16 |   set n.count to 1
-   |       ^
+   |       ^^^^^^^
 
 p/p.synod:17:28: error[context]: look context reads only exported fields
    |
 17 |   look.Layout (text.From n.hidden)
-   |                            ^
+   |                            ^^^^^^
 
 p/p.synod:18:26: error[context]: "time.Now" is not allowed in look context
    |
 18 |   look.Layout (text.From time.Now)
-   |                          ^
+   |                          ^^^^^^^^
 
 p/p.synod:19:3: error[context]: "deliver" is not allowed in look context
    |
 19 |   deliver (message Ping with seq 1) to n
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 p/p.synod:20:3: error[context]: "emit" is not allowed in look context
    |
 20 |   emit (message Ping with seq 1) by n
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 p/p.synod:21:3: error[context]: "net.Send" is not allowed in look context
    |
 21 |   net.Send (message Ping with seq 1) from n to n
-   |   ^
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

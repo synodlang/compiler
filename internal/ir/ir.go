@@ -43,10 +43,13 @@ package ir
 
 import "github.com/synodlang/compiler/internal/types"
 
-// Pos is a source position, for run-time errors and traces.
+// Pos is a source position, for run-time errors and traces. The trace
+// records the start only; EndLine and EndCol (exclusive, code points; zero
+// when unknown) give the extent for the diagnostics of run-time errors.
 type Pos struct {
-	File      string
-	Line, Col int
+	File            string
+	Line, Col       int
+	EndLine, EndCol int
 }
 
 // Program is one entry package with the packages it needs.

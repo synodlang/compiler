@@ -15,7 +15,7 @@ func init() {
 // diskWrite: Write [v] at [k] on [n]. The value is stored with the static
 // type of the argument expression.
 func diskWrite(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
-	if f := nobody(c, args[2], "disk.Write on"); f != nil {
+	if f := nobody(c, args, 2, "disk.Write on"); f != nil {
 		return value.Value{}, f
 	}
 	h.DiskWrite(args[2].NodeID(), args[1].Str, args[0], c.Args[0].Type())
@@ -24,7 +24,7 @@ func diskWrite(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Faul
 
 // diskRead: Read [k] on [n] or [d].
 func diskRead(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
-	if f := nobody(c, args[1], "disk.Read on"); f != nil {
+	if f := nobody(c, args, 1, "disk.Read on"); f != nil {
 		return value.Value{}, f
 	}
 	v, t, ok := h.DiskRead(args[1].NodeID(), args[0].Str)
@@ -35,7 +35,8 @@ func diskRead(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault
 	if !h.Accepts(t, want) {
 		return value.Value{}, fault(c, source.DiskType,
 			"disk value at "+value.Format(args[0], value.FormatOpts{})+" is a "+
-				types.Format(t, "", nil)+", not a "+types.Format(want, "", nil))
+				types.Format(t, "", nil)+", not a "+types.Format(want, "", nil)).
+			WithNote("the default has type " + types.Format(want, "", nil))
 	}
 	return v, nil
 }

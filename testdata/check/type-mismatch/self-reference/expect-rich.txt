@@ -1,4 +1,4 @@
 p/p.synod:7:12: error[type-mismatch]: "{l}" cannot contain itself
   |
 7 |   set l to {l}
-  |            ^
+  |            ^^^

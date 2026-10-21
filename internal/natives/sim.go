@@ -25,7 +25,7 @@ func init() {
 func simSeed(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 	n := args[0].Num
 	if !whole(n) || n < 0 || n > maxSeed {
-		return value.Value{}, fault(c, source.BadArgument, "sim.Seed needs a whole number from 0 to 2^53")
+		return value.Value{}, withArg(fault(c, source.BadArgument, "sim.Seed needs a whole number from 0 to 2^53"), c, args, 0, "is "+show(args[0]))
 	}
 	h.Seed(uint64(n))
 	return value.Value{}, nil
@@ -33,7 +33,7 @@ func simSeed(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault)
 
 func simStopAt(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 	if args[0].Int < 0 {
-		return value.Value{}, fault(c, source.BadArgument, "sim.StopAt needs a time of 0 or more")
+		return value.Value{}, withArg(fault(c, source.BadArgument, "sim.StopAt needs a time of 0 or more"), c, args, 0, "is "+show(args[0]))
 	}
 	h.StopAt(args[0].Int)
 	return value.Value{}, nil
@@ -46,7 +46,7 @@ func simSpawn(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault
 func simCluster(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 	n := args[0].Num
 	if !whole(n) || n < 0 {
-		return value.Value{}, fault(c, source.BadArgument, "sim.Cluster needs a whole count of 0 or more")
+		return value.Value{}, withArg(fault(c, source.BadArgument, "sim.Cluster needs a whole count of 0 or more"), c, args, 0, "is "+show(args[0]))
 	}
 	if n > MaxItems {
 		return value.Value{}, fault(c, source.RunLimit, "sim.Cluster of more than 1000000 nodes")
@@ -61,7 +61,7 @@ func simCluster(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fau
 
 func nodeAction(what string, f func(Host, int)) Func {
 	return func(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
-		if fl := nobody(c, args[0], what); fl != nil {
+		if fl := nobody(c, args, 0, what); fl != nil {
 			return value.Value{}, fl
 		}
 		f(h, args[0].NodeID())

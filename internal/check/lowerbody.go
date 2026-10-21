@@ -52,7 +52,7 @@ func (f *fnc) symVar(s resolve.Symbol) *ir.Var {
 }
 
 func (f *fnc) stmt(s resolve.Stmt) ir.Stmt {
-	at := ir.StmtPos{At: f.pos(s.Where())}
+	at := ir.StmtPos{At: f.span(s.Span())}
 	switch x := s.(type) {
 	case *resolve.Set:
 		return f.set(at, x)
@@ -109,7 +109,7 @@ func (f *fnc) selectPrefix(sel *resolve.Select, upto int) ir.Expr {
 	si := f.info.Sel[sel]
 	for i := 0; i < upto && i < len(si.Steps); i++ {
 		st := si.Steps[i]
-		b := ir.Base{Ty: st.Type, At: f.pos(st.Pos)}
+		b := ir.Base{Ty: st.Type, At: f.span(st.Sp)}
 		switch st.Kind {
 		case StepNodeField:
 			cur = &ir.NodeField{Base: b, Node: cur, Field: f.l.field[st.Field]}
@@ -156,7 +156,7 @@ func (f *fnc) base(e resolve.Expr) ir.Base {
 	if t == nil {
 		t = types.TInvalid
 	}
-	return ir.Base{Ty: t, At: f.pos(e.Where())}
+	return ir.Base{Ty: t, At: f.span(e.Span())}
 }
 
 func (f *fnc) call(e *resolve.Call) *ir.Call {

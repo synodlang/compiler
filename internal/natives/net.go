@@ -17,10 +17,10 @@ func init() {
 
 // netSend: Send [m] from [a] to [b].
 func netSend(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
-	if f := nobody(c, args[1], "net.Send from"); f != nil {
+	if f := nobody(c, args, 1, "net.Send from"); f != nil {
 		return value.Value{}, f
 	}
-	if f := nobody(c, args[2], "net.Send to"); f != nil {
+	if f := nobody(c, args, 2, "net.Send to"); f != nil {
 		return value.Value{}, f
 	}
 	h.Send(args[0].Record(), args[1].NodeID(), args[2].NodeID())
@@ -30,7 +30,7 @@ func netSend(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault)
 func netLatency(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 	a, b := args[0].Int, args[1].Int
 	if a < 0 || b < a {
-		return value.Value{}, fault(c, source.BadArgument, "net.Latency needs 0 ≤ a ≤ b")
+		return value.Value{}, withArg(withArg(fault(c, source.BadArgument, "net.Latency needs 0 ≤ a ≤ b"), c, args, 0, "is "+show(args[0])), c, args, 1, "is "+show(args[1]))
 	}
 	h.SetLatency(a, b)
 	return value.Value{}, nil
@@ -39,18 +39,18 @@ func netLatency(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fau
 func netLoss(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 	p := args[0].Num
 	if !(p >= 0 && p <= 1) {
-		return value.Value{}, fault(c, source.BadArgument, "net.Loss needs 0 ≤ p ≤ 1")
+		return value.Value{}, withArg(fault(c, source.BadArgument, "net.Loss needs 0 ≤ p ≤ 1"), c, args, 0, "is "+show(args[0]))
 	}
 	h.SetLoss(p)
 	return value.Value{}, nil
 }
 
 func netPartition(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
-	a, f := nodeIDs(c, args[0], "net.Partition with")
+	a, f := nodeIDs(c, args, 0, "net.Partition with")
 	if f != nil {
 		return value.Value{}, f
 	}
-	b, f := nodeIDs(c, args[1], "net.Partition with")
+	b, f := nodeIDs(c, args, 1, "net.Partition with")
 	if f != nil {
 		return value.Value{}, f
 	}
@@ -64,10 +64,10 @@ func netHeal(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault)
 }
 
 func netDropNext(h Host, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
-	if f := nobody(c, args[1], "net.DropNext from"); f != nil {
+	if f := nobody(c, args, 1, "net.DropNext from"); f != nil {
 		return value.Value{}, f
 	}
-	if f := nobody(c, args[2], "net.DropNext to"); f != nil {
+	if f := nobody(c, args, 2, "net.DropNext to"); f != nil {
 		return value.Value{}, f
 	}
 	h.DropNext(args[0].Str, args[1].NodeID(), args[2].NodeID())

@@ -1,14 +1,14 @@
 p/p.synod:12:7: error[bad-place]: cannot set "Ping.seq": it is a record field
    |
 12 |   set Ping.seq to 3
-   |       ^
+   |       ^^^^^^^^ a record field
 
 p/p.synod:13:17: error[bad-place]: cannot set "Ping.tags": it is a record field
    |
 13 |   set item 0 of Ping.tags to 4
-   |                 ^
+   |                 ^^^^^^^^^ a record field
 
 p/p.synod:15:7: error[bad-place]: cannot set "copy.seq": it is a record field
    |
 15 |   set copy.seq to 5
-   |       ^
+   |       ^^^^^^^^ a record field
