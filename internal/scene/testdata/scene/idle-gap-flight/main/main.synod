@@ -1,0 +1,15 @@
+# package main
+use example.com/t/p
+use std/net
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  set b to (sim.Spawn p)
+  set a.p.Peers to {b}
+  net.Latency between 1ms and 1ms
+  deliver (message p.Go with k 1) to a
+  after 5ms
+    deliver (message p.Go with k 2) to a
+  after 3s
+    deliver (message p.Go with k 3) to a

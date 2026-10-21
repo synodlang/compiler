@@ -1,0 +1,11 @@
+# package lk
+use std/look
+use std/sim
+
+define Spin [c: shape]
+  after 0s
+    Spin c
+
+when (sim.Added n)
+  draw (look.Circle 1) as c for n
+  Spin c

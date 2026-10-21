@@ -1,0 +1,7 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  deliver (message p.Go with k 1) to a

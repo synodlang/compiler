@@ -1,0 +1,9 @@
+# package main
+use example.com/t/lk
+use example.com/t/p
+use std/sim
+
+define main
+  set a to (sim.Spawn p)
+  after 100ms
+    sim.Crash a

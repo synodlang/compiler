@@ -1,0 +1,12 @@
+# package main
+use example.com/t/p
+use std/sim
+
+define main
+  set nodes to (sim.Cluster of 4 running p)
+  after 1s
+    sim.Crash (item 1 of nodes)
+  after 2s
+    sim.Restart (item 1 of nodes)
+  after 3s
+    sim.Remove (item 2 of nodes)

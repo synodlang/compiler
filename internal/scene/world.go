@@ -80,6 +80,9 @@ type shape struct {
 	busy       int64
 	referenced bool
 	isCenter   bool
+	// card is set once the shape is attached under "card": only then do
+	// its deletion, grouping and pinning change the layout.
+	card bool
 }
 
 type flight struct {
@@ -121,7 +124,10 @@ type world struct {
 
 	pending   map[int]*flight
 	pendOrder []int
-	landed    map[int]landInfo
+	// pendBy lists, per shape, the messages it has been sent flying for
+	// (entries may be stale; pending is the truth).
+	pendBy map[int][]int
+	landed map[int]landInfo
 
 	centerIdx int
 }
@@ -136,7 +142,7 @@ func newWorld(c *clock, cfg worldConfig) *world {
 	return &world{
 		c: c, maxShapes: cfg.MaxShapes, maxKeys: cfg.MaxKeys,
 		att: map[attID]int{}, attNames: map[attKey][]string{},
-		pending: map[int]*flight{}, landed: map[int]landInfo{},
+		pending: map[int]*flight{}, pendBy: map[int][]int{}, landed: map[int]landInfo{},
 		centerIdx: -1, layoutDirty: true,
 	}
 }
@@ -341,7 +347,9 @@ func (w *world) moveSelf(s *shape) {
 func (w *world) pin(s *shape) {
 	if !s.pinned {
 		s.pinned = true
-		w.layoutDirty = true
+		if s.card {
+			w.layoutDirty = true
+		}
 	}
 }
 
@@ -360,11 +368,16 @@ func (w *world) breakAnchor(s *shape) {
 }
 
 func (w *world) cancelFlight(s *shape) {
-	for _, id := range w.pendOrder {
+	ids, ok := w.pendBy[s.idx]
+	if !ok {
+		return
+	}
+	for _, id := range ids {
 		if f, ok := w.pending[id]; ok && f.shape == s.idx {
 			delete(w.pending, id)
 		}
 	}
+	delete(w.pendBy, s.idx)
 }
 
 // busyUntil is the latest end of a tween on shape i or on its group members
@@ -576,6 +589,9 @@ func (w *world) group(items []int, key string, now int64) (int, error) {
 		s := w.shapes[m]
 		s.group = g
 		s.referenced = true
+		if s.card {
+			w.layoutDirty = true
+		}
 		gs.items = append(gs.items, m)
 		for j := range s.keys {
 			sk := &s.keys[j]
@@ -591,7 +607,6 @@ func (w *world) group(items []int, key string, now int64) (int, error) {
 			w.breakAnchor(s)
 		}
 	}
-	w.layoutDirty = true
 	return g, w.takeErr()
 }
 
@@ -631,7 +646,9 @@ func (w *world) deleteAt(i int, at int64) {
 	}
 	s.followers = nil
 	w.cancelFlight(s)
-	w.layoutDirty = true
+	if s.card {
+		w.layoutDirty = true
+	}
 	for _, m := range s.items {
 		w.deleteAt(m, at)
 	}
@@ -668,6 +685,7 @@ func (w *world) attach(name string, k attKey, s int, now int64) error {
 	}
 	w.att[id] = s
 	if name == "card" {
+		w.shapes[s].card = true
 		w.layoutDirty = true
 	}
 	return w.takeErr()
@@ -766,6 +784,7 @@ func (w *world) flightStart(s, a, b, msgID int, now int64) error {
 		w.pendOrder = append(w.pendOrder, msgID)
 	}
 	w.pending[msgID] = f
+	w.pendBy[s] = append(w.pendBy[s], msgID)
 	return nil
 }
 

@@ -1,0 +1,15 @@
+{"format":"synod-scene/1","duration":90,"canvas":{"w":1600,"h":1000},"theme":{"Paper":"#151A2E","Ink":"#EDE9E1","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A"},"shapes":[
+{"id":"s31b5fdfcde94","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
+{"id":"s32b5fdfce047","kind":"label","props":{},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n1"}]},
+{"id":"s33b5fdfce1fa","kind":"group","props":{"items":["s31b5fdfcde94","s32b5fdfce047"]},"keys":[{"at":30,"x":800,"y":500,"opacity":1}]},
+{"id":"sd4b60220f31b","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
+{"id":"sd3b60220f168","kind":"label","props":{},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n2"}]},
+{"id":"sd6b60220f681","kind":"group","props":{"items":["sd4b60220f31b","sd3b60220f168"]},"keys":[{"at":60,"x":800,"y":500,"opacity":1}]}
+],"markers":[
+{"at":90,"kind":"failed","text":"look lk/lk.synod:11:14: error[missing-key]: no shape is attached to \"nope\" under \"card\""}
+],"trace":[
+{"seq":1,"at":0},
+{"seq":2,"at":30},
+{"seq":3,"at":60},
+{"seq":4,"at":90}
+]}

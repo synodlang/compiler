@@ -1,0 +1,12 @@
+# package lk
+use std/look
+use std/sim
+use std/theme
+
+define Hot
+  result #FF6600
+
+when (sim.Added n)
+  draw (look.Circle 10) as dot for n
+  look.Fill dot with Hot
+  look.Stroke dot with theme.Good

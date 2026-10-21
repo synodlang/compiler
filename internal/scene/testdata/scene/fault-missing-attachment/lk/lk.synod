@@ -1,0 +1,11 @@
+# package lk
+use example.com/t/p
+use std/look
+use std/sim
+use std/theme
+
+when (sim.Added n)
+  draw (look.Card for n) as card for n
+
+when (sim.Changed p.Peers of n from old to new)
+  look.Fill (card of "nope") with theme.Accent

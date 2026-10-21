@@ -1,0 +1,18 @@
+# package lk
+use example.com/t/p
+use std/look
+use std/sim
+use std/theme
+
+when (sim.Added n)
+  draw (look.Circle 20) as mark for n
+  look.Fill mark with theme.Quiet
+  look.Tween "x" of mark to 300 over 0s
+
+when (sim.Changed p.Got of n from old to new)
+  draw (look.Circle 30) as mark for n
+  look.Fill mark with theme.Good
+
+when (sim.Changed p.Peers of n from old to new)
+  draw (look.Circle 25) as mark for n
+  look.Fill mark with theme.Warning

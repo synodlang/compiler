@@ -1,0 +1,11 @@
+# package lk
+use std/look
+use std/sim
+
+when (sim.Added n)
+  draw (look.Circle 10) as dot for n
+  look.Tween "opacity" of dot to 1 over 100ms
+
+when sim.Started
+  draw (look.Circle 3) as other
+  look.Tween "color" of other to 1 over 100ms

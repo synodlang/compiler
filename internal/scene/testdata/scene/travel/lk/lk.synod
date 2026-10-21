@@ -1,0 +1,14 @@
+# package lk
+use std/look
+use std/net
+use std/sim
+
+when sim.Started
+  look.Layout "row"
+
+when (sim.Added n)
+  draw (look.Card for n) as card for n
+
+when (net.Sent m from a to b)
+  draw (look.Circle 5) as ball
+  look.Travel ball from (card of a) to (card of b) over 400ms

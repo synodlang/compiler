@@ -1,0 +1,13 @@
+# package lk
+use std/look
+use std/sim
+use std/theme
+
+when (sim.Added n)
+  draw (look.Rect 80 by 40) as box
+  draw (look.Circle 10) as dot
+  draw (look.Label "node") as name
+  draw (look.Group {box, dot, name}) as unit for n
+  look.Fill unit with theme.Good
+  look.Tween "x" of unit to 300 over 200ms
+  look.Place name above box

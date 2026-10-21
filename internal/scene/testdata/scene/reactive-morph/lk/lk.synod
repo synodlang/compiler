@@ -1,0 +1,17 @@
+# package lk
+use example.com/t/p
+use std/look
+use std/sim
+use std/theme
+
+define Shade [g: number]
+  if (g more than 0)
+    result theme.Accent
+  result theme.Ink
+
+when sim.Started
+  look.Layout "row"
+
+when (sim.Added [n: p.Node])
+  draw (look.Card for n) as card for n
+    look.Fill card with (Shade n.p.Got)

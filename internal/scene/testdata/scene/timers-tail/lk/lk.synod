@@ -1,0 +1,13 @@
+# package lk
+use std/look
+use std/sim
+use std/theme
+
+when sim.Started
+  draw (look.Circle 10) as dot
+  after 500ms
+    look.Fill dot with theme.Accent
+    after 1s
+      look.Fill dot with theme.Good
+      after 3s
+        look.Fill dot with theme.Critical

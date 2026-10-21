@@ -1,0 +1,33 @@
+{"format":"synod-scene/1","duration":2220,"canvas":{"w":1600,"h":1000},"theme":{"Paper":"#151A2E","Ink":"#EDE9E1","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A"},"shapes":[
+{"id":"s648ffc90f4c6","kind":"rect","props":{"w":1592,"h":992,"radius":12},"keys":[{"at":0,"x":800,"y":500,"opacity":0,"stroke":"Critical"}]},
+{"id":"s1fdc3aec8c00","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
+{"id":"s20dc3aec8db3","kind":"label","props":{},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n1"}]},
+{"id":"s21dc3aec8f66","kind":"group","props":{"items":["s1fdc3aec8c00","s20dc3aec8db3"]},"keys":[{"at":30,"x":800,"y":200,"opacity":1}]},
+{"id":"s22dc3aec9119","kind":"label","props":{},"keys":[{"at":30,"x":800,"y":245,"opacity":1,"fill":"Ink","text":"Peers {nobody}"}]},
+{"id":"s23dc3aec92cc","kind":"label","props":{},"keys":[{"at":30,"x":800,"y":271,"opacity":1,"fill":"Ink","text":"Got 0"}]},
+{"id":"se2dc40259987","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Ink"},{"at":720,"fill":"Ink"},{"at":1020,"fill":"Quiet"},{"at":1320,"fill":"Quiet"},{"at":1620,"fill":"Ink"}]},
+{"id":"se1dc402597d4","kind":"label","props":{},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n2"}]},
+{"id":"se4dc40259ced","kind":"group","props":{"items":["se2dc40259987","se1dc402597d4"]},"keys":[{"at":60,"x":800,"y":800,"opacity":1},{"at":90,"x":800,"y":800},{"at":120,"x":802.22,"y":798.72},{"at":420,"x":1100,"y":500},{"at":1920,"x":1100,"y":500},{"at":2220,"x":1059.81,"y":650}]},
+{"id":"se3dc40259b3a","kind":"label","props":{},"keys":[{"at":60,"x":800,"y":845,"opacity":1,"fill":"Ink","text":"Peers {nobody}"},{"at":90,"x":800,"y":845},{"at":120,"x":802.22,"y":843.72},{"at":420,"x":1100,"y":545},{"at":1920,"x":1100,"y":545},{"at":2220,"x":1059.81,"y":695}]},
+{"id":"sdedc402592bb","kind":"label","props":{},"keys":[{"at":60,"x":800,"y":871,"opacity":1,"fill":"Ink","text":"Got 0"},{"at":90,"x":800,"y":871},{"at":120,"x":802.22,"y":869.72},{"at":420,"x":1100,"y":571},{"at":1920,"x":1100,"y":571},{"at":2220,"x":1059.81,"y":721}]},
+{"id":"sd1dc31f8a1f6","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":90,"x":0,"y":0,"opacity":1,"fill":"Ink"}],"end":2220},
+{"id":"sd2dc31f8a3a9","kind":"label","props":{},"keys":[{"at":90,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n3"}],"end":2220},
+{"id":"scfdc31f89e90","kind":"group","props":{"items":["sd1dc31f8a1f6","sd2dc31f8a3a9"]},"keys":[{"at":90,"x":540.19,"y":650,"opacity":1},{"at":120,"x":540.19,"y":650},{"at":420,"x":800,"y":800},{"at":1920,"opacity":1},{"at":2220,"opacity":0}],"end":2220},
+{"id":"sd0dc31f8a043","kind":"label","props":{},"keys":[{"at":90,"x":540.19,"y":695,"opacity":1,"fill":"Ink","text":"Peers {nobody}"},{"at":120,"x":540.19,"y":695},{"at":420,"x":800,"y":845},{"at":1920,"opacity":1},{"at":2220,"opacity":0}],"end":2220},
+{"id":"sd5dc31f8a8c2","kind":"label","props":{},"keys":[{"at":90,"x":540.19,"y":721,"opacity":1,"fill":"Ink","text":"Got 0"},{"at":120,"x":540.19,"y":721},{"at":420,"x":800,"y":871},{"at":1920,"opacity":1},{"at":2220,"opacity":0}],"end":2220},
+{"id":"s94dc36d4dd9d","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":120,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
+{"id":"s93dc36d4dbea","kind":"label","props":{},"keys":[{"at":120,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n4"}]},
+{"id":"s92dc36d4da37","kind":"group","props":{"items":["s94dc36d4dd9d","s93dc36d4dbea"]},"keys":[{"at":120,"x":500,"y":500,"opacity":1},{"at":1920,"x":500,"y":500},{"at":2220,"x":540.19,"y":650}]},
+{"id":"s91dc36d4d884","kind":"label","props":{},"keys":[{"at":120,"x":500,"y":545,"opacity":1,"fill":"Ink","text":"Peers {nobody}"},{"at":1920,"x":500,"y":545},{"at":2220,"x":540.19,"y":695}]},
+{"id":"s90dc36d4d6d1","kind":"label","props":{},"keys":[{"at":120,"x":500,"y":571,"opacity":1,"fill":"Ink","text":"Got 0"},{"at":1920,"x":500,"y":571},{"at":2220,"x":540.19,"y":721}]}
+],"markers":[],"trace":[
+{"seq":1,"at":0},
+{"seq":2,"at":30},
+{"seq":3,"at":60},
+{"seq":4,"at":90},
+{"seq":5,"at":120},
+{"seq":6,"at":720},
+{"seq":7,"at":1320},
+{"seq":8,"at":1920},
+{"seq":9,"at":1950}
+]}

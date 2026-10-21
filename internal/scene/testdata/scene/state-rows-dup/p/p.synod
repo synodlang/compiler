@@ -1,0 +1,14 @@
+# package p
+use example.com/t/q
+use std/sim
+
+Go has
+  set k to 0
+
+Node has
+  set Got to 0
+  set Own to "x"
+
+when [n: Node] (sim.Delivered Go)
+  set n.Own to "y"
+  set n.q.Got to 6

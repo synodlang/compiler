@@ -1,0 +1,12 @@
+# package p
+use std/sim
+
+Go has
+  set k to 0
+
+Node has
+  set Got to 0
+
+when [n: Node] (sim.Delivered Go)
+  set n.Got to (n.Got plus 1)
+  set n.Got to (Go.k divided by (n.Got minus 1))

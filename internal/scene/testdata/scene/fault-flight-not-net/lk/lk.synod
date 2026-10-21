@@ -1,0 +1,10 @@
+# package lk
+use std/look
+use std/sim
+
+when (sim.Added n)
+  draw (look.Card for n) as card for n
+
+when (sim.Injected g into n)
+  draw (look.Circle 5) as ball
+  look.Flight ball from (card of n) to (card of n) for g
