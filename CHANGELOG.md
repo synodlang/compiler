@@ -5,6 +5,12 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+### Added
+
+- `synod.wasm`, the compiler for WebAssembly (`GOOS=js GOARCH=wasm`, built from `cmd/synod-wasm`): a global `synod` with the synchronous functions `check`, `run`, `format` and `version`. They take the program as a `files` object and return the CLI's check.json, status, summary, trace and scene as text, byte-identical to the native build; they never throw (errors are `{code, message}` with exit code 2). std is embedded; other modules come in `files` under `vendor/`.
+- Release assets `synod-<tag>.wasm` (about 8.4 MiB, 2.2 MiB gzipped) and `synod-<tag>-wasm_exec.js` (from the Go toolchain that built the module), both listed in `SHA256SUMS`. `go run ./internal/release/cmd/wasm -tag <tag> -out dist` builds them and fails over the size budget (9.5 MiB, 2.75 MiB gzipped).
+- CI runs the runtest and driver goldens compiled to WebAssembly under Node, diffs the trace and scene hashes against Linux, and compares the JS API running in Node with the native API and the goldens (`internal/wasmtest`).
+
 ### Changed
 
 - `synod check` and `synod fmt` skip folders named `vendor` when they walk a folder, like `testdata`, `.x` and `_x`; an explicit file or folder argument is still processed.

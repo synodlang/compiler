@@ -10,8 +10,8 @@ import (
 // size. They sit about 1 MiB (raw) and 0.5 MiB (gzip) above the measured
 // sizes, so growth is noticed before it reaches the site.
 const (
-	WasmMaxBytes     = 10 << 20
-	WasmMaxGzipBytes = 3 << 20
+	WasmMaxBytes     = 19 << 19 // 9.5 MiB; measured 8.42 MiB (8828838 bytes)
+	WasmMaxGzipBytes = 11 << 18 // 2.75 MiB; measured 2.23 MiB (2337281 bytes)
 )
 
 // WasmAssets returns the release asset names of the WebAssembly build: the

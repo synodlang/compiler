@@ -342,8 +342,50 @@ go test ./internal/driver -run '^$' -fuzz '^FuzzCheck$' -fuzztime 1m
 go test ./internal/runtest -run '^$' -fuzz '^FuzzRun$' -fuzztime 1m
 ```
 
-CI also builds for WebAssembly (`GOOS=js GOARCH=wasm go build ./...`), which
-the planned in-browser build needs.
+CI also vets and builds for WebAssembly, runs the run and driver goldens
+compiled to WebAssembly under Node, and runs `internal/wasmtest`, which loads
+`synod.wasm` in Node and compares every call with the native API and the
+goldens. `SYNOD_REQUIRE_NODE=1 go test ./internal/wasmtest` fails instead of
+skipping when Node is missing.
+
+## WebAssembly
+
+The compiler also builds as a WebAssembly module for the browser and Node.
+
+```
+go run ./internal/release/cmd/wasm -tag v0.3.0 -out dist
+```
+
+This writes `dist/synod-<tag>.wasm` and `dist/synod-<tag>-wasm_exec.js` (the
+`wasm_exec.js` of the same Go toolchain; the two must match) and prints the
+sizes (about 8.4 MiB, 2.2 MiB gzipped; the build fails over the budget). Both
+files are release assets and are listed in `SHA256SUMS`.
+
+Load the module, then use the global `synod`:
+
+```js
+const go = new Go(); // from synod-<tag>-wasm_exec.js
+const { instance } = await WebAssembly.instantiateStreaming(fetch("synod-v0.3.0.wasm"), go.importObject);
+go.run(instance); // do not await: it never returns
+const r = synod.run({ "synod.mod": mod, "p/main.synod": src }, { program: "p", seed: 1 });
+```
+
+The calls are synchronous and CPU-bound. Run the module in a Web Worker so the
+page stays responsive. Calls never throw: a result with `error` set has exit
+code 2 and every output `null`. If a JS exception does reach you, the Go
+instance is dead; instantiate it again.
+
+`files` maps relative slash paths to source text. std is embedded; other
+modules go under `vendor/<module>@<version>/` with a `require` line in
+`synod.mod`, as `synod get` lays them out. Results are the CLI's bytes as
+strings.
+
+| Call | Options | Result |
+| ---- | ------- | ------ |
+| `synod.check(files, options?)` | `paths`, `tokens`, `style` (`rich` or `short`) | `exitCode`, `error`, `check` (check.json), `text` |
+| `synod.run(files, options)` | `program` (required), `seed`, `pace`, `mode`, `style`, `summary` | `exitCode`, `error`, `check`, `status`, `summary`, `trace`, `scene`, `failure` |
+| `synod.format(files, options?)` | `paths`, `style` | `exitCode`, `error`, `files`, `changed`, `check`, `text` |
+| `synod.version()` | none | `api` (1), `language`, `compiler`, `formats`, `go`, `text` |
 
 ## Releases
 
