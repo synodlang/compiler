@@ -1,0 +1,26 @@
+run examples/paxos seed 7
+end: stop at 2s, 3 nodes, 4 steps, 13 events
+always:
+  holds          paxos/paxos.synod:80: always Atomic
+  broken 2x @1200ms  paxos/paxos.synod:109: always ((lists.Size ChosenValues) at most 1)
+steps:
+@0s main
+  sim.Started
+  sim.Added n1 runs paxos: paxos.Promised 0, paxos.Log {"a\"b", n2}
+  sim.Injected paxos.Prepare{number 1, secret "s"} into n1
+@10.27ms receive n3
+  net.Arrived #5 paxos.Prepare{number 101, secret "hid"} from n1 to n3
+  sim.Changed paxos.Promised of n3 from 0 to 101
+  net.Dropped #6 paxos.Prepare{number 1, secret "x"} from n1 to n3 (crashed)
+  net.Partitioned {n1} from {n2, n3}
+  disk.Written "pages" on n3
+@90ms deliver n2
+  sim.Broken paxos/paxos.synod:109: always ((lists.Size ChosenValues) at most 1)
+  sim.Emitted paxos.Prepare{number 2, secret ""} by nobody
+  sim.Crashed n2
+  net.Healed
+  sim.Failed index-range: m
+final:
+  n1 up  paxos.Promised 0, paxos.Log {"a\"b", n2}
+  n2 down  paxos.Promised 0, paxos.Log {"a\"b", n2}
+  n3 removed
