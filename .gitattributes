@@ -1,0 +1,12 @@
+# Keep LF on every platform: the formatter tests compare exact bytes.
+* text=auto eol=lf
+*.synod text eol=lf
+testdata/** text eol=lf
+
+# Fixtures that deliberately contain CR or CRLF must never be normalized.
+testdata/misformatted/twopc/twopc.synod -text
+testdata/lex/err-lone-cr.synod -text
+testdata/lex/crlf.synod -text
+testdata/lex/err-cr-at-eof.synod -text
+testdata/parse/ok/bom-crlf.synod -text
+testdata/format/crlf.in.synod -text

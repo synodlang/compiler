@@ -1,0 +1,30 @@
+class Synod < Formula
+  desc "Compiler for the Synod language"
+  homepage "https://github.com/synodlang/compiler"
+  version "0.1.0"
+  license "Apache-2.0"
+
+  on_macos do
+    url "https://github.com/synodlang/compiler/releases/download/v0.1.0/synod-v0.1.0-darwin-universal.tar.gz"
+    sha256 "97d54b410613e449dea7c155055a766b7cb2cb771f47ee58e9f76af8c2db2e06"
+  end
+
+  on_linux do
+    on_arm do
+      url "https://github.com/synodlang/compiler/releases/download/v0.1.0/synod-v0.1.0-linux-arm64.tar.gz"
+      sha256 "d1ae15da6a3607519cf2e6dc383bc3f74721b101928a955464a3240ff89b67a7"
+    end
+    on_intel do
+      url "https://github.com/synodlang/compiler/releases/download/v0.1.0/synod-v0.1.0-linux-amd64.tar.gz"
+      sha256 "46a87db70c1315f343e95bcb1be2073f36ba9b1558677675c154ea488be0c1f8"
+    end
+  end
+
+  def install
+    bin.install "synod"
+  end
+
+  test do
+    assert_match "language", shell_output("#{bin}/synod version")
+  end
+end

@@ -82,6 +82,12 @@ func TestFmtRewrites(t *testing.T) {
 	if err := os.Chmod(p, 0o600); err != nil {
 		t.Fatal(err)
 	}
+	// Windows only models the read-only bit, so compare with the mode as the
+	// OS reports it rather than a literal 0o600.
+	before, err := os.Stat(p)
+	if err != nil {
+		t.Fatal(err)
+	}
 	code, out, errs := exec("fmt", dir)
 	if code != 0 || out != "" || errs != "" {
 		t.Fatalf("code=%d out=%q err=%q", code, out, errs)
@@ -89,7 +95,7 @@ func TestFmtRewrites(t *testing.T) {
 	if got := read(t, p); got != good {
 		t.Errorf("got %q", got)
 	}
-	if info, _ := os.Stat(p); info.Mode().Perm() != 0o600 {
+	if info, _ := os.Stat(p); info.Mode().Perm() != before.Mode().Perm() {
 		t.Errorf("mode changed: %v", info.Mode())
 	}
 	ents, _ := os.ReadDir(filepath.Dir(p))

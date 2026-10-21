@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,17 +15,19 @@ jobs:
       matrix:
         include:
           - goos: darwin
-            goarch: arm64
+            goarch: amd64
           - goos: darwin
-            goarch: amd64
+            goarch: arm64
           - goos: linux
             goarch: amd64
           - goos: linux
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+          - goos: windows
             goarch: arm64
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -31,17 +36,51 @@ jobs:
           CGO_ENABLED: "0"
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-        run: go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME}" -o synod ./cmd/synod
+        run: |
+          bin=synod
+          if [ "$GOOS" = windows ]; then bin=synod.exe; fi
+          go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME}" -o "$bin" ./cmd/synod
       - name: Package
         run: |
-          tar -czf "synod-${GITHUB_REF_NAME}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" synod LICENSE README.md
+          base="synod-${GITHUB_REF_NAME}-${{ matrix.goos }}-${{ matrix.goarch }}"
+          if [ "${{ matrix.goos }}" = windows ]; then
+            zip "${base}.zip" synod.exe LICENSE README.md
+          else
+            tar -czf "${base}.tar.gz" synod LICENSE README.md
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: synod-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: synod-*.tar.gz
+          path: |
+            synod-*.tar.gz
+            synod-*.zip
+
+  universal:
+    needs: build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: synod-darwin-*
+          path: in
+      - name: Merge with lipo
+        run: |
+          mkdir -p amd64 arm64 out dist
+          tar -xzf "in/synod-darwin-amd64/synod-${GITHUB_REF_NAME}-darwin-amd64.tar.gz" -C amd64
+          tar -xzf "in/synod-darwin-arm64/synod-${GITHUB_REF_NAME}-darwin-arm64.tar.gz" -C arm64
+          lipo -create -output out/synod amd64/synod arm64/synod
+          lipo -info out/synod
+          chmod +x out/synod
+          cp LICENSE README.md out/
+          tar -czf "dist/synod-${GITHUB_REF_NAME}-darwin-universal.tar.gz" -C out synod LICENSE README.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: synod-darwin-universal
+          path: dist/synod-*.tar.gz
 
   release:
-    needs: build
+    needs: [build, universal]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -52,8 +91,78 @@ jobs:
           merge-multiple: true
       - name: Checksums
         working-directory: dist
-        run: sha256sum synod-*.tar.gz > SHA256SUMS
+        run: sha256sum synod-*.tar.gz synod-*.zip > SHA256SUMS
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" dist/* --repo "${GITHUB_REPOSITORY}" --title "${GITHUB_REF_NAME}" --generate-notes
+        run: |
+          flags=()
+          case "${GITHUB_REF_NAME}" in *-*) flags+=(--prerelease) ;; esac
+          gh release create "${GITHUB_REF_NAME}" dist/* --repo "${GITHUB_REPOSITORY}" \
+            --title "${GITHUB_REF_NAME}" --generate-notes "${flags[@]}"
+
+  homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+    steps:
+      - name: Check token
+        run: |
+          if [ -z "$RELEASE_TOKEN" ]; then
+            echo "::notice::RELEASE_TOKEN is not set; skipping Homebrew tap update"
+            echo "SKIP=1" >> "$GITHUB_ENV"
+          fi
+      - uses: actions/checkout@v4
+        if: env.SKIP != '1'
+      - uses: actions/setup-go@v5
+        if: env.SKIP != '1'
+        with:
+          go-version-file: go.mod
+      - name: Update tap
+        if: env.SKIP != '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --pattern SHA256SUMS --dir "$RUNNER_TEMP"
+          git clone "https://x-access-token:${RELEASE_TOKEN}@github.com/synodlang/homebrew-tap.git" "$RUNNER_TEMP/tap"
+          go run ./internal/release/cmd/pkgfiles -tag "${GITHUB_REF_NAME}" -sums "$RUNNER_TEMP/SHA256SUMS" -formula "$RUNNER_TEMP/tap/Formula/synod.rb"
+          cd "$RUNNER_TEMP/tap"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/synod.rb
+          git commit -m "synod ${GITHUB_REF_NAME}"
+          git push origin HEAD
+
+  scoop:
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+    steps:
+      - name: Check token
+        run: |
+          if [ -z "$RELEASE_TOKEN" ]; then
+            echo "::notice::RELEASE_TOKEN is not set; skipping Scoop bucket update"
+            echo "SKIP=1" >> "$GITHUB_ENV"
+          fi
+      - uses: actions/checkout@v4
+        if: env.SKIP != '1'
+      - uses: actions/setup-go@v5
+        if: env.SKIP != '1'
+        with:
+          go-version-file: go.mod
+      - name: Update bucket
+        if: env.SKIP != '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --pattern SHA256SUMS --dir "$RUNNER_TEMP"
+          git clone "https://x-access-token:${RELEASE_TOKEN}@github.com/synodlang/scoop-bucket.git" "$RUNNER_TEMP/bucket"
+          go run ./internal/release/cmd/pkgfiles -tag "${GITHUB_REF_NAME}" -sums "$RUNNER_TEMP/SHA256SUMS" -scoop "$RUNNER_TEMP/bucket/synod.json"
+          cd "$RUNNER_TEMP/bucket"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add synod.json
+          git commit -m "synod ${GITHUB_REF_NAME}"
+          git push origin HEAD

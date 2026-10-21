@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0",
+  "description": "Compiler for the Synod language",
+  "homepage": "https://github.com/synodlang/compiler",
+  "license": "Apache-2.0",
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/synodlang/compiler/releases/download/v0.1.0/synod-v0.1.0-windows-amd64.zip",
+      "hash": "489483f249811544c5fc479029a15abe1e3e9926368ecb36f0840bf2e40faac4"
+    },
+    "arm64": {
+      "url": "https://github.com/synodlang/compiler/releases/download/v0.1.0/synod-v0.1.0-windows-arm64.zip",
+      "hash": "859de4543821ee8182f3e8d5c755cc46d8f8fe2e815ae35bff025e6552733c16"
+    }
+  },
+  "bin": "synod.exe",
+  "checkver": {
+    "github": "https://github.com/synodlang/compiler"
+  },
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/synodlang/compiler/releases/download/v$version/synod-v$version-windows-amd64.zip"
+      },
+      "arm64": {
+        "url": "https://github.com/synodlang/compiler/releases/download/v$version/synod-v$version-windows-arm64.zip"
+      }
+    },
+    "hash": {
+      "url": "https://github.com/synodlang/compiler/releases/download/v$version/SHA256SUMS"
+    }
+  }
+}
