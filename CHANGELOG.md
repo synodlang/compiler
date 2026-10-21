@@ -5,7 +5,9 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
-`synod run` simulates a program deterministically and writes its trace.
+## v0.2.1 — 2026-10-21
+
+Implements Synod 0.2. `synod run` simulates a program deterministically and writes its trace.
 
 ### Added
 
