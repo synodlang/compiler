@@ -1,0 +1,7 @@
+# package demo
+define main
+      # far too deep
+  a
+ # one space
+  b
+          # deep at end

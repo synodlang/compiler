@@ -1,0 +1,12 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (hole n Node) (w Learn) (hole ks (list-of Node)) (w at) (hole m (map-of raft.Node (list-of block))))
+    (block
+      (line 3:3
+        (s (w a)))))
+  (line 4:1
+    (s (w define) (w Deep) (hole x (list-of (list-of (map-of text (map-of number raft.Node))))) (w now) (hole b block))
+    (block
+      (line 5:3
+        (s (w a))))))

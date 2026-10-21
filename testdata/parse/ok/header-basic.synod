@@ -1,0 +1,4 @@
+# package gossip
+define main
+  set x to 1
+  net.Send m to n

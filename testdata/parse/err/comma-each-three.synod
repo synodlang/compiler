@@ -1,0 +1,3 @@
+# package d
+each a, b, c in xs
+  x

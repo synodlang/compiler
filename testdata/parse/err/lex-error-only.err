@@ -1,0 +1,2 @@
+lex-error-only.synod:3:1: error[indent]: tabs are not allowed
+  hint: indent with 2 spaces per level

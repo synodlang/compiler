@@ -1,0 +1,4 @@
+# package demo
+define main
+  emit (message Vote.Reply with term 3, granted true, from n) by n
+  set m to (message Tick with n 1)

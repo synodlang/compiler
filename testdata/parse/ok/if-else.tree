@@ -1,0 +1,15 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w Pick) (hole n number))
+    (block
+      (line 3:3
+        (s (w if) (paren (s (w n) (w less) (w than) (n 2))))
+        (block
+          (line 4:5
+            (s (w result) (n 1))))
+        (cont
+          (w else)
+          (block
+            (line 6:5
+              (s (w result) (n 2)))))))))

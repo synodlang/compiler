@@ -1,0 +1,25 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 3:3
+        (s (w set) (w a) (w to) (n 1)))
+      (line 4:3
+        (s (w set) (w b) (w to) (n -2.50)))
+      (line 5:3
+        (s (w set) (w c) (w to) (d 1500ms)))
+      (line 6:3
+        (s (w set) (w d) (w to) (d 1.5s)))
+      (line 7:3
+        (s (w set) (w e) (w to) (t "he said \"hi\"\n")))
+      (line 8:3
+        (s (w set) (w f) (w to) (c #F4A340)))
+      (line 9:3
+        (s (w set) (w g) (w to) (c #deface)))
+      (line 10:3
+        (s (w set) (w h) (w to) (w true)))
+      (line 11:3
+        (s (w set) (w i) (w to) (m n Known)))
+      (line 12:3
+        (s (w set) (w j) (w to) (m server tcp State))))))

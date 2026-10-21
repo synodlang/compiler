@@ -1,0 +1,6 @@
+# package demo
+define main
+  each k, v in table
+    a
+  each k in {1, 2}
+    a

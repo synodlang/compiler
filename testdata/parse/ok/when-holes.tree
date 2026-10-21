@@ -1,0 +1,17 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w when) (hole n Node) (paren (s (m net Received) (w digest) (w from) (w sender))))
+    (block
+      (line 3:3
+        (s (w a)))))
+  (line 4:1
+    (s (w when) (paren (s (m sim Added) (hole n raft.Node))))
+    (block
+      (line 5:3
+        (s (w b)))))
+  (line 6:1
+    (s (w when) (hole n Node) (paren (s (m time Every) (d 5s))))
+    (block
+      (line 7:3
+        (s (w c))))))

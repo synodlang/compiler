@@ -1,0 +1,6 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (group
+    (comment 2:1 "nothing else"))
+  (trailing
+    (comment 4:1 "but comments" blank)))

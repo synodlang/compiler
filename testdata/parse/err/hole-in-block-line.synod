@@ -1,0 +1,4 @@
+# package d
+define foo
+  each k in [n: Node]
+    a

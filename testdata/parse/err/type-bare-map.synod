@@ -1,0 +1,3 @@
+# package d
+define foo [x: map of number]
+  a

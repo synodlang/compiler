@@ -1,0 +1,15 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 4:3
+        (leading
+          (comment 3:7 "far too deep"))
+        (s (w a)))
+      (line 6:3
+        (leading
+          (comment 5:2 "one space"))
+        (s (w b)))
+      (trailing
+        (comment 7:11 "deep at end")))))

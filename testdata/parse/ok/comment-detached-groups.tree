@@ -1,0 +1,28 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (group
+    (comment 3:1 "group one" blank)
+    (comment 4:1 "still one"))
+  (line 7:1
+    (leading
+      (comment 6:1 "group two" blank))
+    (s (w define) (w main))
+    (block
+      (line 8:3
+        (s (w a)))))
+  (line 10:1
+    (leading
+      (comment 9:1 "attached to the second define"))
+    (s (w define) (w other))
+    (block
+      (line 11:3
+        (s (w b)))))
+  (group
+    (comment 13:1 "group three" blank))
+  (line 16:1
+    (leading
+      (comment 15:1 "group four" blank))
+    (s (w define) (w third))
+    (block
+      (line 17:3
+        (s (w c))))))

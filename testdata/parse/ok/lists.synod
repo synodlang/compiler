@@ -1,0 +1,5 @@
+# package demo
+define main
+  set a to {}
+  set b to {1, "two", (x plus 1), n.Known, {}, {3}, true}
+  set c to {{1, 2}, {3}}

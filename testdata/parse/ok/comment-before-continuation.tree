@@ -1,0 +1,17 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 3:3
+        (s (w if) (w x))
+        (block
+          (line 4:5
+            (s (w a))))
+        (cont
+          (leading
+            (comment 6:3 "shallower than the block, so it leads the else" blank))
+          (w else)
+          (block
+            (line 9:5
+              (s (w b)))))))))

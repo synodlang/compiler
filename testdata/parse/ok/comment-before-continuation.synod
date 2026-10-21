@@ -1,0 +1,9 @@
+# package demo
+define main
+  if x
+    a
+
+  # shallower than the block, so it leads the else
+
+  else
+    b

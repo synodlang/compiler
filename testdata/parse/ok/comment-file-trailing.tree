@@ -1,0 +1,10 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 3:3
+        (s (w a)))))
+  (trailing
+    (comment 5:1 "the end" blank)
+    (comment 6:1 "really")))

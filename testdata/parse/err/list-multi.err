@@ -1,0 +1,2 @@
+list-multi.synod:2:11: error[syntax]: a list item is one item
+  hint: parenthesize it

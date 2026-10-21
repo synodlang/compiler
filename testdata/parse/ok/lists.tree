@@ -1,0 +1,11 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 3:3
+        (s (w set) (w a) (w to) (list)))
+      (line 4:3
+        (s (w set) (w b) (w to) (list (n 1) (t "two") (paren (s (w x) (w plus) (n 1))) (m n Known) (list) (list (n 3)) (w true))))
+      (line 5:3
+        (s (w set) (w c) (w to) (list (list (n 1) (n 2)) (list (n 3))))))))

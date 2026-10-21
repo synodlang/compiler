@@ -1,0 +1,22 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 3:3
+        (s (w Try) (n 3) (w times))
+        (block
+          (line 4:5
+            (s (w a))))
+        (cont
+          (w or)
+          (block
+            (line 6:5
+              (s (w b)))))
+        (cont
+          (w finally)
+          (block
+            (line 8:5
+              (s (w c))))))
+      (line 9:3
+        (s (w next))))))

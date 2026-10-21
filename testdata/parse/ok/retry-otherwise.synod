@@ -1,0 +1,9 @@
+# package demo
+define Retry [n: number] times [b: block] otherwise [c: block]
+  result 1
+
+define main
+  Retry 3 times
+    net.Send request from n to server
+  otherwise
+    emit (message GaveUp with Tries 3) by n

@@ -1,0 +1,9 @@
+# package demo
+define main
+  Try 3 times
+    a
+  or
+    b
+  finally
+    c
+  next

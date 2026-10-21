@@ -1,0 +1,26 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 3:3
+        (s (w each) (w k) (w in) (w xs))
+        (block
+          (line 4:5
+            (s (w if) (w k))
+            (block
+              (line 5:7
+                (s (w a)))
+              (trailing
+                (comment 6:7 "trails the if block"))))
+          (trailing
+            (comment 7:5 "trails the each block"))))
+      (trailing
+        (comment 8:3 "trails the define block"))))
+  (line 10:1
+    (leading
+      (comment 9:1 "leads the next define"))
+    (s (w define) (w other))
+    (block
+      (line 11:3
+        (s (w b))))))

@@ -1,0 +1,8 @@
+(file
+  (line 4:1
+    (leading
+      (comment 3:1 "not a header" blank))
+    (s (w define) (w main))
+    (block
+      (line 5:3
+        (s (w a))))))

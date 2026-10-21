@@ -1,0 +1,17 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 4:1
+    (leading
+      (comment 2:1 "about main")
+      (comment 3:1 "second line"))
+    (s (w define) (w main))
+    (block
+      (line 6:3
+        (leading
+          (comment 5:3 "about set"))
+        (s (w set) (w x) (w to) (n 1)))
+      (line 9:3
+        (leading
+          (comment 7:3 "")
+          (comment 8:3 "  indented text"))
+        (s (w set) (w y) (w to) (n 2))))))

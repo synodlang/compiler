@@ -1,0 +1,2 @@
+continuation-first.synod:2:1: error[syntax]: a continuation line must follow a block
+  hint: "else" goes directly after its if block, at the if's indentation

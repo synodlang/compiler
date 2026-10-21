@@ -1,0 +1,25 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (comment 2:13 "opener")
+    (block
+      (line 3:3
+        (s (w set) (w x) (w to) (n 1))
+        (comment 3:14 "one"))
+      (line 4:3
+        (s (w set) (w y) (w to) (paren (s (w a) (w plus) (w b))))
+        (comment 4:22 "tight"))
+      (line 5:3
+        (s (w if) (w x))
+        (comment 5:8 "cond")
+        (block
+          (line 6:5
+            (s (w result) (n 1))
+            (comment 6:14 "r")))
+        (cont
+          (w else)
+          (comment 7:8 "alt")
+          (block
+            (line 8:5
+              (s (w result) (n 2)))))))))

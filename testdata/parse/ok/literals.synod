@@ -1,0 +1,12 @@
+# package demo
+define main
+  set a to 1
+  set b to -2.50
+  set c to 1500ms
+  set d to 1.5s
+  set e to "he said \"hi\"\n"
+  set f to #F4A340
+  set g to #deface
+  set h to true
+  set i to n.Known
+  set j to server.tcp.State

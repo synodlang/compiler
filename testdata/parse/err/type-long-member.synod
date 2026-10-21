@@ -1,0 +1,3 @@
+# package d
+define foo [x: a.b.c]
+  a

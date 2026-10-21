@@ -1,0 +1,9 @@
+# package demo
+# about main
+# second line
+define main
+  # about set
+  set x to 1
+  #
+  #   indented text
+  set y to 2

@@ -1,0 +1,7 @@
+# package demo
+when [n: Node] (net.Received digest from sender)
+  a
+when (sim.Added [n: raft.Node])
+  b
+when [n: Node] (time.Every 5s)
+  c

@@ -1,0 +1,5 @@
+# package demo
+define [n: Node] Learn [ks: list of Node] at [m: map of raft.Node to list of block]
+  a
+define Deep [x: list of list of map of text to map of number to raft.Node] now [b: block]
+  a

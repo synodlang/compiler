@@ -1,0 +1,17 @@
+# package demo
+
+# group one
+# still one
+
+# group two
+define main
+  a
+# attached to the second define
+define other
+  b
+
+# group three
+
+# group four
+define third
+  c

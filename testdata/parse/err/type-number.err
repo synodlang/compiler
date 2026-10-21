@@ -1,0 +1,2 @@
+type-number.synod:2:16: error[syntax]: bad type
+  hint: write list of T / map of K to V

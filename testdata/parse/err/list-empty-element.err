@@ -1,0 +1,2 @@
+list-empty-element.synod:2:13: error[syntax]: missing list item
+  hint: write one item between commas, and no comma before }

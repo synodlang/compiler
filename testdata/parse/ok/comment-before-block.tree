@@ -1,0 +1,14 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 4:3
+        (leading
+          (comment 3:3 "between line and block"))
+        (s (w each) (w k) (w in) (w xs))
+        (block
+          (line 6:5
+            (leading
+              (comment 5:5 "first in block"))
+            (s (w a))))))))

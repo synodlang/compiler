@@ -1,0 +1,6 @@
+# package demo
+define main
+  # between line and block
+  each k in xs
+    # first in block
+    a

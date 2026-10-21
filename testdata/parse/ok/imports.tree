@@ -1,0 +1,13 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w use) (p std/net)))
+  (line 3:1
+    (s (w use) (p github.com/a/raft@v1.2.0) (w as) (w r)))
+  (line 5:1
+    (s (w use) (p github.com/synodlang/std/time)))
+  (line 6:1
+    (s (w define) (w main))
+    (block
+      (line 7:3
+        (s (w a))))))

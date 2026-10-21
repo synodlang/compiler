@@ -1,0 +1,20 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w Retry) (hole n number) (w times) (hole b block) (w otherwise) (hole c block))
+    (block
+      (line 3:3
+        (s (w result) (n 1)))))
+  (line 5:1
+    (s (w define) (w main))
+    (block
+      (line 6:3
+        (s (w Retry) (n 3) (w times))
+        (block
+          (line 7:5
+            (s (m net Send) (w request) (w from) (w n) (w to) (w server))))
+        (cont
+          (w otherwise)
+          (block
+            (line 9:5
+              (s (w emit) (paren (s (w message) (w GaveUp) (w with) (w Tries) (n 3))) (w by) (w n)))))))))

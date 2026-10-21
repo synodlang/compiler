@@ -1,0 +1,13 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 3:3
+        (s (w set) (w x) (w to) (paren (s (paren (s (w a) (w plus) (w b))) (w times) (paren (s (w c) (w minus) (paren (s (w d) (w divided) (w by) (n 2)))))))))
+      (line 4:3
+        (s (w always) (paren (s (w not) (paren (s (w committed) (w and) (w aborted)))))))
+      (line 5:3
+        (s (w set) (w y) (w to) (paren (s (w a)))))
+      (line 6:3
+        (s (w set) (w z) (w to) (paren (s (paren (s (w a))))))))))

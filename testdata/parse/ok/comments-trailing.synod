@@ -1,0 +1,8 @@
+# package demo
+define main # opener
+  set x to 1 # one
+  set y to (a plus b)# tight
+  if x # cond
+    result 1 # r
+  else # alt
+    result 2

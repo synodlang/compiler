@@ -1,0 +1,2 @@
+list-trailing-comma.synod:2:14: error[syntax]: missing list item
+  hint: write one item between commas, and no comma before }

@@ -1,0 +1,9 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 3:3
+        (s (w emit) (paren (s (w message) (m Vote Reply) (w with) (w term) (n 3) , (w granted) (w true) , (w from) (w n))) (w by) (w n)))
+      (line 4:3
+        (s (w set) (w m) (w to) (paren (s (w message) (w Tick) (w with) (w n) (n 1))))))))

@@ -1,0 +1,9 @@
+(file
+  (header 1:1 "package demo" "demo")
+  (line 2:1
+    (s (w define) (w main))
+    (block
+      (line 3:3
+        (s (w foo) (paren (s (w bar))) (list (w a) (w b)) (paren (s (w c)))))
+      (line 4:3
+        (s (w send) (paren (s (w m))) (w to) (paren (s (w n))))))))

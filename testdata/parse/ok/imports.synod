@@ -1,0 +1,7 @@
+# package demo
+use std/net
+use github.com/a/raft@v1.2.0 as r
+
+use github.com/synodlang/std/time
+define main
+  a

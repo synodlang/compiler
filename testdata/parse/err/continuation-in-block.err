@@ -1,0 +1,2 @@
+continuation-in-block.synod:3:3: error[syntax]: a continuation line must follow a block
+  hint: "else" goes directly after its if block, at the if's indentation

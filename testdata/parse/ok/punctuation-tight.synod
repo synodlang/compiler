@@ -1,0 +1,4 @@
+# package demo
+define main
+  foo(bar){a,b}(c)
+  send(m)to(n)

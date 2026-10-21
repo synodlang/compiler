@@ -1,0 +1,11 @@
+# package demo
+define main
+  each k in xs
+    if k
+      a
+      # trails the if block
+    # trails the each block
+  # trails the define block
+# leads the next define
+define other
+  b
