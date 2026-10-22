@@ -26,7 +26,7 @@ type Options struct {
 	TimeLimit int64
 	// MaxStepsPerInstant bounds the steps at one instant (100_000).
 	MaxStepsPerInstant int
-	// MaxDepth bounds the call depth (10_000).
+	// MaxDepth bounds the call depth (value.MaxCallDepth, 500).
 	MaxDepth int
 	// MaxItems bounds list and text sizes (natives.MaxItems).
 	MaxItems int
@@ -97,7 +97,7 @@ func runSim(p *ir.Program, o Options) *sim {
 		o.MaxStepsPerInstant = 100_000
 	}
 	if o.MaxDepth == 0 {
-		o.MaxDepth = 10_000
+		o.MaxDepth = value.MaxCallDepth
 	}
 	if o.MaxItems == 0 {
 		o.MaxItems = natives.MaxItems

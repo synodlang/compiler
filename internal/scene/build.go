@@ -20,8 +20,8 @@ type Options struct {
 	Mode Mode
 	// MaxShapes bounds the shapes (1_000_000), MaxTimersPerInstant the
 	// timers that fire at one presentation instant (100_000), MaxDepth the
-	// call depth (10_000) and MaxKeys the keyframes (10_000_000). Going over
-	// is a run-limit look fault.
+	// call depth (value.MaxCallDepth, 500) and MaxKeys the keyframes
+	// (10_000_000). Going over is a run-limit look fault.
 	MaxShapes, MaxTimersPerInstant, MaxDepth, MaxKeys int
 }
 
@@ -131,7 +131,7 @@ func newBuilder(in Input, o Options) *builder {
 		o.MaxTimersPerInstant = 100_000
 	}
 	if o.MaxDepth <= 0 {
-		o.MaxDepth = 10_000
+		o.MaxDepth = value.MaxCallDepth
 	}
 	b := &builder{in: in, o: o, byPath: map[string]*ir.Package{},
 		hexes: map[string]string{}, inits: map[*ir.Field]value.Value{},

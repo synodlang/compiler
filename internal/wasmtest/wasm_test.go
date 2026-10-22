@@ -26,11 +26,6 @@ const (
 	maxPerRun = 5 * time.Second
 )
 
-// skipStackOverflow is the one run case left out: its 10000 nested calls
-// overflow the JS stack of plain Node ("Maximum call stack size exceeded"
-// thrown through the Go frames), which kills the instance. See the M6 notes.
-const skipStackOverflow = "errors/run-limit/recursion"
-
 // request is one call of the JS API. args are the JSON values passed to the
 // function; opts is nil when the call has no options argument.
 type request struct {
@@ -345,9 +340,6 @@ func buildRequests(t *testing.T) []request {
 				cases = []string{""}
 			}
 			for _, cs := range cases {
-				if label+"/"+cs == skipStackOverflow {
-					continue
-				}
 				d := filepath.Join(dirs[0], cs)
 				files := tree(t, d, "trace.jsonl", "expect.txt", "expect-rich.txt")
 				var want map[string]string
@@ -363,6 +355,17 @@ func buildRequests(t *testing.T) []request {
 	look := tree(t, "../../cmd/synod/testdata/lookfault")
 	add("run lookfault short", "run", nil, look, map[string]any{"program": "main", "style": "short"})
 	add("run lookfault rich", "run", nil, look, map[string]any{"program": "main"})
+
+	// A look observer that recurses past the call-depth limit: the scene
+	// builder reports run-limit instead of overflowing the JS stack.
+	lookRec := map[string]any{
+		"synod.mod":       "module example.com/t\nsynod 0.2\n",
+		"main/main.synod": "# package main\nuse example.com/t/lk\nuse example.com/t/p\nuse std/sim\n\ndefine main\n  set a to (sim.Spawn p)\n  set a.p.Got to 1\n",
+		"p/p.synod":       "# package p\nNode has\n  set Got to 0\n",
+		"lk/lk.synod":     "# package lk\nuse std/sim\n\ndefine Down\n  Down\n\nwhen (sim.Added n)\n  Down\n",
+	}
+	add("run look recursion short", "run", nil, lookRec, map[string]any{"program": "main", "style": "short"})
+	add("run look recursion rich", "run", nil, lookRec, map[string]any{"program": "main"})
 
 	// Format.
 	for _, n := range subdirs(t, filepath.Join(testdata, "misformatted")) {

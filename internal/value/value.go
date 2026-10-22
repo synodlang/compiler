@@ -347,3 +347,10 @@ func cmpStr(a, b string) int {
 	}
 	return 0
 }
+
+// MaxCallDepth is the default limit on nested Synod phrase calls, in the
+// simulator and in the scene builder, on every target. Each Synod call uses
+// several Go frames; plain Node overflows its JS stack in the WebAssembly
+// build at about 3000 nested calls, so the limit leaves a wide margin for
+// browsers with smaller stacks.
+const MaxCallDepth = 500

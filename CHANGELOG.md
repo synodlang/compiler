@@ -13,6 +13,7 @@ section is the text of its GitHub release page.
 
 ### Changed
 
+- The call-depth limit is 500 nested calls on every target (it was 10000), in the simulator and in the scene builder (`value.MaxCallDepth`): the WebAssembly build overflows the JS stack of plain Node at about 3000 nested calls, and browsers can have smaller stacks. The `run-limit` message is still `more than <limit> nested calls`.
 - `synod check` and `synod fmt` skip folders named `vendor` when they walk a folder, like `testdata`, `.x` and `_x`; an explicit file or folder argument is still processed.
 
 ## v0.2.3 — 2026-10-22

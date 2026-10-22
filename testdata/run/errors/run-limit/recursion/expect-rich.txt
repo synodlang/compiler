@@ -1,5 +1,5 @@
-failed at 0s: p/p.synod:3:3: error[run-limit]: more than 10000 nested calls
+failed at 0s: p/p.synod:3:3: error[run-limit]: more than 500 nested calls
   |
 3 |   Down
-  |   ^^^^ nested call over 10000
+  |   ^^^^ nested call over 500
 scene 0.03s, 1 shape -> out/scene.json
