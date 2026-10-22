@@ -1,0 +1,12 @@
+# package main
+use example.com/a/raft as araft
+use example.com/b/raft as braft
+use std/sim
+
+define main
+  set first to (sim.Spawn araft)
+  set second to (sim.Spawn braft)
+  after 500ms
+    sim.Crash first
+    sim.Crash second
+  sim.StopAt 1s

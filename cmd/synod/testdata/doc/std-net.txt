@@ -1,0 +1,28 @@
+net.Send [m: msg] from [a: node] to [b: node]
+    action; node; Send through the network from `a`, which must be the receiver
+net.Latency between [a: time] and [b: time]
+    action; main; Uniform delay per message (default 10ms–30ms)
+net.Loss [p: number]
+    action; main; Probability each message is lost (default 0)
+net.Partition [a: list of node] from [b: list of node]
+    action; main; Cut every link between the two groups
+net.Heal
+    action; main; Remove all partitions
+net.DropNext [type: text] from [a: node] to [b: node]
+    action; main; Drop the next message of that record type (unqualified name) on that link
+net.Received [m: msg] from [a: node]
+    node event; node; Node event: a message arrives at the receiving node
+net.Sent [m: msg] from [a: node] to [b: node]
+    trace event; look; Trace event: net.Send m from a to b
+net.Arrived [m: msg] from [a: node] to [b: node]
+    trace event; look; Trace event: the message is received
+net.Dropped [m: msg] from [a: node] to [b: node] because [r: text]
+    trace event; look; Trace event: loss, partition, crash or net.DropNext
+net.Partitioned [a: list of node] from [b: list of node]
+    trace event; look; Trace event: net.Partition
+net.Healed
+    trace event; look; Trace event: net.Heal
+net.Id [m: msg]
+    gives number; look; The message id of the net fact that bound `m`
+net.Type [m: msg]
+    gives text; look; The unqualified record type name of `m`

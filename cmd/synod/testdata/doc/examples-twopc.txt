@@ -1,0 +1,12 @@
+twopc.Coordinate [ps: list of twopc.Node] from [c: twopc.Node]
+    action
+[n: twopc.Node] twopc.Decide [commit: bool]
+    action
+twopc.Atomic
+    gives bool
+record twopc.Begin: Tx number
+record twopc.Prepare:
+record twopc.Vote:
+record twopc.Decision:
+node twopc.Node: State text, Participants list of twopc.Node
+importing activates 0 observers, 1 invariants

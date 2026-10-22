@@ -1,0 +1,13 @@
+# package raft
+use std/lists
+
+Node has
+  set Term to 0
+
+# Move to the next term
+define [n: Node] Advance
+  set n.Term to (n.Term plus 1)
+
+# How many nodes there are
+define Count [ns: list of Node]
+  result (lists.Size ns)

@@ -1,0 +1,8 @@
+lesson.Ask [q: text]
+    action; main; Emit `Asked` with no choices; the player pauses and asks the viewer to predict
+lesson.Ask [q: text] choosing [c: list of text]
+    action; main; Emit `Asked` with the choices `c`: 2 to 6 distinct, non-empty texts, else `bad-argument`; the player pauses and offers them
+lesson.Note [t: text]
+    action; main; Emit `Noted`; the player shows a caption
+record lesson.Asked: Question text, Choices list of text
+record lesson.Noted: Text text

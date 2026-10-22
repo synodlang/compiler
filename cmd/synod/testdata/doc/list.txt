@@ -1,0 +1,28 @@
+std/disk  storage that survives crashes
+std/lesson  Predict mode and captions
+std/lists
+std/look  shapes, motion, layout (look context only)
+std/look/basic
+std/maps
+std/math
+std/net  the simulated network
+std/random  deterministic randomness
+std/sim  nodes, runs, faults
+std/text
+std/theme  named colors
+std/time
+github.com/synodlang/examples/cassandra
+github.com/synodlang/examples/gossip
+github.com/synodlang/examples/paxos
+github.com/synodlang/examples/raft
+github.com/synodlang/examples/raftlook
+github.com/synodlang/examples/ring
+github.com/synodlang/examples/ringlook
+github.com/synodlang/examples/tcp
+github.com/synodlang/examples/twopc
+github.com/synodlang/examples/wal
+github.com/synodlang/examples/webapp/api
+github.com/synodlang/examples/webapp/app
+github.com/synodlang/examples/webapp/cache
+github.com/synodlang/examples/webapp/db
+github.com/synodlang/examples/webapp/lb

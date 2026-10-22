@@ -1,0 +1,7 @@
+# package raft
+Node has
+  set Leader to false
+
+# Take the lead
+define [n: Node] Elect
+  set n.Leader to true
