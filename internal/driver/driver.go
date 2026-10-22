@@ -91,6 +91,11 @@ func Check(opts Options, targets []string) Result {
 	}
 	for _, lp := range g.Packages {
 		if lp.Broken {
+			if opts.Tokens && !lp.IsStd {
+				for _, f := range lp.Files {
+					res.Tokens[f.Src.Path] = resolve.LexicalTokens(f.Src)
+				}
+			}
 			continue
 		}
 		deps := map[string]*resolve.Package{}

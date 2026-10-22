@@ -24,6 +24,16 @@ type lexer struct {
 // Within one line an invalid UTF-8 byte or a stray CR is reported before any
 // other problem on that line.
 func Lex(f *source.File) ([]Token, *source.Diagnostic) {
+	toks, d := LexPartial(f)
+	if d != nil {
+		return nil, d
+	}
+	return toks, nil
+}
+
+// LexPartial is Lex that keeps the tokens read before the first error: on
+// failure it returns them (without EOF) together with the diagnostic.
+func LexPartial(f *source.File) ([]Token, *source.Diagnostic) {
 	l := &lexer{f: f, src: f.Src, stack: []int{0}}
 	off := 0
 	if bytes.HasPrefix(l.src, []byte("\xef\xbb\xbf")) {
@@ -40,7 +50,7 @@ func Lex(f *source.File) ([]Token, *source.Diagnostic) {
 			}
 		}
 		if d := l.line(off, end, next-1); d != nil {
-			return nil, d
+			return l.toks, d
 		}
 		off = next
 	}
