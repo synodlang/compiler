@@ -5,6 +5,23 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+## v0.2.6 — 2026-10-22
+
+Implements Synod 0.2. Tools for people and agents: `synod doc` and `synod explain` answer questions from the command line, `synod new` and `synod get` start a module and fetch what it requires, and `synod mcp` serves the lot to agents that have no shell.
+
+### Added
+
+- `synod doc [package]`: prints a package's phrases, records and `Node` fields from its source, or lists the visible packages. `--json` prints `synod-doc/1`, `--scope file` gives the scope of one file for editors, `--overlay file` reads unsaved buffers and `--catalog` prints the std catalog as Markdown.
+- `synod explain [code]`: explains a diagnostic code with an example and its fix, or lists the 38 codes. `--json` prints `synod-explain/1`; `--catalog` prints the table of codes, meanings and fixes as Markdown.
+- `synod new <dir> [--module path] [--lib]`: creates a module with `synod.mod`, `.gitignore`, a package folder and a `demo.synod` main file that checks and runs.
+- `synod get [module@version]`: makes `vendor/` and `synod.sum` match the build list, downloading what the store lacks with `git` and verifying the commit and the tree hash.
+- `synod mcp [--root dir]`: a stdio MCP server with the tools `doc`, `explain`, `check`, `run_summary` and `fmt`; each gives the text of the matching command.
+
+### Changed
+
+- The embedded std matches std v0.2.2: every phrase, record and field has a doc comment, and these comments are what `synod doc` prints.
+- `synod version` lists the new formats: `formats synod-trace/1 synod-scene/1 synod-check/1 synod-doc/1 synod-explain/1`. The same list is in `synod.version()` of the WebAssembly build.
+
 ## v0.2.5 — 2026-10-22
 
 Implements Synod 0.2. Editors and learning modes: `synod check` can read unsaved

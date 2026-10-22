@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+      - name: git is present (synod get tests)
+        run: git --version
       - run: go vet ./...
       - run: go test ./...
 
@@ -30,6 +32,8 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+      - name: git is present (synod get tests)
+        run: git --version
       - run: go vet ./...
       - run: go test ./...
 
@@ -49,6 +53,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: synodlang/dsl
+          ref: v0.2.10
           path: _dsl
       - uses: actions/setup-go@v7
         with:
@@ -100,12 +105,13 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: synodlang/dsl
+          ref: v0.2.10
           path: _dsl
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-      - name: Std catalog and README snippets match the std tables
-        run: go test ./internal/stdlib -run 'TestCatalog|TestReadmeSnippets' -v
+      - name: Std catalog, README snippets, doc catalog and explain codes match the spec
+        run: go test ./internal/stdlib ./internal/doc ./internal/explain -v
         env:
           SYNOD_DSL: ${{ github.workspace }}/_dsl
           SYNOD_REQUIRE_DSL: "1"

@@ -19,7 +19,7 @@ repository turns that specification into a tool.
 | Repository | Role | Status |
 | --- | --- | --- |
 | [dsl](https://github.com/synodlang/dsl) | The specification, the std catalog, the implementation guides | Released (v0.2) |
-| `compiler` (this one) | `synod fmt`, `synod check`, `synod run` | Released (v0.2.2) |
+| `compiler` (this one) | `synod` (`new`, `fmt`, `check`, `run`, `get`, `doc`, `explain`, `mcp`) | Released (v0.2.6) |
 | [std](https://github.com/synodlang/std) | The standard library, embedded in the binary | Released |
 | [examples](https://github.com/synodlang/examples) | Sample programs; the acceptance tests | Released |
 | `player`, Mac app, agent skills | Playback and tooling around the trace and the scene | Later milestones |
@@ -164,12 +164,17 @@ form, which has that line and a `hint:` line, and nothing else. Exit code 1.
 
 | Command | What it does |
 | --- | --- |
+| `synod new <dir> [--module path] [--lib]` | Creates a module: `synod.mod`, `.gitignore`, a package folder with a library file and a `demo.synod` main file (`--lib`: no main file). Example: `synod new bank --module example.com/bank`. |
 | `synod fmt [paths...] [--check]` | Rewrites `.synod` files into canonical form. With `--check` it changes nothing, lists the files that would change and exits 1. |
 | `synod check [paths...] [--json] [--tokens] [--overlay file]` | Loads, resolves and checks packages, and prints every diagnostic. With no path it checks the current folder. `--json` prints the `synod-check/1` format. `--tokens` adds a token list per file, for editors (needs `--json`; without it the command exits 2); a file that does not parse still gets lexical tokens. `--overlay file` checks files as if they held other content (`synod-overlay/1`: `{"format":"synod-overlay/1","replace":{"<path>":"<path>"}}`), for unsaved editor buffers. |
-| `synod run <folder> [--seed n] [--trace file] [--scene file] [--pace x] [--mode m] [--summary]` | Checks the folder's main file, simulates it and draws the run. Writes the trace and the scene and prints the status lines. |
+| `synod run <folder> [--seed n] [--trace file] [--scene file] [--pace x] [--mode ordered\|proportional] [--summary]` | Checks the folder's main file, simulates it and draws the run. Writes the trace and the scene and prints the status lines. |
+| `synod get [module@version]` | Makes `vendor/` and `synod.sum` match the build list, downloading what the store lacks (needs `git`). With an argument it first adds or replaces that `require` line. Example: `synod get github.com/synodlang/examples@v0.2.1`. |
+| `synod doc [package] [--json] [--catalog] [--scope file] [--overlay file]` | Prints a package's phrases, records and `Node` fields from its source; with no package, lists the visible packages. `--json` prints `synod-doc/1`; `--catalog` prints the std catalog as Markdown. Example: `synod doc std/net`. |
+| `synod explain [code] [--json] [--catalog]` | Explains a diagnostic code with an example and its fix; with no code, lists the codes. `--json` prints `synod-explain/1`. Example: `synod explain unknown-phrase`. |
+| `synod mcp [--root dir]` | Serves `doc`, `explain`, `check`, `run_summary` and `fmt` as MCP tools over stdio, for agents without a shell. Example: `synod mcp --root .`. |
 | `synod version` | Prints the language, compiler and format versions. |
 
-`fmt`, `check` and `run` also take `--style rich|short` and
+`fmt`, `check`, `run`, `doc` and `explain` also take `--style rich|short` and
 `--color auto|always|never`, as `--style rich` or `--style=rich`. Any other
 value exits 2.
 
@@ -197,10 +202,8 @@ fact and gets a `failed` marker, and `synod run` prints `look failed at
 1. The partial scene is still written.
 
 `--watch` and `--json-events` are recognized but not built yet: they exit 2
-with `not implemented yet`. Likewise `synod
-new`, `get`, `doc` and `explain`, which the
-[CLI guide](https://github.com/synodlang/dsl/blob/main/implementation/05-cli.md)
-plans, do not exist yet.
+with `not implemented yet`. The full usage is in the
+[CLI guide](https://github.com/synodlang/dsl/blob/main/implementation/05-cli.md).
 
 ### Exit codes
 
@@ -282,6 +285,10 @@ internal/
   release/          release notes and package-manager files
   spectest/         tests against the dsl and examples repositories
   runtest/          golden runs, seed stories, fuzzing, benchmarks
+  doc/              synod doc: package docs, JSON, scope and the std catalog
+  explain/          synod explain: the entry for each diagnostic code
+  get/              synod get: the download store, vendor/ and synod.sum
+  mcp/              synod mcp: the MCP server over stdio
 testdata/           golden inputs and outputs for every stage
 ```
 
@@ -303,7 +310,7 @@ matching `SYNOD_REQUIRE_*=1` to fail instead of skip (CI does).
 
 | Variable | What it enables |
 | --- | --- |
-| `SYNOD_DSL` | Checks every `synod` code block of the specification, and that the std catalog and README snippets match the std tables. |
+| `SYNOD_DSL` | Checks every `synod` code block of the specification, that the std catalog and README snippets match the std tables, and that `synod explain` lists the codes of `spec/11`. |
 | `SYNOD_STD` | Checks that the embedded copy in `internal/stdlib/std` equals the `std` repository (a drift test). |
 | `SYNOD_EXAMPLES` | Checks that the vendored copy in `testdata/examples` equals the `examples` repository (a drift test). |
 
