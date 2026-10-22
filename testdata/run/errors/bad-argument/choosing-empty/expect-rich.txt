@@ -1,6 +1,7 @@
-failed at 0s: std/lesson/lesson.synod:15:49: error[bad-argument]: lesson.Ask … choosing needs 2 to 6 different, non-empty choices
-   |
-15 |   emit (message Asked with Question q, Choices (choices c)) by sim.Nobody
-   |                                                 ^^^^^^^^^
-   |                                                         - is {"a", ""}
+failed at 0s: p/main.synod:5:3: error[bad-argument]: lesson.Ask … choosing needs 2 to 6 different, non-empty choices
+  |
+5 |   lesson.Ask "Which one?" choosing {"a", ""}
+  |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: raised inside std, at std/lesson/lesson.synod:15:49
 scene 0.03s, 1 shape -> out/scene.json

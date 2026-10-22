@@ -50,6 +50,8 @@ type Pos struct {
 	File            string
 	Line, Col       int
 	EndLine, EndCol int
+	// Std is true for a position in a std package (decision 89).
+	Std bool
 }
 
 // Program is one entry package with the packages it needs.

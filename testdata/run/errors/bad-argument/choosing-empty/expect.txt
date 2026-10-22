@@ -1,2 +1,2 @@
-{"seq":2,"t":0,"ev":"sim.Failed","code":"bad-argument","message":"lesson.Ask … choosing needs 2 to 6 different, non-empty choices","pos":"std/lesson/lesson.synod:15:49"}
-failed at 0s: std/lesson/lesson.synod:15:49: error[bad-argument]: lesson.Ask … choosing needs 2 to 6 different, non-empty choices
+{"seq":2,"t":0,"ev":"sim.Failed","code":"bad-argument","message":"lesson.Ask … choosing needs 2 to 6 different, non-empty choices","pos":"p/main.synod:5:3"}
+failed at 0s: p/main.synod:5:3: error[bad-argument]: lesson.Ask … choosing needs 2 to 6 different, non-empty choices

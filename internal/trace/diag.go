@@ -26,6 +26,9 @@ func FaultDiagnostic(f *value.Fault, o Options) source.Diagnostic {
 		})
 	}
 	d.Notes = append(d.Notes, f.Notes...)
+	if f.HasInner {
+		d.Notes = append(d.Notes, "raised inside std, at "+o.pos(f.Inner))
+	}
 	if f.Code == source.TimeLimit {
 		d.Help = []source.Help{{Text: "end the run earlier with sim.StopAt"}}
 	}

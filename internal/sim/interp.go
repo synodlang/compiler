@@ -284,6 +284,7 @@ func (s *sim) call(e *ex, c *ir.Call) (value.Value, *value.Fault) {
 	}
 	_, v, f := s.execBlock(&ex{fr: fr, node: e.node, kind: e.kind}, p.Body)
 	s.depth--
+	f.EnteredStd(c.Pos())
 	return v, f
 }
 

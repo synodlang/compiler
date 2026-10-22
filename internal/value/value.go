@@ -84,6 +84,32 @@ type Fault struct {
 	Label string
 	Also  []FaultLabel
 	Notes []string
+
+	// Inner is the std position the error was raised at when Pos was moved
+	// to the user's call that entered std (decision 89); it is only
+	// meaningful when HasInner. It is not part of the trace.
+	Inner    ir.Pos
+	HasInner bool
+}
+
+// EnteredStd applies decision 89 to the fault f that comes out of the call
+// at p of a phrase of std: when f was raised in std code and p is in user
+// code, f moves to p and keeps its std position as Inner. Labels in std are
+// dropped; the other labels stay.
+func (f *Fault) EnteredStd(p ir.Pos) {
+	if f == nil || !f.HasPos || !f.Pos.Std || p.Std {
+		return
+	}
+	f.Inner, f.HasInner = f.Pos, true
+	f.Pos = p
+	f.Label = ""
+	also := f.Also[:0:0]
+	for _, l := range f.Also {
+		if !l.Pos.Std {
+			also = append(also, l)
+		}
+	}
+	f.Also = also
 }
 
 // FaultLabel is a secondary label of a fault: the span of Pos, with a text.

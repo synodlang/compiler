@@ -114,7 +114,7 @@ steps:
   sim.Changed tcp.State of n1 from "CLOSED" to "SYN-SENT"
   net.Sent #1 tcp.Syn{Seq 100} from n1 to n2
 @5ms timer main
-  sim.Emitted lesson.Asked{Question "What does the server send back after a SYN?"} by nobody
+  sim.Emitted lesson.Asked{Question "What does the server send back after a SYN?", Choices {"An ACK, and the connection is open", "A SYN-ACK: its own sequence number and an acknowledgment of the client's", "A FIN, closing the connection", "Nothing until the client sends data"}} by nobody
 @22.142ms receive n2
   net.Arrived #1 tcp.Syn{Seq 100} from n1 to n2
   sim.Changed tcp.State of n2 from "LISTEN" to "SYN-RECEIVED"
@@ -165,7 +165,7 @@ form, which has that line and a `hint:` line, and nothing else. Exit code 1.
 | Command | What it does |
 | --- | --- |
 | `synod fmt [paths...] [--check]` | Rewrites `.synod` files into canonical form. With `--check` it changes nothing, lists the files that would change and exits 1. |
-| `synod check [paths...] [--json] [--tokens]` | Loads, resolves and checks packages, and prints every diagnostic. With no path it checks the current folder. `--json` prints the `synod-check/1` format. `--tokens` adds a token list per file, for editors (needs `--json`; without it the command exits 2). |
+| `synod check [paths...] [--json] [--tokens] [--overlay file]` | Loads, resolves and checks packages, and prints every diagnostic. With no path it checks the current folder. `--json` prints the `synod-check/1` format. `--tokens` adds a token list per file, for editors (needs `--json`; without it the command exits 2); a file that does not parse still gets lexical tokens. `--overlay file` checks files as if they held other content (`synod-overlay/1`: `{"format":"synod-overlay/1","replace":{"<path>":"<path>"}}`), for unsaved editor buffers. |
 | `synod run <folder> [--seed n] [--trace file] [--scene file] [--pace x] [--mode m] [--summary]` | Checks the folder's main file, simulates it and draws the run. Writes the trace and the scene and prints the status lines. |
 | `synod version` | Prints the language, compiler and format versions. |
 
@@ -405,7 +405,7 @@ A release is built on every tag that starts with `v`.
 
 ## Status and roadmap
 
-Today (v0.2.2, implements Synod 0.2): `synod fmt`, `synod check` with every
+Today (v0.2.5, implements Synod 0.2): `synod fmt`, `synod check` with every
 compile-time error of the specification, rich diagnostics, and `synod run`
 with the deterministic simulator, `trace.jsonl` and `--summary`. Every native
 phrase of `std/sim`, `net`, `time`, `random`, `lists`, `maps`, `math`, `text`

@@ -93,7 +93,7 @@ func (f *fnc) pos(p source.Pos) ir.Pos {
 	if f.file != nil {
 		path = f.file.Path
 	}
-	return ir.Pos{File: path, Line: p.Line, Col: p.Col}
+	return ir.Pos{File: path, Line: p.Line, Col: p.Col, Std: f.rp != nil && f.rp.IsStd}
 }
 
 // span is the position of a node with its extent.

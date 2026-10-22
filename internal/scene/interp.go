@@ -242,5 +242,6 @@ func (b *builder) call(e *ex, c *ir.Call) (value.Value, *value.Fault) {
 	_, v, f := b.execBlock(&ex{fr: fr}, p.Body)
 	b.cur = saved
 	b.depth--
+	f.EnteredStd(c.Pos())
 	return v, f
 }

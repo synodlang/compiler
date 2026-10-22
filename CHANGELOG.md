@@ -5,6 +5,24 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+## v0.2.5 — 2026-10-22
+
+Implements Synod 0.2. Editors and learning modes: `synod check` can read unsaved
+buffers and still colors a file that does not parse, `lesson.Ask` can offer
+choices, and a run-time error inside std now points at the user's own code.
+
+### Added
+
+- `synod check --overlay <file>` (`synod-overlay/1`): checks each listed `.synod` file or `synod.mod` as if it held the content of another file; diagnostics and tokens keep the original path and positions. A missing overlay, a bad format or a key that is not an existing file is exit 2.
+- `synod check --json --tokens` lists lexical tokens (`language`, `value`, `comment` and `name`, without `def`) for a file that fails to lex or parse, for every other file of its package and for extra main files, so an editor keeps its highlighting while the user types.
+- `lesson.Ask [q: text] choosing [c: list of text]` for Predict: 2 to 6 distinct, non-empty choices, else a `bad-argument` run-time error.
+- `scene.json` shapes carry `node` and `msg` (the node or message a shape stands for), and `pause` markers carry `choices` when the question has choices.
+
+### Changed
+
+- A run-time error raised while std code runs is reported at the position in user code of the call that entered std, in the trace (`sim.Failed`), the `failed at` and `look failed at` lines, the scene's `failed` marker and the rich form; the std position is kept as a note (decision 89). `lesson.Ask … choosing` with bad choices now points at the `lesson.Ask` call, not at `std/lesson/lesson.synod`.
+- The trace record `lesson.Asked` gains the field `Choices` (`{}` for a plain `lesson.Ask`), so every trace and summary of a program with a question changes.
+
 ## v0.2.4 — 2026-10-22
 
 Implements Synod 0.2. The compiler now also runs in the browser: `synod.wasm`
