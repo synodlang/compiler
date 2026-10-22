@@ -47,7 +47,9 @@ Node has
   set Pages to {}
 
 define [n: Node] start
-  disk.Write {"a": "b"} at "pages" on n
+  set m to {}
+  set item "a" of m to "b"
+  disk.Write m at "pages" on n
   set n.Pages to (disk.Read "pages" on n or {})
   set item "k" of n.Pages to "v"
 ```

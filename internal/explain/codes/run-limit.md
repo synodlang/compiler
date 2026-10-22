@@ -32,7 +32,7 @@ Let the call end, here by taking a count that runs out.
 ```synod
 # package p
 define Down [n: number]
-  if (n is above 0)
+  if (n more than 0)
     Down (n minus 1)
 ```
 
