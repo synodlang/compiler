@@ -429,10 +429,8 @@ func wantRule(gives string, holes []*parse.Hole) (Rule, bool) {
 	case "list of p.Node":
 		return ListOfNodeOfPkg(pkgHole()), true
 	}
-	for _, pre := range []string{"same as ", "same type as "} {
-		if strings.HasPrefix(g, pre) {
-			return SameAs(idx(strings.TrimPrefix(g, pre))), true
-		}
+	if strings.HasPrefix(g, "same as ") {
+		return SameAs(idx(strings.TrimPrefix(g, "same as "))), true
 	}
 	if strings.HasPrefix(g, "item type of ") {
 		return ElemOf(idx(strings.TrimPrefix(g, "item type of "))), true
@@ -524,7 +522,9 @@ func TestCatalog(t *testing.T) {
 		default:
 			t.Errorf("%s: unknown kind %q", where, r.Kind)
 		}
-		if r.Meaning != "" && !readmeBlockFile(d) && d.Comment != r.Meaning {
+		if r.Meaning == "" {
+			t.Errorf("%s: the catalog's Meaning is empty", where)
+		} else if d.Comment != r.Meaning {
 			t.Errorf("%s: comment %q, catalog meaning %q", where, d.Comment, r.Meaning)
 		}
 	}
@@ -608,16 +608,6 @@ func TestCatalog(t *testing.T) {
 			t.Errorf("native %q is not in the catalog", id)
 		}
 	}
-}
-
-// readmeBlockFile reports whether the define stands in a file that is
-// byte-identical to a catalog block (and so carries no comments).
-func readmeBlockFile(d *def) bool {
-	switch d.File.Path {
-	case "time/every.synod", "lesson/lesson.synod", "look/motion.synod":
-		return true
-	}
-	return false
 }
 
 func TestReadmeSnippets(t *testing.T) {

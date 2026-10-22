@@ -2,7 +2,7 @@
 # Store `v` durably on `n`, which must be the receiver (instantly; records `disk.Written`)
 define Write [v: value] at [k: text] on [n: node] native "disk.write"
 
-# The value stored on `n`, or `d` when nothing is stored; the result has the same type as `d` (`spec/04` §4.4)
+# The value stored on `n`, or `d` when nothing is stored; the result has the type of `d` (`spec/04` §4.4)
 define Read [k: text] on [n: node] or [d: value] native "disk.read"
 
 # Trace event: disk.Write v at k on n

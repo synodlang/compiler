@@ -8,13 +8,17 @@ Asked has
 Noted has
   set Text to ""
 
+# Emit `Asked` with no choices; the player pauses and asks the viewer to predict
 define Ask [q: text]
   emit (message Asked with Question q) by sim.Nobody
 
+# Emit `Asked` with the choices `c`: 2 to 6 distinct, non-empty texts, else `bad-argument`; the player pauses and offers them
 define Ask [q: text] choosing [c: list of text]
   emit (message Asked with Question q, Choices (choices c)) by sim.Nobody
 
+# Emit `Noted`; the player shows a caption
 define Note [t: text]
   emit (message Noted with Text t) by sim.Nobody
 
+# Unexported: check `c` for `Ask … choosing` (used by it)
 define choices [c: list of text] native "lesson.choices"

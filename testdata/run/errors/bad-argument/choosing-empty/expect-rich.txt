@@ -3,5 +3,5 @@ failed at 0s: p/main.synod:5:3: error[bad-argument]: lesson.Ask … choosing nee
 5 |   lesson.Ask "Which one?" choosing {"a", ""}
   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
-  = note: raised inside std, at std/lesson/lesson.synod:15:49
+  = note: raised inside std, at std/lesson/lesson.synod:17:49
 scene 0.03s, 1 shape -> out/scene.json
