@@ -411,12 +411,10 @@ with the deterministic simulator, `trace.jsonl` and `--summary`. Every native
 phrase of `std/sim`, `net`, `time`, `random`, `lists`, `maps`, `math`, `text`
 and `disk` works.
 
-On main (M5, unreleased): the `look` phrases and observers, the scene builder
-and `scene.json`. `synod run` writes `out/scene.json` and takes `--scene`,
-`--pace` and `--mode`.
+Released: the `look` phrases and observers, the scene builder and
+`scene.json` (v0.2.3), and `synod.wasm` for browsers (v0.2.4).
 
-Not yet: `--watch` and `--json-events`, the WebAssembly release (M6), and then
-the player, the Mac app, the editor modes and the agent skills (M7 to M11).
+Not yet: `--watch` and `--json-events`, and then the player, the Mac app, the editor modes and the agent skills (M7 to M11).
 The order and acceptance checks are in the
 [roadmap](https://github.com/synodlang/dsl/blob/main/implementation/10-roadmap.md).
 The [change log](CHANGELOG.md) lists what each release added.

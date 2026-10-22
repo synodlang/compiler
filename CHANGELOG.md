@@ -5,6 +5,12 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+## v0.2.4 — 2026-10-22
+
+Implements Synod 0.2. The compiler now also runs in the browser: `synod.wasm`
+checks, formats, runs and draws programs with exactly the same output as the
+command line, ready for the website's interactive examples.
+
 ### Added
 
 - `synod.wasm`, the compiler for WebAssembly (`GOOS=js GOARCH=wasm`, built from `cmd/synod-wasm`): a global `synod` with the synchronous functions `check`, `run`, `format` and `version`. They take the program as a `files` object and return the CLI's check.json, status, summary, trace and scene as text, byte-identical to the native build; they never throw (errors are `{code, message}` with exit code 2). std is embedded; other modules come in `files` under `vendor/`.
