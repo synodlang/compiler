@@ -1,0 +1,1 @@
+p/main.synod:5:36: error[type-mismatch]: ""x"" has type text, expected list of text

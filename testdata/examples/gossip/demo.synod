@@ -11,7 +11,7 @@ define main
       gossip.Join n to (item 0 of nodes)
   after 8s
     sim.Crash (item 2 of nodes)
-    lesson.Ask "How long until the others mark n3 as down?"
+    lesson.Ask "How long until the others mark n3 as down?" choosing {"The moment it stops responding, all at once", "A few seconds, each node noticing at its own time", "Never: gossip cannot detect a crash"}
   after 16s
     sim.Restart (item 2 of nodes)
     lesson.Note "n3 comes back with a new generation, so its lower heartbeat is still believed."

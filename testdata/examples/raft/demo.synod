@@ -13,7 +13,7 @@ define main
   after 2s
     set old to (item 0 of raft.Leaders)
     sim.Crash old
-    lesson.Ask "The leader just crashed. What do the followers do now?"
+    lesson.Ask "The leader just crashed. What do the followers do now?" choosing {"Wait for the old leader to return", "Time out and start an election", "Ask a coordinator service to pick a new leader", "Stop accepting writes for good"}
     after 3s
       sim.Restart old
       lesson.Note "The old leader returns as a follower: it sees a higher term."

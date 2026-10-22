@@ -10,7 +10,7 @@ define main
   lesson.Note "A connection needs three messages before data can flow."
   deliver (message tcp.Open with Server server) to client
   after 5ms
-    lesson.Ask "What does the server send back after a SYN?"
+    lesson.Ask "What does the server send back after a SYN?" choosing {"An ACK, and the connection is open", "A SYN-ACK: its own sequence number and an acknowledgment of the client's", "A FIN, closing the connection", "Nothing until the client sends data"}
   after 100ms
     lesson.Note "Both ends are ESTABLISHED: data can now flow either way."
   sim.StopAt 200ms

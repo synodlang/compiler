@@ -1,5 +1,5 @@
 {"format":"synod-scene/1","duration":30,"canvas":{"w":1600,"h":1000},"theme":{"Paper":"#151A2E","Ink":"#EDE9E1","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A"},"shapes":[
-{"id":"saaef7414cafa","kind":"circle","props":{"r":1},"keys":[{"at":30,"x":800,"y":500,"opacity":1}]}
+{"id":"saaef7414cafa","kind":"circle","node":"n1","props":{"r":1},"keys":[{"at":30,"x":800,"y":500,"opacity":1}]}
 ],"markers":[
 {"at":30,"kind":"failed","text":"look lk/lk.synod:6:3: error[run-limit]: more than 50 timers fired at one instant"}
 ],"trace":[

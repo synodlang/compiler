@@ -10,7 +10,7 @@
 {"seq":9,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"cart:7","Owner":{"node":"n3"}}}}
 {"seq":10,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"cart:9","Owner":{"node":"n3"}}}}
 {"seq":11,"t":0,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"order:12","Owner":{"node":"n2"}}}}
-{"seq":12,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"lesson.Asked","fields":{"Question":"A fifth node joins the ring. How many keys move?"}}}
+{"seq":12,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"lesson.Asked","fields":{"Question":"A fifth node joins the ring. How many keys move?","Choices":["All six: every key is hashed again","None: the new node starts empty","Only the keys the new node takes over: one of the six","Half of them"]}}}
 {"seq":13,"t":2000000,"ev":"sim.Added","node":"n5","runs":["std/lists","std/maps","std/math","std/sim","std/text","github.com/synodlang/examples/ring"],"state":{}}
 {"seq":14,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"user:1","Owner":{"node":"n1"}}}}
 {"seq":15,"t":2000000,"ev":"sim.Emitted","node":null,"record":{"type":"ring.Placed","fields":{"Key":"user:2","Owner":{"node":"n3"}}}}

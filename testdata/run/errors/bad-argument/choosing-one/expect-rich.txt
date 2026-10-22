@@ -1,0 +1,6 @@
+failed at 0s: std/lesson/lesson.synod:15:49: error[bad-argument]: lesson.Ask … choosing needs 2 to 6 different, non-empty choices
+   |
+15 |   emit (message Asked with Question q, Choices (choices c)) by sim.Nobody
+   |                                                 ^^^^^^^^^
+   |                                                         - is {"a"}
+scene 0.03s, 1 shape -> out/scene.json

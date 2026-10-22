@@ -3,6 +3,7 @@ use std/sim
 
 Asked has
   set Question to ""
+  set Choices to {}
 
 Noted has
   set Text to ""
@@ -10,5 +11,10 @@ Noted has
 define Ask [q: text]
   emit (message Asked with Question q) by sim.Nobody
 
+define Ask [q: text] choosing [c: list of text]
+  emit (message Asked with Question q, Choices (choices c)) by sim.Nobody
+
 define Note [t: text]
   emit (message Noted with Text t) by sim.Nobody
+
+define choices [c: list of text] native "lesson.choices"

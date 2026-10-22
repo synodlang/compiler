@@ -83,6 +83,12 @@ type shape struct {
 	// card is set once the shape is attached under "card": only then do
 	// its deletion, grouping and pinning change the layout.
 	card bool
+	// node and msg are the first node the shape is attached to and the first
+	// message it flies for (0 means none: node ids and message ids that
+	// matter start at 1; hasMsg tells message 0 apart).
+	node   int
+	msg    int
+	hasMsg bool
 }
 
 type flight struct {
@@ -684,6 +690,9 @@ func (w *world) attach(name string, k attKey, s int, now int64) error {
 		w.attNames[k] = append(w.attNames[k], name)
 	}
 	w.att[id] = s
+	if sh := w.shapes[s]; k.Kind == akNode && k.Node > 0 && sh.node == 0 {
+		sh.node = k.Node
+	}
 	if name == "card" {
 		w.shapes[s].card = true
 		w.layoutDirty = true
@@ -769,6 +778,9 @@ func (w *world) flightStart(s, a, b, msgID int, now int64) error {
 	sh := w.shapes[s]
 	if sh.deleted || w.shapes[a].deleted || w.shapes[b].deleted {
 		return nil
+	}
+	if !sh.hasMsg {
+		sh.msg, sh.hasMsg = msgID, true
 	}
 	w.moveSelf(sh)
 	ax, ay := w.worldPos(a, now)

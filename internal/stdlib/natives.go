@@ -147,6 +147,7 @@ var Natives = buildNatives()
 var Contexts = map[string]Ctx{
 	"time.Every":               Node | Main,
 	"lesson.Ask":               Main,
+	"lesson.Ask choosing":      Main,
 	"lesson.Note":              Main,
 	"look.Card for":            Look,
 	"look.Fade to":             Look,
@@ -250,6 +251,9 @@ func buildNatives() map[string]*Sig {
 	add("disk.write", Phrase, Node, None, 2)
 	add("disk.read", Phrase, Node, SameAs(2), 1, Rel{Kind: RelExpectResultOn, A: 2})
 	trace("disk.written")
+
+	// std/lesson: choices is unexported, used by Ask … choosing.
+	add("lesson.choices", Phrase, Main, SameAs(0), -1)
 
 	// std/look: every phrase is look-only.
 	for _, id := range []string{"circle", "rect", "label", "line", "group", "center"} {

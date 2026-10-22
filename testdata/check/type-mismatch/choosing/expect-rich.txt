@@ -1,0 +1,4 @@
+p/main.synod:5:36: error[type-mismatch]: ""x"" has type text, expected list of text
+  |
+5 |   lesson.Ask "Which one?" choosing "x"
+  |                                    ^^^ has type text

@@ -26,7 +26,7 @@ steps:
   net.Sent #5 paxos.Promise{number 101, prior 0, priorValue ""} from n3 to n1
 @15ms timer main
   sim.Injected paxos.Start{Value "y"} into n3
-  sim.Emitted lesson.Asked{Question "Two proposers are racing. Can both x and y be chosen?"} by nobody
+  sim.Emitted lesson.Asked{Question "Two proposers are racing. Can both x and y be chosen?", Choices {"Yes: each proposer's value is chosen at its own ballot", "No: the higher ballot wins, so y alone is chosen", "No: the second proposer learns of x and proposes x too", "Neither: the proposers block each other forever"}} by nobody
 @15ms deliver n3
   net.Sent #6 paxos.Prepare{number 103} from n3 to n1
   net.Sent #7 paxos.Prepare{number 103} from n3 to n2

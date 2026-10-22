@@ -11,7 +11,7 @@ define main
   each k in keys
     emit (message ring.Placed with Key k, Owner (item 0 of (ring.Owners of k among nodes count 1))) by sim.Nobody
   after 2s
-    lesson.Ask "A fifth node joins the ring. How many keys move?"
+    lesson.Ask "A fifth node joins the ring. How many keys move?" choosing {"All six: every key is hashed again", "None: the new node starts empty", "Only the keys the new node takes over: one of the six", "Half of them"}
     set grown to (lists.Append (sim.Spawn ring) to nodes)
     each k in keys
       emit (message ring.Placed with Key k, Owner (item 0 of (ring.Owners of k among grown count 1))) by sim.Nobody

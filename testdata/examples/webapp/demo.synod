@@ -26,5 +26,5 @@ define main
   lesson.Note "Misses go to the database and fill the cache; hits come back fast."
   after 2s
     sim.Crash store
-    lesson.Ask "The cache just crashed. What happens to new requests?"
+    lesson.Ask "The cache just crashed. What happens to new requests?" choosing {"They go straight to the database instead", "They hang: nothing answers and nothing times out", "The load balancer notices and retries on another cache", "They are served, only more slowly"}
   sim.StopAt 4s

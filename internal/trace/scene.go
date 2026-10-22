@@ -40,6 +40,12 @@ type SceneShape struct {
 	From, To string
 	Items    []string
 	Keys     []Key
+	// Node ("n3") is the node the shape is attached to and Msg the id of the
+	// message it flies for; each is written only when its Has flag is set.
+	Node    string
+	HasNode bool
+	Msg     int
+	HasMsg  bool
 	// End is the time the shape stops existing; written only when HasEnd.
 	End    int64
 	HasEnd bool
@@ -75,6 +81,8 @@ type Marker struct {
 	Seq  int
 	Kind string
 	Text string
+	// Choices are the choices of a pause marker; written only when not empty.
+	Choices []string
 }
 
 // SlotEntry says when the fact with sequence number Seq is presented.

@@ -10,7 +10,7 @@
       (deliver (message paxos.Start (Value "x")) (item nodes#0 0))
       (after (time 15000)
         (deliver (message paxos.Start (Value "y")) (item nodes#0 2))
-        (call "lesson.Ask" "Two proposers are racing. Can both x and y be chosen?"))
+        (call "lesson.Ask … choosing" "Two proposers are racing. Can both x and y be chosen?" (list "Yes: each proposer's value is chosen at its own ballot" "No: the higher ballot wins, so y alone is chosen" "No: the second proposer learns of x and proposes x too" "Neither: the proposers block each other forever")))
       (native "sim.stopAt" (time 2000000))))
   (package "std/lists" std
     (runs "std/lists"))
@@ -144,13 +144,18 @@
     (uses "std/sim")
     (runs "std/sim" "std/lesson")
     (record Asked exported
-      (field Question text exported ""))
+      (field Question text exported "")
+      (field Choices list of text exported (empty list of text)))
     (record Noted exported
       (field Text text exported ""))
     (phrase "Ask"
       (vars (0 q param text))
       (body
         (emit (message lesson.Asked (Question q#0)) (native "sim.nobody"))))
+    (phrase "Ask … choosing"
+      (vars (0 q param text) (1 c param list of text))
+      (body
+        (emit (message lesson.Asked (Question q#0) (Choices (native "lesson.choices" c#1))) (native "sim.nobody"))))
     (phrase "Note"
       (vars (0 t param text))
       (body

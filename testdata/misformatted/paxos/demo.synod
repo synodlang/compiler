@@ -16,5 +16,5 @@ define main
   deliver (message paxos.Start with Value "x") to ( item 0 of nodes )
   after 15.0ms
     deliver (message paxos.Start with Value "y") to (item 2 of nodes)
-    lesson.Ask "Two proposers are racing. Can both x and y be chosen?"
+    lesson.Ask "Two proposers are racing. Can both x and y be chosen?" choosing {"Yes: each proposer's value is chosen at its own ballot", "No: the higher ballot wins, so y alone is chosen", "No: the second proposer learns of x and proposes x too", "Neither: the proposers block each other forever"}
   sim.StopAt 2000ms

@@ -57,6 +57,10 @@ func (e *encoder) scene(s *Scene) error {
 		w.str(m.Kind)
 		w.key("text", false)
 		w.str(m.Text)
+		if m.Kind == "pause" && len(m.Choices) > 0 {
+			w.key("choices", false)
+			w.strs(m.Choices)
+		}
 		w.byte('}')
 		return nil
 	}); err != nil {
@@ -104,6 +108,14 @@ func (e *encoder) shape(s *SceneShape) error {
 	w.str(s.ID)
 	w.key("kind", false)
 	w.str(s.Kind)
+	if s.HasNode {
+		w.key("node", false)
+		w.str(s.Node)
+	}
+	if s.HasMsg {
+		w.key("msg", false)
+		w.int(int64(s.Msg))
+	}
 	w.raw(`,"props":{`)
 	switch s.Kind {
 	case KindCircle:

@@ -17,7 +17,7 @@
 {"seq":16,"t":13534,"ev":"sim.Changed","node":"n3","field":"paxos.Promised","old":0,"new":101}
 {"seq":17,"t":13534,"ev":"net.Sent","node":"n3","msg":{"id":5,"type":"paxos.Promise","fields":{"number":"…","prior":"…","priorValue":"…"}},"from":"n3","to":"n1"}
 {"seq":18,"t":15000,"ev":"sim.Injected","node":"n3","record":{"type":"paxos.Start","fields":{"Value":"y"}}}
-{"seq":19,"t":15000,"ev":"sim.Emitted","node":null,"record":{"type":"lesson.Asked","fields":{"Question":"Two proposers are racing. Can both x and y be chosen?"}}}
+{"seq":19,"t":15000,"ev":"sim.Emitted","node":null,"record":{"type":"lesson.Asked","fields":{"Question":"Two proposers are racing. Can both x and y be chosen?","Choices":["Yes: each proposer's value is chosen at its own ballot","No: the higher ballot wins, so y alone is chosen","No: the second proposer learns of x and proposes x too","Neither: the proposers block each other forever"]}}}
 {"seq":20,"t":15000,"ev":"net.Sent","node":"n3","msg":{"id":6,"type":"paxos.Prepare","fields":{"number":"…"}},"from":"n3","to":"n1"}
 {"seq":21,"t":15000,"ev":"net.Sent","node":"n3","msg":{"id":7,"type":"paxos.Prepare","fields":{"number":"…"}},"from":"n3","to":"n2"}
 {"seq":22,"t":15000,"ev":"net.Sent","node":"n3","msg":{"id":8,"type":"paxos.Prepare","fields":{"number":"…"}},"from":"n3","to":"n3"}

@@ -146,3 +146,63 @@ func TestThemeTableMatchesStd(t *testing.T) {
 		}
 	}
 }
+
+func TestNodeAndMsgKeys(t *testing.T) {
+	w := newTW(1000)
+	a := w.mk(t, trace.KindCircle, 0)
+	b := w.mk(t, trace.KindCircle, 0)
+	c := w.mk(t, trace.KindCircle, 0)
+	d := w.mk(t, trace.KindCircle, 0)
+	must(t, w.attach("card", nodeKey(3), a, 0))
+	must(t, w.attach("again", nodeKey(4), a, 0)) // the first node attachment wins
+	must(t, w.attach("tag", textKey("x"), b, 0)) // a text key is not a node
+	must(t, w.attach("n", numberKey(7), b, 0))   // nor a number key
+	must(t, w.attach("card", nodeKey(5), c, 0))
+	must(t, w.attach("card", nodeKey(5), d, 10)) // a replacement is attached too
+	must(t, w.flightStart(b, a, d, 9, 0))
+	must(t, w.flightStart(b, a, d, 11, 5)) // the first flight wins
+	sc := w.emit(emitInput{Cursor: 100})
+	got := func(i int) trace.SceneShape { return sc.Shapes[i] }
+	if s := got(0); !s.HasNode || s.Node != "n3" || s.HasMsg {
+		t.Errorf("a: %+v", s)
+	}
+	if s := got(1); s.HasNode || !s.HasMsg || s.Msg != 9 {
+		t.Errorf("b: %+v", s)
+	}
+	if s := got(2); !s.HasNode || s.Node != "n5" {
+		t.Errorf("c: %+v", s)
+	}
+	if s := got(3); !s.HasNode || s.Node != "n5" {
+		t.Errorf("replacement: %+v", s)
+	}
+	var buf bytes.Buffer
+	if err := trace.EncodeScene(&buf, sc); err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`"kind":"circle","node":"n3","props":`, `"kind":"circle","msg":9,"props":`} {
+		if !strings.Contains(buf.String(), want) {
+			t.Errorf("missing %s in\n%s", want, buf.String())
+		}
+	}
+}
+
+func TestPauseChoicesEncoding(t *testing.T) {
+	sc := newTW(1000).emit(emitInput{Cursor: 10, Markers: []trace.Marker{
+		{At: 1, Kind: "pause", Text: "q", Choices: []string{"a", "b"}},
+		{At: 2, Kind: "pause", Text: "r"},
+		{At: 3, Kind: "caption", Text: "c", Choices: []string{"ignored"}},
+	}})
+	var buf bytes.Buffer
+	if err := trace.EncodeScene(&buf, sc); err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		`{"at":1,"kind":"pause","text":"q","choices":["a","b"]}`,
+		`{"at":2,"kind":"pause","text":"r"}`,
+		`{"at":3,"kind":"caption","text":"c"}`,
+	} {
+		if !strings.Contains(buf.String(), want) {
+			t.Errorf("missing %s in\n%s", want, buf.String())
+		}
+	}
+}

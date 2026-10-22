@@ -59,7 +59,7 @@
 {"seq":58,"t":3000000,"ev":"disk.Written","node":"n1","key":"last"}
 {"seq":59,"t":3000000,"ev":"sim.Changed","node":"n1","field":"wal.Table","old":{"map":[["k1","1"],["k2","2"],["k3","3"],["k4","4"],["k5","5"],["k6","6"],["k7","7"],["k8","8"],["k9","9"]]},"new":{"map":[["k1","1"],["k10","10"],["k2","2"],["k3","3"],["k4","4"],["k5","5"],["k6","6"],["k7","7"],["k8","8"],["k9","9"]]}}
 {"seq":60,"t":3100000,"ev":"sim.Crashed","node":"n1"}
-{"seq":61,"t":3100000,"ev":"sim.Emitted","node":null,"record":{"type":"lesson.Asked","fields":{"Question":"The last checkpoint was at 2s. Which writes survive the crash?"}}}
+{"seq":61,"t":3100000,"ev":"sim.Emitted","node":null,"record":{"type":"lesson.Asked","fields":{"Question":"The last checkpoint was at 2s. Which writes survive the crash?","Choices":["Only the six writes made before the checkpoint","All ten acknowledged writes: six from the checkpoint, four replayed from the log","None: memory is lost with the crash","Every write, including the one sent during the outage"]}}}
 {"seq":62,"t":3300000,"ev":"sim.Injected","node":"n1","record":{"type":"wal.Put","fields":{"Key":"k11","Value":"11"}}}
 {"seq":63,"t":3500000,"ev":"sim.Restarted","node":"n1","runs":["std/disk","std/lists","std/sim","std/text","std/time","github.com/synodlang/examples/wal"],"state":{"wal.Table":{"map":[]},"wal.Lsn":0,"wal.Flushed":0}}
 {"seq":64,"t":3500000,"ev":"sim.Emitted","node":null,"record":{"type":"lesson.Noted","fields":{"Text":"Writes after the checkpoint come back from the log."}}}

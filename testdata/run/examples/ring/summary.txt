@@ -14,7 +14,7 @@ steps:
   sim.Emitted ring.Placed{Key "cart:9", Owner n3} by nobody
   sim.Emitted ring.Placed{Key "order:12", Owner n2} by nobody
 @2s timer main
-  sim.Emitted lesson.Asked{Question "A fifth node joins the ring. How many keys move?"} by nobody
+  sim.Emitted lesson.Asked{Question "A fifth node joins the ring. How many keys move?", Choices {"All six: every key is hashed again", "None: the new node starts empty", "Only the keys the new node takes over: one of the six", "Half of them"}} by nobody
   sim.Added n5 runs ring
   sim.Emitted ring.Placed{Key "user:1", Owner n1} by nobody
   sim.Emitted ring.Placed{Key "user:2", Owner n3} by nobody

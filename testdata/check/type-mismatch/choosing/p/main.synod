@@ -1,0 +1,5 @@
+# package main
+use std/lesson
+
+define main
+  lesson.Ask "Which one?" choosing "x"

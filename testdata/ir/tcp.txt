@@ -9,7 +9,7 @@
       (call "lesson.Note" "A connection needs three messages before data can flow.")
       (deliver (message tcp.Open (Server server#1)) client#0)
       (after (time 5000)
-        (call "lesson.Ask" "What does the server send back after a SYN?"))
+        (call "lesson.Ask … choosing" "What does the server send back after a SYN?" (list "An ACK, and the connection is open" "A SYN-ACK: its own sequence number and an acknowledgment of the client's" "A FIN, closing the connection" "Nothing until the client sends data")))
       (after (time 100000)
         (call "lesson.Note" "Both ends are ESTABLISHED: data can now flow either way."))
       (native "sim.stopAt" (time 200000))))
@@ -71,13 +71,18 @@
     (uses "std/sim")
     (runs "std/sim" "std/lesson")
     (record Asked exported
-      (field Question text exported ""))
+      (field Question text exported "")
+      (field Choices list of text exported (empty list of text)))
     (record Noted exported
       (field Text text exported ""))
     (phrase "Ask"
       (vars (0 q param text))
       (body
         (emit (message lesson.Asked (Question q#0)) (native "sim.nobody"))))
+    (phrase "Ask … choosing"
+      (vars (0 q param text) (1 c param list of text))
+      (body
+        (emit (message lesson.Asked (Question q#0) (Choices (native "lesson.choices" c#1))) (native "sim.nobody"))))
     (phrase "Note"
       (vars (0 t param text))
       (body

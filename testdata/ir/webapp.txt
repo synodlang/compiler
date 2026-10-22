@@ -18,7 +18,7 @@
       (call "lesson.Note" "Misses go to the database and fill the cache; hits come back fast.")
       (after (time 2000000)
         (native "sim.crash" store#2)
-        (call "lesson.Ask" "The cache just crashed. What happens to new requests?"))
+        (call "lesson.Ask … choosing" "The cache just crashed. What happens to new requests?" (list "They go straight to the database instead" "They hang: nothing answers and nothing times out" "The load balancer notices and retries on another cache" "They are served, only more slowly")))
       (native "sim.stopAt" (time 4000000))))
   (package "github.com/synodlang/examples/webapp/api"
     (runs "github.com/synodlang/examples/webapp/api")
@@ -169,13 +169,18 @@
     (uses "std/sim")
     (runs "std/sim" "std/lesson")
     (record Asked exported
-      (field Question text exported ""))
+      (field Question text exported "")
+      (field Choices list of text exported (empty list of text)))
     (record Noted exported
       (field Text text exported ""))
     (phrase "Ask"
       (vars (0 q param text))
       (body
         (emit (message lesson.Asked (Question q#0)) (native "sim.nobody"))))
+    (phrase "Ask … choosing"
+      (vars (0 q param text) (1 c param list of text))
+      (body
+        (emit (message lesson.Asked (Question q#0) (Choices (native "lesson.choices" c#1))) (native "sim.nobody"))))
     (phrase "Note"
       (vars (0 t param text))
       (body

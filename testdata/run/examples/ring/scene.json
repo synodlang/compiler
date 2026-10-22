@@ -2,7 +2,7 @@
 {"id":"s9c60a45b54c4","kind":"circle","props":{"r":300},"keys":[{"at":0,"x":800,"y":500,"opacity":1,"fill":"Paper","stroke":"Line"}]},
 {"id":"s2758d828cb77","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
 {"id":"s2658d828c9c4","kind":"label","props":{},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n1"}]},
-{"id":"s2958d828cedd","kind":"group","props":{"items":["s2758d828cb77","s2658d828c9c4"]},"keys":[{"at":30,"x":1090.65,"y":425.68,"opacity":1}]},
+{"id":"s2958d828cedd","kind":"group","node":"n1","props":{"items":["s2758d828cb77","s2658d828c9c4"]},"keys":[{"at":30,"x":1090.65,"y":425.68,"opacity":1}]},
 {"id":"s2858d828cd2a","kind":"circle","props":{"r":4},"keys":[{"at":30,"x":1090.65,"y":425.68,"opacity":1,"fill":"Quiet"}]},
 {"id":"s2358d828c4ab","kind":"circle","props":{"r":4},"keys":[{"at":30,"x":932.1,"y":230.65,"opacity":1,"fill":"Quiet"}]},
 {"id":"s2258d828c2f8","kind":"circle","props":{"r":4},"keys":[{"at":30,"x":903.11,"y":781.73,"opacity":1,"fill":"Quiet"}]},
@@ -13,7 +13,7 @@
 {"id":"s1cf74d4f299c","kind":"circle","props":{"r":4},"keys":[{"at":30,"x":639.2,"y":246.74,"opacity":1,"fill":"Quiet"}]},
 {"id":"s6458d2efbdf0","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
 {"id":"s6558d2efbfa3","kind":"label","props":{},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n2"}]},
-{"id":"s6658d2efc156","kind":"group","props":{"items":["s6458d2efbdf0","s6558d2efbfa3"]},"keys":[{"at":60,"x":975.52,"y":256.7,"opacity":1}]},
+{"id":"s6658d2efc156","kind":"group","node":"n2","props":{"items":["s6458d2efbdf0","s6558d2efbfa3"]},"keys":[{"at":60,"x":975.52,"y":256.7,"opacity":1}]},
 {"id":"s6758d2efc309","kind":"circle","props":{"r":4},"keys":[{"at":60,"x":975.52,"y":256.7,"opacity":1,"fill":"Quiet"}]},
 {"id":"s6858d2efc4bc","kind":"circle","props":{"r":4},"keys":[{"at":60,"x":798.88,"y":800,"opacity":1,"fill":"Quiet"}]},
 {"id":"s6958d2efc66f","kind":"circle","props":{"r":4},"keys":[{"at":60,"x":584.36,"y":708.57,"opacity":1,"fill":"Quiet"}]},
@@ -24,7 +24,7 @@
 {"id":"sc8ee6d6286c9","kind":"circle","props":{"r":4},"keys":[{"at":60,"x":1082.36,"y":601.35,"opacity":1,"fill":"Quiet"}]},
 {"id":"s5958ce1f454d","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":90,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
 {"id":"s5858ce1f439a","kind":"label","props":{},"keys":[{"at":90,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n3"}]},
-{"id":"s5758ce1f41e7","kind":"group","props":{"items":["s5958ce1f454d","s5858ce1f439a"]},"keys":[{"at":90,"x":786.5,"y":200.3,"opacity":1}]},
+{"id":"s5758ce1f41e7","kind":"group","node":"n3","props":{"items":["s5958ce1f454d","s5858ce1f439a"]},"keys":[{"at":90,"x":786.5,"y":200.3,"opacity":1}]},
 {"id":"s5658ce1f4034","kind":"circle","props":{"r":4},"keys":[{"at":90,"x":786.5,"y":200.3,"opacity":1,"fill":"Quiet"}]},
 {"id":"s5558ce1f3e81","kind":"circle","props":{"r":4},"keys":[{"at":90,"x":1097.22,"y":459.23,"opacity":1,"fill":"Quiet"}]},
 {"id":"s5458ce1f3cce","kind":"circle","props":{"r":4},"keys":[{"at":90,"x":1006.06,"y":718.04,"opacity":1,"fill":"Quiet"}]},
@@ -35,7 +35,7 @@
 {"id":"sc8e63f1ff9de","kind":"circle","props":{"r":4},"keys":[{"at":90,"x":508.95,"y":427.26,"opacity":1,"fill":"Quiet"}]},
 {"id":"s9658c88965e6","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":120,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
 {"id":"s9758c8896799","kind":"label","props":{},"keys":[{"at":120,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n4"}]},
-{"id":"s9458c8896280","kind":"group","props":{"items":["s9658c88965e6","s9758c8896799"]},"keys":[{"at":120,"x":517.96,"y":397.75,"opacity":1}]},
+{"id":"s9458c8896280","kind":"group","node":"n4","props":{"items":["s9658c88965e6","s9758c8896799"]},"keys":[{"at":120,"x":517.96,"y":397.75,"opacity":1}]},
 {"id":"s9558c8896433","kind":"circle","props":{"r":4},"keys":[{"at":120,"x":517.96,"y":397.75,"opacity":1,"fill":"Quiet"}]},
 {"id":"s9a58c8896cb2","kind":"circle","props":{"r":4},"keys":[{"at":120,"x":1090.57,"y":574.61,"opacity":1,"fill":"Quiet"}]},
 {"id":"s9b58c8896e65","kind":"circle","props":{"r":4},"keys":[{"at":120,"x":618.89,"y":260.84,"opacity":1,"fill":"Quiet"}]},
@@ -52,7 +52,7 @@
 {"id":"sd6acf49123a8","kind":"label","props":{},"keys":[{"at":300,"x":1063.52,"y":256.7,"opacity":1,"fill":"Ink","text":"order:12"},{"at":1110,"opacity":1},{"at":1410,"opacity":0}],"end":1410},
 {"id":"s4358eb830d8b","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":930,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
 {"id":"s4258eb830bd8","kind":"label","props":{},"keys":[{"at":930,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n5"}]},
-{"id":"s4558eb8310f1","kind":"group","props":{"items":["s4358eb830d8b","s4258eb830bd8"]},"keys":[{"at":930,"x":936.84,"y":766.98,"opacity":1}]},
+{"id":"s4558eb8310f1","kind":"group","node":"n5","props":{"items":["s4358eb830d8b","s4258eb830bd8"]},"keys":[{"at":930,"x":936.84,"y":766.98,"opacity":1}]},
 {"id":"s4458eb830f3e","kind":"circle","props":{"r":4},"keys":[{"at":930,"x":936.84,"y":766.98,"opacity":1,"fill":"Quiet"}]},
 {"id":"s4758eb831457","kind":"circle","props":{"r":4},"keys":[{"at":930,"x":895.05,"y":215.46,"opacity":1,"fill":"Quiet"}]},
 {"id":"s4658eb8312a4","kind":"circle","props":{"r":4},"keys":[{"at":930,"x":991.44,"y":269.02,"opacity":1,"fill":"Quiet"}]},
@@ -68,7 +68,7 @@
 {"id":"sb60669453be8","kind":"label","props":{},"keys":[{"at":1080,"x":866.5,"y":200.3,"opacity":0,"fill":"Ink","text":"cart:9"},{"at":1380,"opacity":1}]},
 {"id":"s59066e21412f","kind":"label","props":{},"keys":[{"at":1110,"x":1063.52,"y":256.7,"opacity":0,"fill":"Ink","text":"order:12"},{"at":1410,"opacity":1}]}
 ],"markers":[
-{"at":900,"kind":"pause","text":"A fifth node joins the ring. How many keys move?"}
+{"at":900,"kind":"pause","text":"A fifth node joins the ring. How many keys move?","choices":["All six: every key is hashed again","None: the new node starts empty","Only the keys the new node takes over: one of the six","Half of them"]}
 ],"trace":[
 {"seq":1,"at":0},
 {"seq":2,"at":30},

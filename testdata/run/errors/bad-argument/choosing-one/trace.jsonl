@@ -1,0 +1,3 @@
+{"format":"synod-trace/1","synod":"0.2","seed":1,"program":"example.com/t/p","packages":["std/lesson","std/sim"]}
+{"seq":1,"t":0,"ev":"sim.Started"}
+{"seq":2,"t":0,"ev":"sim.Failed","code":"bad-argument","message":"lesson.Ask … choosing needs 2 to 6 different, non-empty choices","pos":"std/lesson/lesson.synod:15:49"}

@@ -13,5 +13,5 @@ define main
   deliver (message twopc.Begin with Tx 1) to coordinator
   after 45ms
     sim.Crash coordinator
-    lesson.Ask "The coordinator crashed while votes were in flight. What can a prepared participant do?"
+    lesson.Ask "The coordinator crashed while votes were in flight. What can a prepared participant do?" choosing {"Commit, because it voted yes", "Abort on its own, because the coordinator is gone", "Wait for the coordinator: it voted yes, so it cannot decide alone", "Elect a new coordinator among the participants"}
   sim.StopAt 3s

@@ -2,11 +2,11 @@
 {"id":"sf51ce27cc857","kind":"rect","props":{"w":80,"h":40,"radius":12},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Good"}]},
 {"id":"sf41ce27cc6a4","kind":"circle","props":{"r":10},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Good"}]},
 {"id":"sf71ce27ccbbd","kind":"label","props":{},"keys":[{"at":30,"x":0,"y":-37,"opacity":1,"fill":"Ink","text":"node"}]},
-{"id":"sf61ce27cca0a","kind":"group","props":{"items":["sf51ce27cc857","sf41ce27cc6a4","sf71ce27ccbbd"]},"keys":[{"at":30,"x":800,"y":500,"opacity":1},{"at":230,"x":300}]},
+{"id":"sf61ce27cca0a","kind":"group","node":"n1","props":{"items":["sf51ce27cc857","sf41ce27cc6a4","sf71ce27ccbbd"]},"keys":[{"at":30,"x":800,"y":500,"opacity":1},{"at":230,"x":300}]},
 {"id":"sb21cdd449450","kind":"rect","props":{"w":80,"h":40,"radius":12},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Good"}]},
 {"id":"sb31cdd449603","kind":"circle","props":{"r":10},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Good"}]},
 {"id":"sb41cdd4497b6","kind":"label","props":{},"keys":[{"at":60,"x":0,"y":-37,"opacity":1,"fill":"Ink","text":"node"}]},
-{"id":"sb51cdd449969","kind":"group","props":{"items":["sb21cdd449450","sb31cdd449603","sb41cdd4497b6"]},"keys":[{"at":60,"x":800,"y":500,"opacity":1},{"at":260,"x":300}]}
+{"id":"sb51cdd449969","kind":"group","node":"n2","props":{"items":["sb21cdd449450","sb31cdd449603","sb41cdd4497b6"]},"keys":[{"at":60,"x":800,"y":500,"opacity":1},{"at":260,"x":300}]}
 ],"markers":[],"trace":[
 {"seq":1,"at":0},
 {"seq":2,"at":30},

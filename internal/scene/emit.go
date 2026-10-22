@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/synodlang/compiler/internal/trace"
+	"github.com/synodlang/compiler/internal/value"
 )
 
 // themeColors are the eight std/theme colors in catalog order, used when
@@ -70,6 +71,12 @@ func (w *world) emit(in emitInput) *trace.Scene {
 	for _, i := range idx {
 		s := w.shapes[i]
 		o := trace.SceneShape{ID: idOf[i], Kind: s.kind, End: s.end, HasEnd: s.deleted}
+		if s.node > 0 {
+			o.Node, o.HasNode = value.NodeName(s.node), true
+		}
+		if s.hasMsg {
+			o.Msg, o.HasMsg = s.msg, true
+		}
 		switch s.kind {
 		case trace.KindCircle:
 			o.R = s.r

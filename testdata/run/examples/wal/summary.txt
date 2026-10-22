@@ -85,7 +85,7 @@ steps:
   sim.Changed wal.Table of n1 from {"k1": "1", "k2": "2", "k3": "3", "k4": "4", "k5": "5", "k6": "6", "k7": "7", "k8": "8", "k9": "9"} to {"k1": "1", "k10": "10", "k2": "2", "k3": "3", "k4": "4", "k5": "5", "k6": "6", "k7": "7", "k8": "8", "k9": "9"}
 @3100ms timer main
   sim.Crashed n1
-  sim.Emitted lesson.Asked{Question "The last checkpoint was at 2s. Which writes survive the crash?"} by nobody
+  sim.Emitted lesson.Asked{Question "The last checkpoint was at 2s. Which writes survive the crash?", Choices {"Only the six writes made before the checkpoint", "All ten acknowledged writes: six from the checkpoint, four replayed from the log", "None: memory is lost with the crash", "Every write, including the one sent during the outage"}} by nobody
 @3300ms timer main
   sim.Injected wal.Put{Key "k11", Value "11"} into n1
 @3500ms timer main

@@ -55,7 +55,7 @@ func ignoredInRepo(rel string) bool {
 			return true
 		}
 	}
-	return len(parts) == 1 && (rel == "LICENSE" || rel == "README.md")
+	return len(parts) == 1 && (rel == "LICENSE" || rel == "README.md" || rel == "CHANGELOG.md")
 }
 
 func TestStdDrift(t *testing.T) {

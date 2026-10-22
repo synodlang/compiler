@@ -20,7 +20,7 @@ define main
     sim.Crash victim
   after 12s
     deliver (message cassandra.Write with Key "user:42", Value "Grace") to coordinator
-    lesson.Ask "One replica is down. Does the write succeed, and how will that replica catch up?"
+    lesson.Ask "One replica is down. Does the write succeed, and how will that replica catch up?" choosing {"It fails until the replica returns", "It succeeds; a hint replays it when the replica returns", "It succeeds, but the replica never gets it"}
   after 14s
     deliver (message cassandra.Read with Key "user:42") to (item 2 of replicas)
   after 18s

@@ -334,8 +334,8 @@ func (b *builder) lookFault(f *value.Fault) {
 
 // markFact adds the markers fact f raises.
 func (b *builder) markFact(f *trace.Fact, seq int, at int64) {
-	add := func(kind, text string) {
-		b.markers = append(b.markers, trace.Marker{At: at, Seq: seq, Kind: kind, Text: text})
+	add := func(kind, text string, choices ...string) {
+		b.markers = append(b.markers, trace.Marker{At: at, Seq: seq, Kind: kind, Text: text, Choices: choices})
 	}
 	switch f.Ev {
 	case "sim.Emitted":
@@ -354,7 +354,11 @@ func (b *builder) markFact(f *trace.Fact, seq int, at int64) {
 		}
 		for i, fl := range r.Type.Fields {
 			if fl.Name == field && r.Fields[i].K == value.KText {
-				add(kind, r.Fields[i].Str)
+				var choices []string
+				if kind == "pause" {
+					choices = askedChoices(r)
+				}
+				add(kind, r.Fields[i].Str, choices...)
 			}
 		}
 	case "sim.Broken":
@@ -380,4 +384,19 @@ func (b *builder) finish() *trace.Scene {
 	last := b.clock.now()
 	b.world.finalize(last)
 	return b.world.emit(emitInput{Slots: b.slots, Markers: b.markers, Cursor: last, Hex: b.colorHex})
+}
+
+// askedChoices returns the texts in the Choices field of an Asked record.
+func askedChoices(r *value.Record) []string {
+	var out []string
+	for i, fl := range r.Type.Fields {
+		if fl.Name == "Choices" && r.Fields[i].K == value.KList {
+			for _, it := range r.Fields[i].List().Items {
+				if it.K == value.KText {
+					out = append(out, it.Str)
+				}
+			}
+		}
+	}
+	return out
 }
