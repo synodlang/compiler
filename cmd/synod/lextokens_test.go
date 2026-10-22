@@ -132,3 +132,67 @@ func TestLexicalSiblingOfBrokenFile(t *testing.T) {
 	}
 	t.Error("sibling gossip.synod not listed")
 }
+
+func tokensOf(t *testing.T, args ...string) (int, map[string]lexFile) {
+	t.Helper()
+	code, out, errs := exec(args...)
+	if errs != "" {
+		t.Fatalf("stderr %q", errs)
+	}
+	var doc struct{ Files []lexFile }
+	if err := json.Unmarshal([]byte(out), &doc); err != nil {
+		t.Fatal(err)
+	}
+	m := map[string]lexFile{}
+	for _, f := range doc.Files {
+		m[f.File] = f
+	}
+	return code, m
+}
+
+func onlyLexical(t *testing.T, f lexFile) {
+	t.Helper()
+	if len(f.Tokens) == 0 {
+		t.Errorf("%s has no tokens", f.File)
+	}
+	for _, tk := range f.Tokens {
+		if tk.Role == "phrase" || tk.Role == "field" || tk.Role == "type" || tk.Def != nil {
+			t.Fatalf("%s:%d:%d is not lexical: %s", f.File, tk.Line, tk.Col, tk.Role)
+		}
+	}
+}
+
+func TestLexicalBrokenMainFile(t *testing.T) {
+	for name, edit := range map[string]string{"parse": "x (\n", "lex": "\tx\n"} {
+		t.Run(name, func(t *testing.T) { brokenMain(t, name, edit) })
+	}
+}
+
+func brokenMain(t *testing.T, name, edit string) {
+	{
+		gossipDir(t)
+		write(t, "gossip/demo.synod", read(t, "gossip/demo.synod")+edit)
+		code, files := tokensOf(t, "check", "--json", "--tokens", "gossip")
+		if code != 1 {
+			t.Fatalf("%s: code=%d", name, code)
+		}
+		for _, f := range []string{"gossip/demo.synod", "gossip/gossip.synod"} {
+			got, ok := files[f]
+			if !ok {
+				t.Fatalf("%s: %s not listed", name, f)
+			}
+			onlyLexical(t, got)
+		}
+	}
+}
+
+func TestLexicalExtraMainFile(t *testing.T) {
+	gossipDir(t)
+	write(t, "gossip/second.synod", "# package main\ndefine main\n  sim.Seed 1\n")
+	_, files := tokensOf(t, "check", "--json", "--tokens", "gossip")
+	got, ok := files["gossip/second.synod"]
+	if !ok {
+		t.Fatal("extra main file not listed")
+	}
+	onlyLexical(t, got)
+}

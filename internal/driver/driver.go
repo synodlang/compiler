@@ -89,6 +89,13 @@ func Check(opts Options, targets []string) Result {
 	if opts.Tokens {
 		res.Tokens = map[string][]resolve.Token{}
 	}
+	if opts.Tokens {
+		// Main files after the first of a folder are not resolved; they get
+		// lexical tokens like the files of a broken package.
+		for _, f := range g.Extra {
+			res.Tokens[f.Src.Path] = resolve.LexicalTokens(f.Src)
+		}
+	}
 	for _, lp := range g.Packages {
 		if lp.Broken {
 			if opts.Tokens && !lp.IsStd {
