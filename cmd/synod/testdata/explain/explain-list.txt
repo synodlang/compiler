@@ -1,0 +1,38 @@
+syntax  The structure grammar cannot parse the line.
+indent  The indentation of a line is wrong.
+non-canonical  The code can be read but is not written in canonical form.
+bad-header  The file's package header is missing or wrong.
+unknown-phrase  No phrase matches the sentence by its shape.
+ambiguous-phrase  More than one phrase matches the sentence by its shape.
+duplicate-name  A name is defined twice in one namespace.
+shadowing  A name hides another name that is already in scope.
+reserved-word  A reserved word is used as a name or a head.
+bad-pattern  A `define` or `when` pattern breaks the pattern rules.
+bad-receiver  A receiver is of the wrong type or in the wrong place.
+bad-place  `set` targets something that cannot be set.
+type-mismatch  A value has a type that is not accepted where it is used.
+ambiguous-empty  The type of `{}` cannot be told.
+missing-result  A value phrase has a path that does not reach `result`.
+value-as-statement  A phrase that gives a value stands where a statement is expected.
+action-as-value  A phrase that gives no value is used as a value.
+unexported  A lower-case name from another package is used.
+unused-name  A local or `each` name is never read.
+unused-import  An import is never used.
+unneeded-alias  `use … as` is written where there is no collision.
+unknown-import  An import path does not name a library package.
+import-cycle  Packages import each other in a circle.
+missing-main  A main file has no `define main`, or `synod run` finds no main file.
+extra-main  A folder has more than one `define main`, or `define main` is in a library file.
+context  A statement is not allowed in the context it runs in.
+foreign-state  Node code reaches another node's state.
+color-literal  A color literal stands where only a named color is allowed.
+native-outside-std  `native` is used outside `std/`.
+missing-key  A map was asked for a key it does not hold.
+index-range  A list index is not a whole number from 0 up to one less than the size of the list.
+disk-type  A value read from a node's disk does not have the type of the default given to `disk.Read`.
+division-by-zero  A number or a time was divided by zero.
+nobody  `sim.Nobody` was used where a node is needed.
+time-limit  The next event is later than 10 minutes of simulated time.
+bad-argument  An argument is outside the domain of the phrase that received it.
+number-range  A calculation gave a number that is not finite, or a time that does not fit in 64 bits.
+run-limit  The run exceeded one of the limits that keep a program from running forever.

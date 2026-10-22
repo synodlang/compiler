@@ -1,0 +1,36 @@
+unknown-phrase: No phrase matches the sentence by its shape.
+
+A sentence matches a phrase when it has the same number of items and the same words in the same places. A hole takes exactly one item, so a sentence of several words must be inside parentheses. If nothing matches, you get `unknown-phrase`. It is also the error for an event phrase that stands outside `when`, a record field that does not exist, and a `message … with` setting of more than two items.
+
+A common cause is a missing pair of parentheses. Here `if` takes one condition, and `n.Role is "leader"` is three items.
+
+Example (p/p.synod):
+    # package p
+    Node has
+      set Role to "follower"
+
+    define [n: Node] Demote
+      if n.Role is "leader"
+        set n.Role to "follower"
+
+synod check says:
+    p/p.synod:6:3: error[unknown-phrase]: no phrase matches "if n.Role is "leader""
+      |
+    6 |   if n.Role is "leader"
+      |   ^^^^^^^^^^^^^^^^^^^^^ no phrase takes these items
+      |      ------------------ 3 items here; "if" takes one condition
+      |
+    help: parenthesize the condition
+      |
+    6 |   if (n.Role is "leader")
+      |      +                  +
+      |
+
+Fix: Parenthesize the condition.
+    # package p
+    Node has
+      set Role to "follower"
+
+    define [n: Node] Demote
+      if (n.Role is "leader")
+        set n.Role to "follower"

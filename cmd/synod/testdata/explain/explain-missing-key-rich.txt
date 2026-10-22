@@ -1,0 +1,33 @@
+missing-key: A map was asked for a key it does not hold.
+
+`item k of m` reads the value stored under the key `k`. The map has to hold that key when the line runs, because Synod has no default value and does not guess one. The run stops at the line that asked.
+
+The same code is raised in a look when `card of n` or `tag of k` names a shape that was never attached to that key.
+
+Example (p/main.synod):
+    # package main
+    use std/sim
+
+    define main
+      set m to {}
+      set item "a" of m to 1s
+      sim.StopAt (item "b" of m)
+
+synod run says:
+    failed at 0s: p/main.synod:7:15: error[missing-key]: key "b" is not in the map
+      |
+    7 |   sim.StopAt (item "b" of m)
+      |               ^^^^^^^^^^^^^
+      |                    --- not in the map
+      |
+      = note: the map has 1 key
+
+Fix: Set the key before reading it.
+    # package main
+    use std/sim
+
+    define main
+      set m to {}
+      set item "a" of m to 1s
+      set item "b" of m to 2s
+      sim.StopAt (item "b" of m)
