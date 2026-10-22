@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/synodlang/compiler/internal/load"
 	"github.com/synodlang/compiler/internal/source"
@@ -391,8 +392,33 @@ func (g *getter) fetch(e *entry, line sumLine, have bool) error {
 		tag = sub + "/" + e.ver
 	}
 	clone := filepath.Join(tmp, "clone")
-	if out, err := g.git("", "clone", "--quiet", "--depth", "1", "--no-tags", "--branch", tag, "--", url, clone); err != nil {
+	// The bytes must be the tag's own on every OS: no CRLF conversion, no
+	// symlink checkout, and no attribute (filter, eol, ident) from the user's
+	// configuration or from the repository itself.
+	if out, err := g.git("", "-c", "core.autocrlf=false", "-c", "core.eol=lf", "-c", "core.symlinks=false", "-c", "core.longpaths=true",
+		"clone", "--quiet", "--depth", "1", "--no-tags", "--no-checkout", "--branch", tag, "--", url, clone); err != nil {
 		return fmt.Errorf("%s: git clone of %s at tag %s failed: %s", key, url, tag, out)
+	}
+	if err := os.MkdirAll(filepath.Join(clone, ".git", "info"), 0o755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(clone, ".git", "info", "attributes"), []byte("* -text -eol -ident -filter\n"), 0o644); err != nil {
+		return err
+	}
+	if out, err := g.git(clone, "-c", "core.autocrlf=false", "-c", "core.eol=lf", "-c", "core.symlinks=false", "-c", "core.longpaths=true",
+		"checkout", "--quiet", "HEAD"); err != nil {
+		return fmt.Errorf("%s: git checkout of tag %s failed: %s", key, tag, out)
+	}
+	// Symbolic links are refused whatever the checkout made of them.
+	listing, err := g.gitRaw(clone, "ls-tree", "-r", "-z", "HEAD")
+	if err != nil {
+		return fmt.Errorf("%s: cannot list tag %s: %v", key, tag, err)
+	}
+	for _, ent := range strings.Split(listing, "\x00") {
+		mode, p, ok := strings.Cut(ent, "\t")
+		if ok && strings.HasPrefix(mode, "120000 ") && (sub == "" || strings.HasPrefix(p, sub+"/")) {
+			return fmt.Errorf("%s: %s is a symbolic link", key, strings.TrimPrefix(p, sub+"/"))
+		}
 	}
 	commit, err := g.git(clone, "rev-parse", "HEAD")
 	if err != nil || !commitRe.MatchString(commit) {
@@ -438,12 +464,19 @@ func (g *getter) fetch(e *entry, line sumLine, have bool) error {
 	if err := writeAtomic(commitFile(e.dir), []byte(commit+"\n")); err != nil {
 		return err
 	}
-	if err := os.Rename(tree, e.dir); err != nil {
+	for i := 0; ; i++ {
+		err = os.Rename(tree, e.dir)
+		if err == nil {
+			break
+		}
 		if _, serr := os.Lstat(e.dir); serr == nil {
-			// Another process stored the entry first; use that one.
+			// Another process stored the entry first; verify and use it.
 			return g.useStored(e, line, have)
 		}
-		return err
+		if i == 8 {
+			return err
+		}
+		time.Sleep(time.Duration(i+1) * 20 * time.Millisecond)
 	}
 	if err := makeReadOnly(e.dir); err != nil {
 		return err
@@ -474,4 +507,13 @@ func (g *getter) git(dir string, args ...string) (string, error) {
 		text = err.Error()
 	}
 	return text, err
+}
+
+// gitRaw is git with the whole output, untrimmed.
+func (g *getter) gitRaw(dir string, args ...string) (string, error) {
+	cmd := exec.Command(g.gitPath, args...)
+	cmd.Dir = dir
+	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
+	out, err := cmd.Output()
+	return string(out), err
 }

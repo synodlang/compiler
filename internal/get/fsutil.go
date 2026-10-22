@@ -1,10 +1,12 @@
 package get
 
 import (
+	"bytes"
 	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // copyFiles writes the files into dst, creating folders (0755) and files
@@ -69,8 +71,18 @@ func forceRemoveAll(path string) error {
 }
 
 // writeAtomic writes data to name through a temporary file in the same
-// folder, so a reader never sees half of it.
+// folder, so a reader never sees half of it. Several processes may write the
+// same file at once: when name already holds data the write is a success,
+// and a rename refused because another process has the file open (Windows)
+// is retried a few times with a short backoff.
 func writeAtomic(name string, data []byte) error {
+	same := func() bool {
+		cur, err := os.ReadFile(name)
+		return err == nil && bytes.Equal(cur, data)
+	}
+	if same() {
+		return nil
+	}
 	tmp, err := os.CreateTemp(filepath.Dir(name), ".tmp-")
 	if err != nil {
 		return err
@@ -82,9 +94,15 @@ func writeAtomic(name string, data []byte) error {
 		return err
 	}
 	_ = os.Chmod(tmp.Name(), 0o644)
-	if err := os.Rename(tmp.Name(), name); err != nil {
-		os.Remove(tmp.Name())
-		return err
+	defer os.Remove(tmp.Name())
+	for i := 0; ; i++ {
+		err = os.Rename(tmp.Name(), name)
+		if err == nil || same() {
+			return nil
+		}
+		if i == 8 {
+			return err
+		}
+		time.Sleep(time.Duration(i+1) * 20 * time.Millisecond)
 	}
-	return nil
 }

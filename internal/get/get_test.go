@@ -441,3 +441,34 @@ func TestSetRequire(t *testing.T) {
 		t.Errorf("got %q", got)
 	}
 }
+
+func TestGetIgnoresUserGitConfig(t *testing.T) {
+	e := newEnv(t)
+	cfg := filepath.Join(e.root, "gitconfig")
+	os.WriteFile(cfg, []byte("[core]\n\tautocrlf = true\n\teol = crlf\n"), 0o644)
+	t.Setenv("GIT_CONFIG_GLOBAL", cfg)
+	files := modFiles("github.com/o/lf")
+	files["pkg/pkg.synod"] = "# package pkg\nA has\n  set X to 1\n"
+	files[".gitattributes"] = "* text eol=crlf\n"
+	e.publish("github.com/o/lf", files, "v1.0.0")
+	dir := e.project("github.com/o/lf v1.0.0")
+	if _, err := run(t, dir, "", ""); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(filepath.Join(dir, "vendor", "github.com", "o", "lf@v1.0.0", "pkg", "pkg.synod"))
+	if string(b) != files["pkg/pkg.synod"] {
+		t.Errorf("bytes changed: %q", b)
+	}
+	// h1 of the committed bytes, computed from a git export that ignores config.
+	exp := filepath.Join(e.root, "export")
+	os.MkdirAll(exp, 0o755)
+	work := filepath.Join(e.root, "work", "github.com", "o", "lf")
+	for name, text := range files {
+		write(t, exp, map[string]string{name: text})
+	}
+	_ = work
+	sum, _ := os.ReadFile(filepath.Join(dir, "synod.sum"))
+	if want := refHash(t, exp, func(rel string) bool { return false }); !strings.Contains(string(sum), want) {
+		t.Errorf("h1 %s not in\n%s", want, sum)
+	}
+}
