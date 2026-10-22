@@ -415,7 +415,7 @@ func TestVersion(t *testing.T) {
 	if v["api"] != 1 || v["language"] != "0.2" || v["error"] != nil || v["exitCode"] != 0 {
 		t.Errorf("%v", v)
 	}
-	if !reflect.DeepEqual(v["formats"], []any{"synod-check/1", "synod-trace/1", "synod-scene/1"}) {
+	if !reflect.DeepEqual(v["formats"], []any{"synod-trace/1", "synod-scene/1", "synod-check/1", "synod-doc/1", "synod-explain/1"}) {
 		t.Errorf("formats %v", v["formats"])
 	}
 	if !strings.HasPrefix(str(t, v, "go"), "go1.") || !strings.Contains(str(t, v, "text"), "compiler "+str(t, v, "compiler")+"\n") {

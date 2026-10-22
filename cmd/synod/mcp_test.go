@@ -220,7 +220,7 @@ func TestMCPToolsMatchCLI(t *testing.T) {
 	}
 }
 
-// doc and explain come from other tasks; skip until they are implemented.
+// doc and explain give the same text as the CLI.
 func TestMCPDocExplain(t *testing.T) {
 	root := examplesRoot(t)
 	c := startMCP(t, root)
@@ -237,9 +237,6 @@ func TestMCPDocExplain(t *testing.T) {
 		tr, rerr := c.tool(tc.name, tc.args)
 		if rerr != nil {
 			t.Fatalf("%s: %+v", tc.name, rerr)
-		}
-		if strings.Contains(tr.Structured.Stderr, "not implemented") {
-			t.Skipf("%s: command not implemented yet (T6 removes this skip)", tc.name)
 		}
 		code, out, errs := cli(t, root, tc.cli...)
 		if tr.Structured.ExitCode != code || tr.Structured.Stdout != out || tr.Structured.Stderr != errs {

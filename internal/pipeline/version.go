@@ -11,7 +11,7 @@ import (
 const Language = "0.2"
 
 // Formats are the document formats the compiler writes.
-var Formats = [...]string{"synod-check/1", "synod-trace/1", "synod-scene/1"}
+var Formats = [...]string{"synod-trace/1", "synod-scene/1", "synod-check/1", "synod-doc/1", "synod-explain/1"}
 
 // pseudoVersion matches Go pseudo-version suffixes: vX.Y.Z-yyyymmddhhmmss-abcdefabcdef,
 // vX.Y.Z-pre.0.yyyymmddhhmmss-abcdefabcdef and vX.Y.(Z+1)-0.yyyymmddhhmmss-abcdefabcdef.

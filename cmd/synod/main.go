@@ -1,5 +1,5 @@
 // Command synod is the Synod compiler command line (implementation/05-cli.md).
-// This milestone implements fmt, check, run and version.
+// It implements new, fmt, check, run, get, doc, explain, mcp and version.
 package main
 
 import (
@@ -18,9 +18,14 @@ var formatFn func(f *source.File) ([]byte, *source.Diagnostic)
 const usage = `usage: synod <command> [arguments]
 
 commands:
+  new <dir> [--module path] [--lib]
   fmt [paths...] [--check] [--style rich|short] [--color auto|always|never]
   check [paths...] [--json] [--tokens] [--overlay file] [--style rich|short] [--color auto|always|never]
-  run <folder> [--seed n] [--trace file] [--scene file] [--pace x] [--mode m] [--summary] [--style rich|short] [--color auto|always|never]
+  run <folder> [--seed n] [--trace file] [--scene file] [--pace x] [--mode ordered|proportional] [--summary] [--style rich|short] [--color auto|always|never]
+  get [module@version]
+  doc [package] [--json] [--catalog] [--scope file] [--overlay file] [--style rich|short] [--color auto|always|never]
+  explain [code] [--json] [--catalog] [--style rich|short] [--color auto|always|never]
+  mcp [--root dir]
   version
 `
 
@@ -51,9 +56,16 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runRun(rest, stdout, stderr)
 	case "version":
 		return runVersion(rest, stdout, stderr)
-	case "new", "get", "doc", "explain":
-		fmt.Fprintf(stderr, "synod: %s: not implemented yet\n", cmd)
-		return exitUsage
+	case "new":
+		return runNew(rest, stdout, stderr)
+	case "get":
+		return runGet(rest, stdout, stderr)
+	case "doc":
+		return runDoc(rest, stdout, stderr)
+	case "explain":
+		return runExplain(rest, stdout, stderr)
+	case "mcp":
+		return runMCP(rest, stdin, stdout, stderr)
 	case "help", "-h", "--help":
 		fmt.Fprint(stdout, usage)
 		return exitOK

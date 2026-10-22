@@ -372,7 +372,7 @@ func TestRunInternalError(t *testing.T) {
 
 func TestRunUsageListsRun(t *testing.T) {
 	code, stdout, _ := exec("help")
-	if code != 0 || !strings.Contains(stdout, "run <folder> [--seed n] [--trace file] [--scene file] [--pace x] [--mode m] [--summary]") {
+	if code != 0 || !strings.Contains(stdout, "run <folder> [--seed n] [--trace file] [--scene file] [--pace x] [--mode ordered|proportional] [--summary]") {
 		t.Errorf("usage %q", stdout)
 	}
 }
