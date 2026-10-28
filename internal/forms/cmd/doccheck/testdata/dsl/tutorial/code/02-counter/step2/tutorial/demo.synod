@@ -1,0 +1,9 @@
+# package main
+use example.com/tutorial/tutorial
+use std/sim
+
+define main
+  set first to (sim.Spawn tutorial)
+  after 3s
+    sim.Crash first
+  sim.StopAt 6s

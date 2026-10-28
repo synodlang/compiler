@@ -1,0 +1,19 @@
+run example.com/tutorial/tutorial seed 1
+end: empty at 3s, 1 node, 5 steps, 9 events
+steps:
+@0s main
+  sim.Started
+  sim.Added n1 runs tutorial: tutorial.Count 0
+@0s start n1
+  sim.Changed tutorial.Count of n1 from 0 to 1
+@1s timer n1
+  sim.Fired n1
+  sim.Changed tutorial.Count of n1 from 1 to 2
+@2s timer n1
+  sim.Fired n1
+  sim.Changed tutorial.Count of n1 from 2 to 3
+@3s timer main
+  sim.Crashed n1
+  sim.Ended empty
+final:
+  n1 down  tutorial.Count 3

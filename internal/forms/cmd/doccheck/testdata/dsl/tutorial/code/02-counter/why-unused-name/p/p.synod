@@ -1,0 +1,6 @@
+# package main
+use std/lesson
+
+define main
+  set x to 1
+  lesson.Note "Hi"

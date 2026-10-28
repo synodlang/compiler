@@ -5,6 +5,20 @@ section is the text of its GitHub release page.
 
 ## Unreleased
 
+Implements Synod 0.2. The documentation is now checked against the compiler, and `synod get` downloads are byte-exact.
+
+### Added
+
+- `internal/forms` and `internal/forms/cmd/doccheck` (not linked into `synod` or `synod.wasm`): the catalog of the forms of `spec/02`, the types of `spec/04`, the contexts of `spec/05` and the std packages, checked against the spec text, and `doccheck`, which checks the tutorial and the Library examples of `dsl` (decisions 104 and 105): coverage, order of introduction, `synod new` and `examples/raft` copies, golden summaries, "why" programs and one runnable example per std phrase. A `docs` job in CI runs it once the pinned `dsl` has a tutorial.
+
+### Changed
+
+- `synod explain --json`: `example.files` holds every file the example is checked or run with, the implied `synod.mod` included (decision 111). The text form, `--catalog` and the MCP tool are unchanged.
+
+### Fixed
+
+- `synod get` checks out modules byte for byte (no line-ending, filter or attribute conversion), refuses symbolic links by tree mode and tolerates two `synod get` processes racing on the store.
+
 ## v0.2.6 — 2026-10-22
 
 Implements Synod 0.2. Tools for people and agents: `synod doc` and `synod explain` answer questions from the command line, `synod new` and `synod get` start a module and fetch what it requires, and `synod mcp` serves the lot to agents that have no shell.

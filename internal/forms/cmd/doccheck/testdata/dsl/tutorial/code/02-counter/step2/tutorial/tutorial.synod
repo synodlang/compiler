@@ -1,0 +1,10 @@
+# package tutorial
+use std/time
+
+Node has
+  set Count to 0
+
+# Count up once a second
+define [n: Node] start
+  time.Every 1s
+    set n.Count to (n.Count plus 2)

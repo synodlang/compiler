@@ -1,0 +1,10 @@
+# package ticker
+use std/time
+
+Node has
+  set Last to 0s
+
+# Remember when each tick happened
+define [n: Node] start
+  time.Every 1s
+    set n.Last to time.Now

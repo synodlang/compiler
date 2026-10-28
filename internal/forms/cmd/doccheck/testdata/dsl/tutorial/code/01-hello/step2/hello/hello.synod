@@ -1,0 +1,7 @@
+# package main
+use std/lesson
+
+# Say hello twice
+define main
+  lesson.Note "Hello"
+  lesson.Note "Hello again"

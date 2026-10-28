@@ -1,0 +1,8 @@
+run hello seed 1
+end: empty at 0s, 0 nodes, 1 step, 3 events
+steps:
+@0s main
+  sim.Started
+  sim.Emitted lesson.Noted{Text "Hello"} by nobody
+  sim.Ended empty
+final:

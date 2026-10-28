@@ -1,0 +1,6 @@
+# package main
+use std/lesson
+use std/text
+
+define main
+  lesson.Note (text.From (1 divided by 0))

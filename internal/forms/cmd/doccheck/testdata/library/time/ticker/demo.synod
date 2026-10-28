@@ -1,0 +1,9 @@
+# package main
+use example.com/library/time/ticker
+use std/sim
+
+define main
+  set first to (sim.Spawn ticker)
+  after 2s
+    sim.Crash first
+  sim.StopAt 3s

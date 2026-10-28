@@ -116,6 +116,49 @@ jobs:
           SYNOD_DSL: ${{ github.workspace }}/_dsl
           SYNOD_REQUIRE_DSL: "1"
 
+  docs:
+    # Inert until the pinned dsl has a tutorial (it has from v0.2.14): the
+    # steps below are skipped while _dsl/tutorial/coverage.md is absent.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: synodlang/dsl
+          ref: v0.2.10
+          path: _dsl
+      - name: Is there a tutorial to check?
+        id: tutorial
+        run: |
+          if [ -f _dsl/tutorial/coverage.md ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            . _dsl/tutorial/versions.env
+            echo "examples=$EXAMPLES_VERSION" >> "$GITHUB_OUTPUT"
+          else
+            echo "dsl has no tutorial yet; the docs check is skipped"
+          fi
+      - uses: actions/checkout@v7
+        if: steps.tutorial.outputs.present == 'true'
+        with:
+          repository: synodlang/examples
+          ref: ${{ steps.tutorial.outputs.examples }}
+          path: _examples
+      - uses: actions/setup-go@v7
+        if: steps.tutorial.outputs.present == 'true'
+        with:
+          go-version-file: go.mod
+      - name: Build synod
+        if: steps.tutorial.outputs.present == 'true'
+        run: go build -o "$RUNNER_TEMP/synod" ./cmd/synod
+      - name: Tutorial, coverage and Library examples
+        if: steps.tutorial.outputs.present == 'true'
+        run: >
+          go run ./internal/forms/cmd/doccheck
+          -synod "$RUNNER_TEMP/synod"
+          -tutorial _dsl/tutorial
+          -library _dsl/std/examples
+          -examples _examples
+
   wasm:
     runs-on: ubuntu-latest
     env:

@@ -109,7 +109,9 @@ type jsonDoc struct {
 }
 
 // WriteJSON writes the synod-explain/1 document of docs: one compact line
-// ending in a newline. The diagnostic is the short form lines.
+// ending in a newline. The example holds every file it is checked or run
+// with, the implied synod.mod included (decision 111). The diagnostic is the
+// short form lines.
 func WriteJSON(w io.Writer, docs []*Doc) error {
 	out := jsonDoc{Format: jsonFormat, Codes: []jsonCode{}}
 	for _, d := range docs {
@@ -120,7 +122,7 @@ func WriteJSON(w io.Writer, docs []*Doc) error {
 			Diagnostic: d.Diagnostic(pipeline.Style{}),
 			Fix:        jsonFix{Note: e.FixNote, Files: map[string]string{}, Deleted: []string{}},
 		}
-		for _, f := range e.Example {
+		for _, f := range e.ExampleFiles() {
 			c.Example.Files[f.Path] = f.Content
 		}
 		for _, f := range e.FixFiles {
