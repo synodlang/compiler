@@ -174,6 +174,29 @@ func checkCoverage(cfg *config, p *problems) map[string]int {
 	return chapters
 }
 
+// stdRef is the Reference of a package row: "std/README.md § std/net".
+var stdRef = regexp.MustCompile(`^std/README\.md § (std/[a-z]+(?:/[a-z]+)*)$`)
+
+// badStdRef checks that dsl/std/README.md has the heading "## std/net"; the
+// default look std/look/basic is documented inside the section of std/look.
+func badStdRef(cfg *config, pkg string) []string {
+	text, err := os.ReadFile(filepath.Join(cfg.spec, "..", "std", "README.md"))
+	if err != nil {
+		return []string{err.Error()}
+	}
+	heading := pkg
+	if pkg == "std/look/basic" {
+		heading = "std/look"
+		if !strings.Contains(string(text), "`std/look/basic`") {
+			return []string{"std/README.md does not document std/look/basic"}
+		}
+	}
+	if !regexp.MustCompile(`(?m)^## ` + regexp.QuoteMeta(heading) + `\b`).Match(text) {
+		return []string{"std/README.md has no heading ## " + heading}
+	}
+	return nil
+}
+
 var refToken = regexp.MustCompile(`spec/\d+|implementation/\d+|decisions?|\d+(?:\.\d+)?`)
 
 // badRefs returns what is wrong with a Reference cell: "spec/03 §3.3",
@@ -185,6 +208,9 @@ func badRefs(cfg *config, ref string, optional bool) []string {
 			return nil
 		}
 		return []string{"empty"}
+	}
+	if m := stdRef.FindStringSubmatch(ref); m != nil {
+		return badStdRef(cfg, m[1])
 	}
 	var bad []string
 	file, inDecisions, found := "", false, false

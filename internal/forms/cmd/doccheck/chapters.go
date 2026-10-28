@@ -48,14 +48,19 @@ func checkChapters(cfg *config, p *problems) []chapter {
 		out = append(out, chapter{num: num, name: strings.TrimSuffix(e.Name(), ".md")})
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].num < out[j].num })
+	have := map[int]bool{}
+	for _, c := range out {
+		have[c.num] = true
+	}
 	for i := 1; i <= cfg.chapters; i++ {
-		if i > len(out) || out[i-1].num != i {
+		if !have[i] {
 			p.add(cfg.tutorial, "chapter %02d is missing (chapters are NN-slug.md, 01..%02d)", i, cfg.chapters)
-			return out
 		}
 	}
-	if len(out) > cfg.chapters {
-		p.add(cfg.tutorial, "%d chapter files, expected %d", len(out), cfg.chapters)
+	for _, c := range out {
+		if c.num > cfg.chapters {
+			p.add(cfg.tutorial, "chapter %02d is beyond the expected %d", c.num, cfg.chapters)
+		}
 	}
 	for i := range out {
 		checkChapter(cfg, p, &out[i])

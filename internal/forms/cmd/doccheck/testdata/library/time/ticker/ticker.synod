@@ -1,4 +1,5 @@
 # package ticker
+use example.com/library/time/shared
 use std/time
 
 Node has
@@ -6,5 +7,5 @@ Node has
 
 # Remember when each tick happened
 define [n: Node] start
-  time.Every 1s
+  time.Every shared.Step
     set n.Last to time.Now

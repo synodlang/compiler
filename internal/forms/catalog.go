@@ -35,6 +35,10 @@ type Item struct {
 	// Terminals are the quoted terminals of those productions that the form is
 	// spelled with.
 	Terminals []string
+	// Prose marks an item that a chapter explains in prose only, because
+	// user code cannot use it (define native belongs to std, type value to
+	// native patterns): doccheck does not ask for a step that uses it.
+	Prose bool
 }
 
 // Key is the name of the item in coverage.md and in a Uses: "form:main".
@@ -142,6 +146,9 @@ var contextItems = []Item{
 	{ID: "look", Spec: "spec/05 §5.4"},
 }
 
+// proseOnly lists the items that need no step.
+var proseOnly = map[string]bool{"form:define-native": true, "type:value": true}
+
 // Catalog returns every item: the forms, the types, the contexts and the std
 // packages (those of doc.StdPackages, in byte order).
 func Catalog() []Item {
@@ -159,6 +166,9 @@ func Catalog() []Item {
 	sort.Strings(pkgs)
 	for _, path := range pkgs {
 		out = append(out, Item{ID: path, Kind: KindPackage, Spec: "std/README.md"})
+	}
+	for i := range out {
+		out[i].Prose = proseOnly[out[i].Key()]
 	}
 	return out
 }

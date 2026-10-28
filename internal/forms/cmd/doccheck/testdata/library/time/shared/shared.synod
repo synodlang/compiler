@@ -1,0 +1,4 @@
+# package shared
+# The gap between two ticks
+define Step
+  result 1s

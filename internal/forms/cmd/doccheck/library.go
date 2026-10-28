@@ -37,21 +37,34 @@ func checkLibrary(cfg *config, p *problems) {
 	}
 	defer os.RemoveAll(tmp)
 
+	imports := libraryImports(cfg.library)
+
 	// used maps an exported pattern to the examples that use it.
 	used := map[string][]string{}
 	checked := map[string]bool{}
 	for _, pkg := range cfg.stdPackages() {
 		folder := libraryFolder(pkg)
 		var examples []string
+		var helpers []string
 		entries, err := os.ReadDir(filepath.Join(cfg.library, folder))
 		if err != nil {
 			p.add(cfg.library, "no folder %s/ for %s", folder, pkg)
 			continue
 		}
 		for _, e := range entries {
-			if e.IsDir() && !strings.HasPrefix(e.Name(), ".") && len(synodFolders(filepath.Join(cfg.library, folder, e.Name()))) > 0 {
-				examples = append(examples, folder+"/"+e.Name())
+			if !e.IsDir() || strings.HasPrefix(e.Name(), ".") {
+				continue
 			}
+			dir := filepath.Join(cfg.library, folder, e.Name())
+			switch {
+			case hasMain(dir):
+				examples = append(examples, folder+"/"+e.Name())
+			case len(synodFolders(dir)) > 0:
+				helpers = append(helpers, folder+"/"+e.Name())
+			}
+		}
+		for _, h := range helpers {
+			checkHelper(cfg, p, tmp, h, imports)
 		}
 		exported := map[string]bool{}
 		for _, ph := range phrases[pkg] {
@@ -165,4 +178,54 @@ func checkExample(cfg *config, p *problems, tmp, ex string) *forms.Uses {
 		return nil
 	}
 	return u
+}
+
+// hasMain reports that dir holds a main file: a .synod file with the header
+// "# package main". A folder without one is a helper package.
+func hasMain(dir string) bool {
+	files, _ := filepath.Glob(filepath.Join(dir, "*.synod"))
+	for _, f := range files {
+		b, err := os.ReadFile(f)
+		if err == nil && strings.HasPrefix(string(b), "# package main\n") {
+			return true
+		}
+	}
+	return false
+}
+
+var useLine = regexp.MustCompile(`(?m)^use (\S+)`)
+
+// libraryImports returns the import paths used by the .synod files of the
+// library, relative to its module path ("look/pingpong").
+func libraryImports(lib string) map[string]bool {
+	out := map[string]bool{}
+	mod := ""
+	if b, err := os.ReadFile(filepath.Join(lib, "synod.mod")); err == nil {
+		if m := regexp.MustCompile(`(?m)^module (\S+)`).FindStringSubmatch(string(b)); m != nil {
+			mod = m[1]
+		}
+	}
+	filepath.WalkDir(lib, func(path string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.HasSuffix(d.Name(), ".synod") {
+			return nil
+		}
+		b, _ := os.ReadFile(path)
+		for _, m := range useLine.FindAllStringSubmatch(string(b), -1) {
+			if rel, ok := strings.CutPrefix(m[1], mod+"/"); ok && mod != "" {
+				out[rel] = true
+			}
+		}
+		return nil
+	})
+	return out
+}
+
+// checkHelper checks a helper package of the Library, a folder without a main
+// file: it must pass fmt and check and some example of the module imports it.
+func checkHelper(cfg *config, p *problems, tmp, h string, imports map[string]bool) {
+	where := filepath.Join(cfg.library, filepath.FromSlash(h))
+	lintFolder(cfg, p, where, tmp, h)
+	if !imports[h] {
+		p.add(where, "has no main file, so it is a helper package, and no example imports it")
+	}
 }

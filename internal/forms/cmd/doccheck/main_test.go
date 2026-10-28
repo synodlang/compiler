@@ -157,6 +157,35 @@ func TestBadRows(t *testing.T) {
 	wantProblem(t, cfg.check(false), "no heading 9.9", "chapter 7 is outside 1..2")
 }
 
+func TestTaughtButUnused(t *testing.T) {
+	cfg := tutorialConfig(t)
+	for _, id := range []string{"form:if", "form:define-native"} {
+		edit(t, cfg, "coverage.md", "| `form:plus`", "| `"+id+"` | prose | spec/01 §1.2 | 2 |\n| `form:plus`")
+	}
+	for _, it := range forms.Catalog() {
+		if it.Key() == "form:if" || it.Key() == "form:define-native" {
+			cfg.catalog = append(cfg.catalog, it)
+		}
+	}
+	got := cfg.check(false)
+	wantProblem(t, got, "form:if is taught in chapter 2, but no step of chapter 2 uses it")
+	if strings.Contains(got, "define-native is taught") {
+		t.Errorf("a prose-only item needs no step:\n%s", got)
+	}
+}
+
+func TestStdReference(t *testing.T) {
+	cfg := tutorialConfig(t)
+	cfg.spec = filepath.Join(cfg.tutorial, "..", "spec")
+	good, bad := "std/README.md § std/time", "std/README.md § std/nope"
+	if b := badRefs(cfg, good, false); len(b) > 0 {
+		t.Errorf("%q: %v", good, b)
+	}
+	if b := badRefs(cfg, bad, false); len(b) == 0 {
+		t.Errorf("%q accepted", bad)
+	}
+}
+
 func TestBadPhraseRow(t *testing.T) {
 	cfg := tutorialConfig(t)
 	edit(t, cfg, "coverage.md", "phrase:lesson.Note [t: text]", "phrase:lesson.Nope [t: text]")
@@ -290,6 +319,15 @@ func TestLibraryUnusedPhrase(t *testing.T) {
 	b, _ := os.ReadFile(path)
 	os.WriteFile(path, []byte(strings.Replace(string(b), "time.Now", "1s", 1)), 0o644)
 	wantProblem(t, cfg.checkLibrary(), `no example uses std/time (phrase "time.Now")`)
+}
+
+func TestLibraryHelper(t *testing.T) {
+	cfg := libraryConfig(t)
+	path := filepath.Join(cfg.library, "time/ticker/ticker.synod")
+	b, _ := os.ReadFile(path)
+	text := strings.Replace(string(b), "use example.com/library/time/shared\n", "", 1)
+	os.WriteFile(path, []byte(strings.Replace(text, "shared.Step", "1s", 1)), 0o644)
+	wantProblem(t, cfg.checkLibrary(), "time/shared: has no main file, so it is a helper package, and no example imports it")
 }
 
 func TestLibraryExpect(t *testing.T) {

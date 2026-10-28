@@ -97,26 +97,46 @@ func lintFolder(cfg *config, p *problems, where, tmp, target string) bool {
 	return ok
 }
 
-// checkSteps checks every step: fmt, get, check, the summary golden, and the
-// order of introduction (decision 104).
+// checkSteps checks every step: fmt, get, check, the summary golden, the order
+// of introduction (decision 104), and that every item a chapter teaches is
+// used by one of its steps (prose-only items excepted).
 func checkSteps(cfg *config, p *problems, chapters []chapter, rows map[string]int) {
 	known := map[string]bool{}
 	for _, it := range cfg.catalog {
 		known[it.Key()] = true
 	}
 	for _, ch := range chapters {
+		used := map[string]bool{}
+		whole := len(ch.steps) > 0
 		for _, s := range ch.steps {
-			where := s.dir
 			tmp, err := copyTo(s.dir)
 			if err != nil {
-				p.add(where, "%v", err)
+				p.add(s.dir, "%v", err)
+				whole = false
 				continue
 			}
-			if lintFolder(cfg, p, where, tmp, ".") {
+			if lintFolder(cfg, p, s.dir, tmp, ".") {
 				checkSummary(cfg, p, s, tmp)
-				checkOrder(p, ch, s, tmp, known, rows)
+				u := checkOrder(p, ch, s, tmp, known, rows)
+				if u == nil {
+					whole = false
+				} else {
+					for _, k := range u.Keys() {
+						used[k] = true
+					}
+				}
+			} else {
+				whole = false
 			}
 			os.RemoveAll(tmp)
+		}
+		if !whole {
+			continue
+		}
+		for _, it := range cfg.catalog {
+			if c, ok := rows[it.Key()]; ok && c == ch.num && !it.Prose && !used[it.Key()] {
+				p.add(filepath.Join(cfg.tutorial, "coverage.md"), "%s is taught in chapter %d, but no step of chapter %d uses it", it.Key(), ch.num, ch.num)
+			}
 		}
 	}
 }
@@ -142,13 +162,13 @@ func checkSummary(cfg *config, p *problems, s step, tmp string) {
 	}
 }
 
-// checkOrder fails when step s of chapter ch uses an item that a later
+// checkOrder returns the uses of step s and fails when step s of chapter ch uses an item that a later
 // chapter introduces.
-func checkOrder(p *problems, ch chapter, s step, tmp string, known map[string]bool, rows map[string]int) {
+func checkOrder(p *problems, ch chapter, s step, tmp string, known map[string]bool, rows map[string]int) *forms.Uses {
 	u, diags, err := forms.AnalyzeDir(tmp)
 	if err != nil || u == nil {
 		p.add(s.dir, "usage analysis failed: %v %d diagnostics", err, len(diags))
-		return
+		return nil
 	}
 	for _, k := range u.Keys() {
 		if known[k] {
@@ -162,6 +182,7 @@ func checkOrder(p *problems, ch chapter, s step, tmp string, known map[string]bo
 			p.add(s.dir, "chapter %d uses the phrase %q, which chapter %d introduces", ch.num, pat, c)
 		}
 	}
+	return u
 }
 
 // checkWhys checks that each why program fails with the code in expect.
