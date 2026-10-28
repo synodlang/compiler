@@ -1,0 +1,23 @@
+# package lk
+use std/look
+use std/net
+use std/sim
+
+when sim.Started
+  look.Layout "row"
+
+when (sim.Added n)
+  draw (look.Card for n) as card for n
+
+when (net.Sent m from a to b)
+  look.Effect "glow" on (card of a)
+  look.Effect "indicate" on (card of a)
+
+when (net.Arrived m from a to b)
+  look.Effect "flash" on (card of b)
+  after 100ms
+    look.Effect "ripple" on (card of b)
+  after 200ms
+    look.Effect "circumscribe" on (card of b)
+  after 300ms
+    look.Effect "sweep" on (card of b)

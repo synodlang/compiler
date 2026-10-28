@@ -1,0 +1,26 @@
+# package lk
+use std/look
+use std/net
+use std/sim
+use std/theme
+
+when sim.Started
+  look.Layout "row"
+
+when (sim.Added n)
+  draw (look.Card for n) as card for n
+  look.Reveal (card of n)
+  draw (look.Label (sim.Name n)) as tag for "tag"
+  look.Place tag below (card of n)
+  look.PopIn tag
+
+when (net.Sent m from a to b)
+  draw (look.Circle 5) as ball
+  look.Fill ball with theme.Accent
+  look.Tween "halo" of ball to 1 over 200ms
+  look.Tween "draw" of ball to 0 over 0s
+  look.Tween "draw" of ball to 1 over 300ms
+  look.Travel ball from (card of a) to (card of b) over 400ms
+  draw (look.Line from (card of a) to (card of b)) as link
+  look.Reveal link
+  look.Tween "halo" of (card of b) to 0.5 over 100ms

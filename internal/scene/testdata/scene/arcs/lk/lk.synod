@@ -1,0 +1,25 @@
+# package lk
+use std/look
+use std/net
+use std/sim
+
+when sim.Started
+  look.Layout "row"
+
+when (sim.Added n)
+  draw (look.Card for n) as card for n
+
+when (net.Sent m from a to b)
+  draw (look.Circle 5) as ball
+  look.Bend ball by 0.25
+  look.Trail ball for 240ms
+  look.Dash ball on 4 off 2
+  look.Flight ball from (card of a) to (card of b) for m
+  draw (look.Circle 3) as other
+  look.Bend other by 0.25
+  look.Bend other by 0
+  look.Dash other on 0 off 5
+  look.Travel other from (card of a) to (card of b) over 400ms
+
+when (net.Arrived m from a to b)
+  look.Dash (card of b) on 6 off 3

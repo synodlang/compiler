@@ -21,7 +21,6 @@ const (
 	MinFlight       = 400   // ms: a landing is this long after its send
 	MinStep         = 30    // ms: least distance between successive slots
 	Morph           = 300   // ms: morph and fade duration
-	EffectLen       = 600   // ms: length of an effect
 	TimerTail       = 2000  // ms: timers run this long after the last fact
 	ProportionalLen = 30000 // ms: length of a proportional scene
 	CanvasW         = 1600
@@ -32,7 +31,6 @@ const (
 	PlaceGap        = 8.0
 	LabelCharW      = 8.0
 	LabelH          = 18.0
-	RectRadius      = 12.0
 )
 
 // rnd rounds a computed number to 0.01 and never returns -0.
@@ -122,7 +120,10 @@ func cosTurn(f float64) float64 { _, c := sinCosTurn(f); return c }
 
 // orbitPoint is the point at fraction f of a turn on the circle of radius
 // OrbitRadius around (cx, cy); 0 is 12 o'clock, clockwise. Rounded to 0.01.
-func orbitPoint(cx, cy, f float64) (x, y float64) {
+func orbitPoint(cx, cy, f float64) (x, y float64) { return orbitPointR(cx, cy, f, OrbitRadius) }
+
+// orbitPointR is orbitPoint on a circle of the given radius.
+func orbitPointR(cx, cy, f, radius float64) (x, y float64) {
 	s, c := sinCosTurn(f)
-	return rnd(cx + float64(OrbitRadius*s)), rnd(cy - float64(OrbitRadius*c))
+	return rnd(cx + float64(radius*s)), rnd(cy - float64(radius*c))
 }

@@ -26,7 +26,7 @@ func desc(ks []trace.Key) string {
 	var parts []string
 	for _, k := range ks {
 		var f []string
-		n := func(name string, bit uint16, v float64) {
+		n := func(name string, bit uint32, v float64) {
 			if k.Set&bit != 0 {
 				f = append(f, fmt.Sprintf("%s=%s", name, value.FormatNumber(v)))
 			}
@@ -36,7 +36,7 @@ func desc(ks []trace.Key) string {
 		n("s", trace.PScale, k.Scale)
 		n("o", trace.POpacity, k.Opacity)
 		n("r", trace.PRotation, k.Rotation)
-		str := func(name string, bit uint16, v string) {
+		str := func(name string, bit uint32, v string) {
 			if k.Set&bit != 0 {
 				f = append(f, name+"="+v)
 			}
@@ -179,7 +179,7 @@ func TestTweenValidation(t *testing.T) {
 	w := newTW(1000)
 	s := w.mk(t, trace.KindCircle, 0)
 	for _, tc := range []struct {
-		p uint16
+		p uint32
 		v pv
 		d int64
 	}{

@@ -109,3 +109,50 @@ func TestRuleText(t *testing.T) {
 		t.Fatal(got)
 	}
 }
+
+func TestEncodeSceneV3(t *testing.T) {
+	st := DefaultStyle()
+	st.Sketch, st.Easing = 1, "spring"
+	s := &Scene{
+		Duration: 900,
+		Theme:    []ThemeColor{{"Paper", "#fff"}, {"Message2", "#7FB2F0"}},
+		Style:    &st,
+		Shapes: []SceneShape{
+			{ID: "s000000000001", Kind: KindIcon, Keys: []Key{
+				{At: 0, Set: PX | PY | POpacity | PStroke | PIcon | PDraw | PHalo, X: 1, Y: 2, Opacity: 1, Stroke: "Ink", Icon: "mail", Draw: 0.5, Halo: 1},
+				{At: 100, Set: PIcon | PCurve | PTrail | PDash | PRole | PFace | PCount, Icon: "cross", Curve: -0.25, Trail: 240, DashOn: 4, DashOff: 2, Role: "caption", Face: "mono", Count: 7},
+				{At: 200, Set: PDash},
+			}},
+			{ID: "s000000000002", Kind: KindCounter, Keys: []Key{{At: 0, Set: PCount, Count: 3}}},
+		},
+		Camera: []CameraKey{{At: 0, X: 800, Y: 500, Zoom: 1.5}, {At: 500, X: 100, Y: 200.5, Zoom: 2}},
+	}
+	want := `{"format":"synod-scene/1","duration":900,"canvas":{"w":1600,"h":1000},"theme":{"Paper":"#fff","Message2":"#7FB2F0"},"style":{"sketch":1,"easing":"spring"},"shapes":[
+{"id":"s000000000001","kind":"icon","props":{"size":32},"keys":[{"at":0,"x":1,"y":2,"opacity":1,"stroke":"Ink","draw":0.5,"halo":1,"icon":"mail"},{"at":100,"curve":-0.25,"trail":240,"dash":[4,2],"icon":"cross","count":7,"role":"caption","face":"mono"},{"at":200,"dash":[]}]},
+{"id":"s000000000002","kind":"counter","props":{},"keys":[{"at":0,"count":3}]}
+],"markers":[],"camera":[
+{"at":0,"x":800,"y":500,"zoom":1.5},
+{"at":500,"x":100,"y":200.5,"zoom":2}
+],"trace":[]}
+`
+	if got := encScene(t, s); got != want {
+		t.Fatalf("got:\n%s\nwant:\n%s", got, want)
+	}
+	// the default style is not written
+	d := DefaultStyle()
+	got := encScene(t, &Scene{Style: &d})
+	if strings.Contains(got, "style") {
+		t.Errorf("default style written: %s", got)
+	}
+	nan := math.NaN()
+	for _, c := range []*Scene{
+		{Camera: []CameraKey{{Zoom: nan}}},
+		{Shapes: []SceneShape{{ID: "a", Kind: KindIcon, Keys: []Key{{Set: PDraw, Draw: nan}}}}},
+		{Style: &Style{Sketch: nan}},
+	} {
+		var b bytes.Buffer
+		if err := EncodeScene(&b, c); err == nil {
+			t.Errorf("NaN accepted in %+v", c)
+		}
+	}
+}

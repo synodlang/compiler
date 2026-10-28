@@ -1,6 +1,8 @@
 package scene
 
 import (
+	"math"
+
 	"github.com/synodlang/compiler/internal/ir"
 	"github.com/synodlang/compiler/internal/natives"
 	"github.com/synodlang/compiler/internal/rng"
@@ -38,6 +40,15 @@ func init() {
 	Table["look.orbit"] = lookOrbit
 	Table["look.flight"] = lookFlight
 	Table["look.delete"] = lookDelete
+	Table["look.icon"] = lookIcon
+	Table["look.counter"] = lookCounter
+	Table["look.role"] = lookRole
+	Table["look.face"] = lookFace
+	Table["look.dash"] = lookDash
+	Table["look.bend"] = lookBend
+	Table["look.trail"] = lookTrail
+	Table["look.focus"] = lookFocus
+	Table["look.messageColor"] = lookMessageColor
 	Table["sim.stateRows"] = simStateRows
 	Table["net.id"] = netID
 	Table["net.type"] = netType
@@ -113,16 +124,17 @@ func lookCenter(b *builder, c *ir.Call, args []value.Value) (value.Value, *value
 	return value.Shape(i), nil
 }
 
-func lookPaint(p uint16) Func {
+func lookPaint(p uint32) Func {
 	return func(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 		return value.Value{}, b.wf(b.world.set(int(args[0].Int), p, pv{S: args[1].Str}, b.now), c)
 	}
 }
 
 // props are the property names look.Tween accepts.
-var props = map[string]uint16{
+var props = map[string]uint32{
 	"x": trace.PX, "y": trace.PY, "scale": trace.PScale, "opacity": trace.POpacity,
 	"rotation": trace.PRotation, "fill": trace.PFill, "stroke": trace.PStroke, "text": trace.PText,
+	"draw": trace.PDraw, "halo": trace.PHalo, "icon": trace.PIcon, "count": trace.PCount,
 }
 
 // ms converts a time in microseconds to presentation milliseconds at the
@@ -139,7 +151,7 @@ func lookTween(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.
 	p, ok := props[args[0].Str]
 	if !ok {
 		return value.Value{}, badArgument(c, "look.Tween has no property %q", args[0].Str).
-			WithLabel("use x, y, scale, opacity, rotation, fill, stroke or text")
+			WithLabel("use x, y, scale, opacity, rotation, fill, stroke, text, draw, halo, icon or count")
 	}
 	s := int(args[1].Int)
 	v := args[2]
@@ -163,7 +175,7 @@ func lookTween(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.
 			return value.Value{}, badArgument(c, "Tween of %q needs a color", args[0].Str)
 		}
 		to.S = v.Str
-	case trace.PText:
+	case trace.PText, trace.PIcon:
 		if v.K != value.KText {
 			return value.Value{}, badArgument(c, "Tween of %q needs a text", args[0].Str)
 		}
@@ -178,11 +190,6 @@ func lookTween(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.
 }
 
 func lookEffect(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
-	switch args[0].Str {
-	case "glow", "blur", "trail":
-	default:
-		return value.Value{}, badArgument(c, "look.Effect needs \"glow\", \"blur\" or \"trail\", not %q", args[0].Str)
-	}
 	return value.Value{}, b.wf(b.world.effect(int(args[1].Int), args[0].Str, b.now), c)
 }
 
@@ -312,4 +319,88 @@ func (h *lookHost) DiskWrite(int, string, value.Value, types.Type) {
 }
 func (h *lookHost) DiskRead(int, string) (value.Value, types.Type, bool) {
 	panic(bug("DiskRead"))
+}
+
+func lookIcon(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
+	return lookShape(b, c, shapeSpec{Kind: trace.KindIcon, Text: args[0].Str})
+}
+
+func lookCounter(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
+	if args[0].Num < 0 {
+		return value.Value{}, badArgument(c, "a counter cannot show a negative number")
+	}
+	// the whole number nearest v (halves round up, as the readers do)
+	return lookShape(b, c, shapeSpec{Kind: trace.KindCounter, Count: math.Floor(args[0].Num + 0.5)})
+}
+
+func lookRole(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
+	switch args[1].Str {
+	case "title", "label", "value", "caption":
+	default:
+		return value.Value{}, badArgument(c, "look.Role needs \"title\", \"label\", \"value\" or \"caption\", not %q", args[1].Str)
+	}
+	return value.Value{}, b.wf(b.world.setStep(int(args[0].Int), trace.PRole, pv{S: args[1].Str}, b.now), c)
+}
+
+func lookFace(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
+	switch args[1].Str {
+	case "sans", "mono":
+	default:
+		return value.Value{}, badArgument(c, "look.Face needs \"sans\" or \"mono\", not %q", args[1].Str)
+	}
+	return value.Value{}, b.wf(b.world.setStep(int(args[0].Int), trace.PFace, pv{S: args[1].Str}, b.now), c)
+}
+
+func lookDash(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
+	on, off := args[1].Num, args[2].Num
+	if !finite(on) || !finite(off) || on < 0 || off < 0 {
+		return value.Value{}, badArgument(c, "a dash length cannot be negative")
+	}
+	if on == 0 {
+		off = 0 // solid: the empty list
+	}
+	return value.Value{}, b.wf(b.world.setStep(int(args[0].Int), trace.PDash, pv{N: on, M: off}, b.now), c)
+}
+
+func lookBend(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
+	v := args[1].Num
+	if !finite(v) || v < -1 || v > 1 {
+		return value.Value{}, badArgument(c, "look.Bend needs a bend between -1 and 1")
+	}
+	return value.Value{}, b.wf(b.world.setStep(int(args[0].Int), trace.PCurve, pv{N: v}, b.now), c)
+}
+
+func lookTrail(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
+	us := args[1].Int
+	if us < 0 || us > 2_000_000 {
+		return value.Value{}, badArgument(c, "look.Trail needs a duration from 0s to 2s")
+	}
+	return value.Value{}, b.wf(b.world.setStep(int(args[0].Int), trace.PTrail, pv{N: float64(b.ms(us))}, b.now), c)
+}
+
+func lookFocus(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
+	z := args[1].Num
+	if !finite(z) || z < 0.5 || z > 4 {
+		return value.Value{}, badArgument(c, "look.Focus needs a zoom between 0.5 and 4")
+	}
+	if args[2].Int < 0 {
+		return value.Value{}, badArgument(c, "a duration cannot be negative")
+	}
+	s := int(args[0].Int)
+	if !b.world.live(s) {
+		return value.Value{}, nil
+	}
+	x, y := b.world.worldPos(s, b.now)
+	return value.Value{}, b.wf(b.world.focus(x, y, z, b.now, b.ms(args[2].Int)), c)
+}
+
+// lookMessageColor is look.MessageColor: Message1 to Message4 by the hash of
+// the record type name of the message, as the trace writes it.
+func lookMessageColor(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
+	t := args[0].Record().Type
+	name := messageColorName(b.qual(t.Pkg) + "." + t.Name)
+	if _, ok := b.hexes[name]; !ok {
+		b.hexes[name] = b.th.color(name)
+	}
+	return value.Color(name), nil
 }

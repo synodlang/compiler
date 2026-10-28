@@ -41,11 +41,16 @@ func (w *world) cards(st *store) []int {
 	return out
 }
 
-// slotPos is the position of member i of n in the layout kind.
-func slotPos(kind string, i, n int) (x, y float64) {
+// slotPos is the position of member i of n in the layout kind at layout
+// scale 1.
+func slotPos(kind string, i, n int) (x, y float64) { return slotPosF(kind, i, n, 1) }
+
+// slotPosF is slotPos with the layout scale f (theme.Fill): the ring radius
+// and the spacing of rows and grids are multiplied by f.
+func slotPosF(kind string, i, n int, f float64) (x, y float64) {
 	switch kind {
 	case "row":
-		return rnd(CenterX + float64(float64(2*i-(n-1))*80)), CenterY
+		return rnd(CenterX + float64(float64(2*i-(n-1))*float64(80*f))), CenterY
 	case "grid":
 		c := 1
 		for c*c < n {
@@ -53,10 +58,10 @@ func slotPos(kind string, i, n int) (x, y float64) {
 		}
 		r := (n + c - 1) / c
 		col, row := i%c, i/c
-		return rnd(CenterX + float64(float64(2*col-(c-1))*100)),
-			rnd(CenterY + float64(float64(2*row-(r-1))*80))
+		return rnd(CenterX + float64(float64(2*col-(c-1))*float64(100*f))),
+			rnd(CenterY + float64(float64(2*row-(r-1))*float64(80*f)))
 	}
-	return orbitPoint(CenterX, CenterY, float64(i)/float64(n))
+	return orbitPointR(CenterX, CenterY, float64(i)/float64(n), float64(OrbitRadius*f))
 }
 
 // reflow arranges the node cards for the current layout. Call it after each
@@ -72,7 +77,7 @@ func (w *world) reflow(now int64, st *store) error {
 	w.memberSeen = st.memberVer
 	ms := w.cards(st)
 	for k, i := range ms {
-		x, y := slotPos(w.layout, k, len(ms))
+		x, y := slotPosF(w.layout, k, len(ms), w.th.Fill)
 		if math.IsNaN(x) {
 			continue
 		}

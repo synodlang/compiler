@@ -204,7 +204,7 @@ func (g *lookGen) stmt(ind int, e env, depth int) {
 		}
 	case 7:
 		if v := g.shapeVar(); v != "" {
-			g.line(ind, "look.Effect %q on %s", g.pick("glow", "blur", "trail", "bogus"), v)
+			g.line(ind, "look.Effect %q on %s", g.pick("glow", "indicate", "flash", "circumscribe", "ripple", "sweep", "blur", "trail", "bogus"), v)
 		}
 	case 8:
 		if v := g.shapeVar(); v != "" {

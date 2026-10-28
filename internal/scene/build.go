@@ -81,6 +81,7 @@ type builder struct {
 	world  *world
 	ids    idGen
 	hexes  map[string]string
+	th     theme
 	inits  map[*ir.Field]value.Value
 	host   lookHost
 
@@ -148,7 +149,11 @@ func newBuilder(in Input, o Options) *builder {
 	}
 	b.clock = newClock(o.Pace, o.Mode, end)
 	b.store = newStore()
-	b.world = newWorld(b.clock, worldConfig{MaxShapes: o.MaxShapes, MaxKeys: o.MaxKeys})
+	if in.Prog != nil {
+		b.th = theme{in.Prog.Theme}
+	}
+	wt := b.th.world()
+	b.world = newWorld(b.clock, worldConfig{MaxShapes: o.MaxShapes, MaxKeys: o.MaxKeys, Theme: &wt})
 	for _, p := range []*ir.Program{in.Look, in.Prog} {
 		if p == nil {
 			continue
@@ -383,7 +388,8 @@ func (b *builder) markFact(f *trace.Fact, seq int, at int64) {
 func (b *builder) finish() *trace.Scene {
 	last := b.clock.now()
 	b.world.finalize(last)
-	return b.world.emit(emitInput{Slots: b.slots, Markers: b.markers, Cursor: last, Hex: b.colorHex})
+	return b.world.emit(emitInput{Slots: b.slots, Markers: b.markers, Cursor: last, Hex: b.colorHex,
+		Base: b.th.base(), Style: b.th.style()})
 }
 
 // askedChoices returns the texts in the Choices field of an Asked record.

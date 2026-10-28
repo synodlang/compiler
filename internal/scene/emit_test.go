@@ -5,10 +5,13 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/synodlang/compiler/internal/stdlib"
 	"github.com/synodlang/compiler/internal/trace"
+	"github.com/synodlang/compiler/internal/types"
 )
 
 func TestEmitEncodes(t *testing.T) {
@@ -129,21 +132,57 @@ func TestEmitDeterministic(t *testing.T) {
 	}
 }
 
-// The fallback theme table must match std/theme/theme.synod.
+// The default theme tables must match std/theme/default.
 func TestThemeTableMatchesStd(t *testing.T) {
-	src, err := os.ReadFile(filepath.Join("..", "stdlib", "std", "theme", "theme.synod"))
+	src, err := os.ReadFile(filepath.Join("..", "stdlib", "std", "theme", "default", "default.synod"))
 	if err != nil {
-		t.Skip("std theme not found")
+		t.Skip("std theme/default not found")
 	}
-	re := regexp.MustCompile(`(?m)^define (\w+)\n  result (#[0-9A-Fa-f]{6})`)
+	re := regexp.MustCompile(`(?m)^define (\w+)\n  result (.+)$`)
 	ms := re.FindAllStringSubmatch(string(src), -1)
-	if len(ms) != len(themeColors) {
-		t.Fatalf("theme.synod has %d colors, table %d", len(ms), len(themeColors))
+	want := len(themeColorNames) + len(themeNumNames) + len(themeTextNames)
+	if len(ms) != want {
+		t.Fatalf("default.synod has %d names, tables %d", len(ms), want)
 	}
-	for i, m := range ms {
-		if m[1] != themeColors[i].Name || !strings.EqualFold(m[2], themeColors[i].Hex) {
-			t.Errorf("color %d: %v vs %+v", i, m[1:], themeColors[i])
+	for _, m := range ms {
+		name, lit := m[1], m[2]
+		switch {
+		case defaultColors[name] != "":
+			if !strings.EqualFold(lit, defaultColors[name]) {
+				t.Errorf("%s: %s vs %s", name, lit, defaultColors[name])
+			}
+		case defaultTexts[name] != "":
+			if lit != strconv.Quote(defaultTexts[name]) {
+				t.Errorf("%s: %s vs %q", name, lit, defaultTexts[name])
+			}
+		default:
+			v, ok := defaultNums[name]
+			if f, err := strconv.ParseFloat(lit, 64); !ok || err != nil || f != v {
+				t.Errorf("%s: %s vs %v", name, lit, v)
+			}
 		}
+	}
+	if len(stdlib.ThemeNames) != want {
+		t.Errorf("stdlib.ThemeNames has %d names, the tables %d", len(stdlib.ThemeNames), want)
+	}
+	for _, n := range stdlib.ThemeNames {
+		_, c := defaultColors[n.Name]
+		_, f := defaultNums[n.Name]
+		_, s := defaultTexts[n.Name]
+		if !c && !f && !s {
+			t.Errorf("theme name %s has no default", n.Name)
+		}
+		if (c && n.Type != types.TColor) || (f && n.Type != types.TNumber) || (s && n.Type != types.TText) {
+			t.Errorf("theme name %s has type %v", n.Name, n.Type)
+		}
+	}
+	for i, c := range themeColors {
+		if c.Name != themeColorNames[i] || c.Hex != defaultColors[c.Name] {
+			t.Errorf("themeColors[%d] = %+v", i, c)
+		}
+	}
+	if d := trace.DefaultStyle(); d != (theme{}).styleValue() {
+		t.Errorf("DefaultStyle %+v differs from the default theme's style %+v", d, (theme{}).styleValue())
 	}
 }
 

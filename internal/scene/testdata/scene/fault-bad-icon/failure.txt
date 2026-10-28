@@ -1,0 +1,1 @@
+fact 1: error[bad-argument]: there is no icon "castle"

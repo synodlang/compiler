@@ -10,8 +10,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/synodlang/compiler/internal/ir"
 	"github.com/synodlang/compiler/internal/stdlib"
 	"github.com/synodlang/compiler/internal/trace"
+	"github.com/synodlang/compiler/internal/types"
 )
 
 // checkScene verifies the invariants every scene obeys (plan 5.1 and 5.5):
@@ -42,7 +44,7 @@ func checkScene(t testing.TB, sc *trace.Scene) {
 					t.Errorf("group %s refers to a missing shape %s", s.ID, m)
 				}
 			}
-		case trace.KindCircle, trace.KindRect, trace.KindLabel:
+		case trace.KindCircle, trace.KindRect, trace.KindLabel, trace.KindIcon, trace.KindCounter:
 		default:
 			t.Errorf("shape %s has kind %q", s.ID, s.Kind)
 		}
@@ -97,6 +99,9 @@ func options(t *testing.T, dir string) Options {
 	}
 	for _, ln := range strings.Split(strings.TrimSpace(string(data)), "\n") {
 		f := strings.Fields(ln)
+		if len(f) > 0 && f[0] == "theme" {
+			continue // see themeOptions
+		}
 		if len(f) != 2 {
 			t.Fatalf("bad options line %q", ln)
 		}
@@ -117,6 +122,58 @@ func options(t *testing.T, dir string) Options {
 		}
 	}
 	return o
+}
+
+// themeOptions applies the "theme Name value" lines of the options file of a
+// case to the theme of prog (the rest of the theme being the default): a
+// color is a #hex, a number a number, any other value a text (the rest of
+// the line).
+func themeOptions(t *testing.T, dir string, prog *ir.Program) {
+	data, err := os.ReadFile(filepath.Join(dir, "options"))
+	if err != nil {
+		return
+	}
+	set := map[string]string{}
+	for _, ln := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+		if f := strings.SplitN(ln, " ", 3); len(f) == 3 && f[0] == "theme" {
+			set[f[1]] = f[2]
+		}
+	}
+	if len(set) == 0 {
+		return
+	}
+	th := &ir.Theme{Path: "test"}
+	for _, n := range stdlib.ThemeNames {
+		v := ir.ThemeValue{Name: n.Name, Type: n.Type}
+		lit, over := set[n.Name]
+		switch {
+		case n.Type == types.TColor:
+			v.V = defaultColors[n.Name]
+			if over {
+				v.V = lit
+			}
+		case n.Type == types.TNumber:
+			v.V = defaultNums[n.Name]
+			if over {
+				f, err := strconv.ParseFloat(lit, 64)
+				if err != nil {
+					t.Fatal(err)
+				}
+				v.V = f
+			}
+		default:
+			v.V = defaultTexts[n.Name]
+			if over {
+				v.V = lit
+			}
+		}
+		delete(set, n.Name)
+		th.Values = append(th.Values, v)
+	}
+	if len(set) > 0 {
+		t.Fatalf("unknown theme names %v", set)
+	}
+	prog.Theme = th
 }
 
 // TestGoldenCases builds the scene of every case of testdata/scene and
@@ -144,6 +201,7 @@ func TestGoldenCases(t *testing.T) {
 				t.Fatalf("the simulation failed: %v (expect-sim-failed: %v)", r.Failed, err == nil)
 			}
 			o := options(t, dir)
+			themeOptions(t, dir, p.Prog)
 			sc, fl := Build(p.input(r.Facts), o)
 			checkScene(t, sc)
 			checkSlots(t, r.Facts, sc, o)

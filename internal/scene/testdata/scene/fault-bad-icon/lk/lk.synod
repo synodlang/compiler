@@ -1,0 +1,6 @@
+# package lk
+use std/look
+use std/sim
+
+when sim.Started
+  draw (look.Icon "castle") as c

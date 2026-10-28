@@ -32,6 +32,12 @@ type emitInput struct {
 	// scene; it is only asked for names outside the eight theme colors. A
 	// nil Hex or an unknown name gives "#000000".
 	Hex func(name string) (string, bool)
+	// Base are the eight theme colors in catalog order; nil means the
+	// colors of std/theme/default.
+	Base []trace.ThemeColor
+	// Style is the style object of the scene; nil when it equals the
+	// default style.
+	Style *trace.Style
 }
 
 // emitted reports whether shape s is written: the center only when a line or
@@ -81,7 +87,7 @@ func (w *world) emit(in emitInput) *trace.Scene {
 		case trace.KindCircle:
 			o.R = s.r
 		case trace.KindRect:
-			o.W, o.H, o.Radius = s.w, s.h, RectRadius
+			o.W, o.H, o.Radius = s.w, s.h, s.radius
 		case trace.KindLine:
 			o.From, o.To = idOf[s.from], idOf[s.to]
 		case trace.KindGroup:
@@ -109,6 +115,13 @@ func (w *world) emit(in emitInput) *trace.Scene {
 		}
 		sc.Shapes = append(sc.Shapes, o)
 	}
+	if len(w.cam) > 0 {
+		sc.Camera = append([]trace.CameraKey(nil), w.cam...)
+		if at := sc.Camera[len(sc.Camera)-1].At; at > dur {
+			dur = at
+		}
+	}
+	sc.Style = in.Style
 	sc.Markers = append([]trace.Marker(nil), in.Markers...)
 	sort.SliceStable(sc.Markers, func(a, b int) bool {
 		x, y := sc.Markers[a], sc.Markers[b]
@@ -123,8 +136,12 @@ func (w *world) emit(in emitInput) *trace.Scene {
 		}
 	}
 	sc.Duration = dur
-	sc.Theme = append(sc.Theme, themeColors...)
-	for _, t := range themeColors {
+	base := in.Base
+	if base == nil {
+		base = themeColors
+	}
+	sc.Theme = append(sc.Theme, base...)
+	for _, t := range base {
 		delete(used, t.Name)
 	}
 	var extra []string

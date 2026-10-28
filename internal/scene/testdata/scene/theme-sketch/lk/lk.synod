@@ -1,0 +1,23 @@
+# package lk
+use std/look
+use std/net
+use std/sim
+use std/theme
+
+when sim.Started
+  look.Layout "grid"
+  draw look.Frame as frame
+  look.Stroke frame with theme.Line
+
+when (sim.Added n)
+  draw (look.Card for n) as card for n
+
+when (net.Sent m from a to b)
+  draw (look.Circle 5) as ball
+  look.Fill ball with (look.MessageColor m)
+  draw (look.Line from (card of a) to (card of b)) as link
+  draw (look.Rect 20 by 10) as pill
+  look.Travel ball from (card of a) to (card of b) over 400ms
+  look.Tween "scale" of pill to 2 over 200ms
+  draw (look.Label "hi") as hi
+  look.Tween "x" of hi to 100 over 100ms

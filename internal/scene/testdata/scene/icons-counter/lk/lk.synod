@@ -1,0 +1,25 @@
+# package lk
+use example.com/t/p
+use std/look
+use std/sim
+
+when sim.Started
+  look.Layout "row"
+
+when (sim.Added [n: p.Node])
+  draw (look.Card for n) as card for n
+  draw (look.Icon "server") as icon for "icon"
+  look.Place icon above (card of n)
+  draw (look.Counter 0) as count for "count"
+  look.Role count as "value"
+  look.Face count as "mono"
+  look.Place count below (card of n)
+  draw (look.Label "title") as title for "title"
+  look.Role title as "title"
+  look.Role title as "label"
+  look.Face title as "mono"
+  look.Place title beside (card of n)
+
+when (sim.Changed p.Got of [n: p.Node] from a to b)
+  look.Tween "icon" of (icon of "icon") to "check" over 300ms
+  look.Tween "count" of (count of "count") to n.p.Got over 400ms

@@ -3,6 +3,8 @@ package scene
 import (
 	"fmt"
 	"math"
+	"sort"
+	"strconv"
 	"unicode/utf8"
 
 	"github.com/synodlang/compiler/internal/trace"
@@ -44,14 +46,41 @@ type attID struct {
 }
 
 // shapeSpec describes a new shape. Kind is a trace.Kind* constant. Circle
-// uses R; rect W and H; label Text; line From and To (shape indexes); group
-// none (members are added by world.group).
+// uses R; rect W and H; label Text; line From and To (shape indexes); icon
+// Text (the icon name); counter Count; group none (members are added by
+// world.group).
 type shapeSpec struct {
 	Kind     string
 	R, W, H  float64
 	Text     string
 	From, To int
+	Count    float64
 }
+
+// iconNames is the icon set (implementation/icons.json).
+var iconNames = map[string]bool{
+	"server": true, "database": true, "disk": true, "user": true, "client": true,
+	"clock": true, "lock": true, "mail": true, "check": true, "cross": true,
+	"warning": true, "crown": true, "bolt": true, "cloud": true, "key": true, "eye": true,
+}
+
+// effectLen is the duration in ms (before pace) of each effect.
+var effectLen = map[string]int64{
+	"glow": 600, "indicate": 600, "flash": 500, "circumscribe": 900, "ripple": 700, "sweep": 800,
+}
+
+// worldTheme are the theme values the world bakes into shapes.
+type worldTheme struct {
+	// Radius is the corner radius of rects, LinkOpacity the opacity of a
+	// new line, Fill the layout scale.
+	Radius, LinkOpacity, Fill float64
+	// Spring selects the back-out curve for x, y, scale, rotation and the
+	// camera.
+	Spring bool
+}
+
+// defaultWorldTheme is the world theme of std/theme/default.
+func defaultWorldTheme() worldTheme { return worldTheme{Radius: 12, LinkOpacity: 1, Fill: 1} }
 
 type shape struct {
 	idx  int
@@ -76,6 +105,8 @@ type shape struct {
 	dx, dy    float64
 	followers []int
 	pinned    bool
+	// radius is the corner radius of a rect.
+	radius float64
 	// busy is the end of the latest tween on this shape.
 	busy       int64
 	referenced bool
@@ -102,8 +133,12 @@ type landInfo struct {
 	dropped bool
 }
 
-// worldConfig carries the run limits (0 means the default).
-type worldConfig struct{ MaxShapes, MaxKeys int }
+// worldConfig carries the run limits (0 means the default) and the theme
+// values the world bakes in (nil means std/theme/default).
+type worldConfig struct {
+	MaxShapes, MaxKeys int
+	Theme              *worldTheme
+}
 
 // world is the set of shapes and everything that moves them: timelines,
 // Place constraints, groups, attachments, layout and flights. All times are
@@ -116,6 +151,11 @@ type world struct {
 	c         *clock
 	maxShapes int
 	maxKeys   int
+	th        worldTheme
+	spring    bool
+
+	// cam are the camera keys of look.Focus.
+	cam []trace.CameraKey
 
 	shapes []*shape
 	nkeys  int
@@ -145,8 +185,12 @@ func newWorld(c *clock, cfg worldConfig) *world {
 	if cfg.MaxKeys <= 0 {
 		cfg.MaxKeys = 10_000_000
 	}
+	th := defaultWorldTheme()
+	if cfg.Theme != nil {
+		th = *cfg.Theme
+	}
 	return &world{
-		c: c, maxShapes: cfg.MaxShapes, maxKeys: cfg.MaxKeys,
+		c: c, maxShapes: cfg.MaxShapes, maxKeys: cfg.MaxKeys, th: th, spring: th.Spring,
 		att: map[attID]int{}, attNames: map[attKey][]string{},
 		pending: map[int]*flight{}, pendBy: map[int][]int{}, landed: map[int]landInfo{},
 		centerIdx: -1, layoutDirty: true,
@@ -175,16 +219,22 @@ func (w *world) sh(i int) *shape { return w.shapes[i] }
 func (w *world) live(i int) bool { return i >= 0 && i < len(w.shapes) && !w.shapes[i].deleted }
 
 // kindHas reports whether shapes of kind have property p.
-func kindHas(kind string, p uint16) bool {
+func kindHas(kind string, p uint32) bool {
 	switch p {
-	case trace.PX, trace.PY:
+	case trace.PX, trace.PY, trace.PCurve, trace.PTrail:
 		return kind != trace.KindLine
 	case trace.PFill:
 		return kind != trace.KindLine
 	case trace.PStroke:
-		return kind != trace.KindLabel
+		return kind != trace.KindLabel && kind != trace.KindCounter
 	case trace.PText:
 		return kind == trace.KindLabel
+	case trace.PIcon:
+		return kind == trace.KindIcon
+	case trace.PCount:
+		return kind == trace.KindCounter
+	case trace.PRole, trace.PFace:
+		return kind == trace.KindLabel || kind == trace.KindCounter
 	}
 	return true
 }
@@ -201,9 +251,13 @@ func (w *world) newShape(sp shapeSpec, key string, now int64) (int, error) {
 		return -1, badArg("a circle's radius cannot be negative")
 	case sp.Kind == trace.KindRect && (sp.W < 0 || sp.H < 0 || !finite(sp.W) || !finite(sp.H)):
 		return -1, badArg("a rectangle's size cannot be negative")
+	case sp.Kind == trace.KindIcon && !iconNames[sp.Text]:
+		return -1, badArg("there is no icon %q", sp.Text)
+	case sp.Kind == trace.KindCounter && (sp.Count < 0 || !finite(sp.Count)):
+		return -1, badArg("a counter cannot show a negative number")
 	}
 	s := &shape{idx: len(w.shapes), kind: sp.Kind, key: key, r: sp.R, w: sp.W, h: sp.H,
-		from: -1, to: -1, born: now, group: -1, anchor: -1}
+		from: -1, to: -1, born: now, group: -1, anchor: -1, radius: w.th.Radius}
 	if sp.Kind == trace.KindLine {
 		s.from, s.to = sp.From, sp.To
 		w.shapes[sp.From].referenced = true
@@ -221,7 +275,14 @@ func (w *world) newShape(sp shapeSpec, key string, now int64) (int, error) {
 		setPV(k, trace.PFill, pv{S: "Ink"})
 		setPV(k, trace.PText, pv{S: sp.Text})
 	case trace.KindLine:
+		setPV(k, trace.POpacity, pv{N: w.th.LinkOpacity})
 		setPV(k, trace.PStroke, pv{S: "Line"})
+	case trace.KindIcon:
+		setPV(k, trace.PStroke, pv{S: "Ink"})
+		setPV(k, trace.PIcon, pv{S: sp.Text})
+	case trace.KindCounter:
+		setPV(k, trace.PFill, pv{S: "Ink"})
+		setPV(k, trace.PCount, pv{N: sp.Count})
 	}
 	return s.idx, w.takeErr()
 }
@@ -254,7 +315,7 @@ func (w *world) morphDur(s *shape, now int64) int64 {
 }
 
 // validate checks a property value against the kind and ranges of spec/09.
-func validate(s *shape, p uint16, v pv) error {
+func validate(s *shape, p uint32, v pv) error {
 	if !kindHas(s.kind, p) {
 		return badArg("a %s has no such property", s.kind)
 	}
@@ -268,6 +329,15 @@ func validate(s *shape, p uint16, v pv) error {
 		if p == trace.PScale && v.N < 0 {
 			return badArg("scale cannot be negative")
 		}
+		if (p == trace.PDraw || p == trace.PHalo) && (v.N < 0 || v.N > 1) {
+			return badArg("draw and halo must be between 0 and 1")
+		}
+		if p == trace.PCount && v.N < 0 {
+			return badArg("a count cannot be negative")
+		}
+	}
+	if p == trace.PIcon && !iconNames[v.S] {
+		return badArg("there is no icon %q", v.S)
 	}
 	return nil
 }
@@ -277,7 +347,7 @@ func validate(s *shape, p uint16, v pv) error {
 // For x and y the target is in the shape's own space (relative to its group;
 // use localPosOf to aim at another shape). Tweening x or y breaks a Place
 // constraint, takes the shape out of the layout and cancels a pending flight.
-func (w *world) tween(i int, p uint16, v pv, now, d int64) error {
+func (w *world) tween(i int, p uint32, v pv, now, d int64) error {
 	s := w.shapes[i]
 	if d < 0 {
 		return badArg("a duration cannot be negative")
@@ -298,7 +368,7 @@ func (w *world) tween(i int, p uint16, v pv, now, d int64) error {
 // set changes a property by the morph rule: at once on a brand-new shape,
 // otherwise over Morph/pace. Used for Fill, Stroke, Place, Orbit, layout moves
 // and reactive property changes. It does not pin.
-func (w *world) set(i int, p uint16, v pv, now int64) error {
+func (w *world) set(i int, p uint32, v pv, now int64) error {
 	s := w.shapes[i]
 	if err := validate(s, p, v); err != nil {
 		return err
@@ -312,14 +382,20 @@ func (w *world) set(i int, p uint16, v pv, now int64) error {
 
 // apply writes p on s, fanning Fill and Stroke of a group out to its
 // non-label members and moving the followers of a moved anchor.
-func (w *world) apply(s *shape, p uint16, v pv, now, d int64) {
+func (w *world) apply(s *shape, p uint32, v pv, now, d int64) {
 	if s.deleted {
+		return
+	}
+	if s.kind == trace.KindGroup && (p == trace.PDraw || p == trace.PHalo) {
+		for _, m := range s.items {
+			w.apply(w.shapes[m], p, v, now, d)
+		}
 		return
 	}
 	if s.kind == trace.KindGroup && (p == trace.PFill || p == trace.PStroke) {
 		for _, m := range s.items {
 			ms := w.shapes[m]
-			if ms.kind == trace.KindLabel && ms.group >= 0 {
+			if (ms.kind == trace.KindLabel || ms.kind == trace.KindCounter) && ms.group >= 0 {
 				continue
 			}
 			if !kindHas(ms.kind, p) {
@@ -411,8 +487,8 @@ func (w *world) worldPos(i int, now int64) (x, y float64) {
 		bx, by := w.worldPos(s.to, now)
 		return rnd(float64(ax+bx) / 2), rnd(float64(ay+by) / 2)
 	}
-	x = valueAt(s.keys, trace.PX, now).N
-	y = valueAt(s.keys, trace.PY, now).N
+	x = w.valueAt(s.keys, trace.PX, now).N
+	y = w.valueAt(s.keys, trace.PY, now).N
 	if s.group >= 0 {
 		gx, gy := w.worldPos(s.group, now)
 		x, y = x+gx, y+gy
@@ -457,6 +533,11 @@ func (w *world) sizeOf(s *shape) (float64, float64) {
 	case trace.KindLabel:
 		t, _ := finalVal(s.keys, trace.PText)
 		return float64(LabelCharW * float64(utf8.RuneCountInString(t.S))), LabelH
+	case trace.KindIcon:
+		return trace.IconSize, trace.IconSize
+	case trace.KindCounter:
+		c, _ := finalVal(s.keys, trace.PCount)
+		return float64(LabelCharW * float64(counterColumns(c.N))), LabelH
 	case trace.KindGroup:
 		if len(s.items) == 0 {
 			return 0, 0
@@ -616,17 +697,123 @@ func (w *world) group(items []int, key string, now int64) (int, error) {
 	return g, w.takeErr()
 }
 
-// effect is look.Effect: key effect "glow" (or the given name) at now and
-// "none" at now + EffectLen/pace. A running effect is replaced.
+// effect is look.Effect: key effect name at now and "none" at now + the
+// length of the effect scaled by pace. A running effect is replaced. name
+// must be one of the effects (bad-argument otherwise).
 func (w *world) effect(i int, name string, now int64) error {
+	dur, ok := effectLen[name]
+	if !ok {
+		return badArg("look.Effect needs \"glow\", \"indicate\", \"flash\", \"circumscribe\", \"ripple\" or \"sweep\", not %q", name)
+	}
 	s := w.shapes[i]
 	if s.deleted {
 		return nil
 	}
 	w.removeAfter(s, trace.PEffect, now)
 	w.putProp(s, now, trace.PEffect, pv{S: name})
-	w.putProp(s, now+w.c.scale(EffectLen), trace.PEffect, pv{S: "none"})
+	w.putProp(s, now+w.c.scale(dur), trace.PEffect, pv{S: "none"})
 	return w.takeErr()
+}
+
+// counterColumns is the number of digit columns of a counter showing the
+// whole number nearest n (at least 1).
+func counterColumns(n float64) int {
+	return len(strconv.FormatFloat(math.Floor(n+0.5), 'f', 0, 64))
+}
+
+// setStep sets a step property (curve, trail, dash, role, face) from now on:
+// the keys of p after now are dropped and a key is written at now unless the
+// value already holds there. Shapes that lack the property do nothing; a
+// dash on a group goes to its members that have an outline.
+func (w *world) setStep(i int, p uint32, v pv, now int64) error {
+	s := w.shapes[i]
+	if s.deleted {
+		return nil
+	}
+	if p == trace.PDash && s.kind == trace.KindGroup {
+		for _, m := range s.items {
+			if k := w.shapes[m].kind; k != trace.KindLabel && k != trace.KindCounter {
+				if err := w.setStep(m, p, v, now); err != nil {
+					return err
+				}
+			}
+		}
+		return w.takeErr()
+	}
+	if s.kind == trace.KindLine && (p == trace.PCurve || p == trace.PTrail) {
+		return nil // a line has no position of its own to bend or trail
+	}
+	if !kindHas(s.kind, p) {
+		return badArg("a %s has no such property", s.kind)
+	}
+	// from now on: drop the keys of p at now and after, and write a key only
+	// when the value that held before differs
+	w.removeAfter(s, p, now-1)
+	if cur := w.valueAt(s.keys, p, now); !equalPV(cur, v) {
+		w.putProp(s, now, p, v)
+	}
+	return w.takeErr()
+}
+
+// focus is look.Focus: the camera moves to (x, y) at zoom z over d ms
+// (already scaled by pace). The camera keys after now are dropped; a key at
+// now holds the camera as it is there (when a move follows), then comes the
+// target at now+d.
+func (w *world) focus(x, y, z float64, now, d int64) error {
+	if d < 0 {
+		return badArg("a duration cannot be negative")
+	}
+	cur := w.camAt(now)
+	n := len(w.cam)
+	for n > 0 && w.cam[n-1].At > now {
+		n--
+	}
+	ran := n < len(w.cam)
+	w.nkeys -= len(w.cam) - n
+	w.cam = w.cam[:n]
+	target := trace.CameraKey{X: x, Y: y, Zoom: z}
+	if !ran && cur.X == x && cur.Y == y && cur.Zoom == z {
+		return nil
+	}
+	put := func(at int64, k trace.CameraKey) {
+		k.At = at
+		if n := len(w.cam); n > 0 && w.cam[n-1].At == at {
+			w.cam[n-1] = k
+			return
+		}
+		w.cam = append(w.cam, k)
+		w.addKey()
+	}
+	if d == 0 {
+		// an instant change: pin the previous camera just before now
+		if n := len(w.cam); n > 0 && w.cam[n-1].At < now-1 {
+			put(now-1, cur)
+		}
+		put(now, target)
+		return w.takeErr()
+	}
+	put(now, cur)
+	put(now+d, target)
+	return w.takeErr()
+}
+
+// camAt is the camera at time t: before the first key the scene centre at
+// zoom 1; between two keys the curve of the theme, rounded to 0.01.
+func (w *world) camAt(t int64) trace.CameraKey {
+	cur := trace.CameraKey{At: t, X: CenterX, Y: CenterY, Zoom: 1}
+	ks := w.cam
+	i := sort.Search(len(ks), func(i int) bool { return ks[i].At > t })
+	if i == 0 {
+		return cur
+	}
+	a := ks[i-1]
+	if i == len(ks) || a.At == t {
+		return trace.CameraKey{At: t, X: a.X, Y: a.Y, Zoom: a.Zoom}
+	}
+	b := ks[i]
+	e := ease(w.spring, float64(t-a.At)/float64(b.At-a.At))
+	f := func(p, q float64) float64 { return rnd(p + float64(float64(q-p)*e)) }
+	return trace.CameraKey{At: t, X: f(a.X, b.X), Y: f(a.Y, b.Y), Zoom: f(a.Zoom, b.Zoom)}
 }
 
 // delete is look.delete: shape i (and its group members) ends now and stays
@@ -711,14 +898,14 @@ func (w *world) replace(old, nw int, now int64) {
 	n.replacement = true
 	same := o.born == now
 	d := w.c.scale(Morph)
-	for _, p := range []uint16{trace.PX, trace.PY, trace.PScale, trace.PRotation, trace.POpacity} {
+	for _, p := range []uint32{trace.PX, trace.PY, trace.PScale, trace.PRotation, trace.POpacity} {
 		if !kindHas(o.kind, p) || !kindHas(n.kind, p) {
 			continue
 		}
 		if _, has := finalVal(o.keys, p); !has {
 			continue // scale and rotation at their defaults
 		}
-		ov := valueAt(o.keys, p, now)
+		ov := w.valueAt(o.keys, p, now)
 		if p == trace.POpacity && !same {
 			w.putProp(n, now, p, pv{N: 0})
 			w.writeProp(n, p, ov, now, d)
@@ -726,7 +913,7 @@ func (w *world) replace(old, nw int, now int64) {
 			w.putProp(n, now, p, ov)
 		}
 	}
-	for _, p := range []uint16{trace.PFill, trace.PStroke, trace.PText} {
+	for _, p := range []uint32{trace.PFill, trace.PStroke, trace.PText} {
 		if !kindHas(o.kind, p) || !kindHas(n.kind, p) || o.kind == trace.KindGroup || n.kind == trace.KindGroup {
 			continue
 		}

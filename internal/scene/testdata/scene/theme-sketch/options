@@ -1,0 +1,20 @@
+theme Paper #FFFFFF
+theme Ink #1A1A1A
+theme Message3 #2A9D3F
+theme Sketch 1
+theme Glow 0
+theme CornerRadius 4
+theme LinkOpacity 0.6
+theme NodeShape circle
+theme NodeFill outline
+theme Easing spring
+theme Sans Shantell Sans
+theme Mono Shantell Sans
+theme TitleSize 30
+theme Tracking 0.02
+theme Vignette 0.35
+theme Shadow 0.15
+theme Drift 6
+theme StrokeWidth 3
+theme Margin 10
+theme Fill 1.25

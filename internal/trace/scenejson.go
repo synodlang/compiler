@@ -44,7 +44,11 @@ func (e *encoder) scene(s *Scene) error {
 		w.key(c.Name, i == 0)
 		w.str(c.Hex)
 	}
-	w.raw(`},"shapes":`)
+	w.byte('}')
+	if err := e.style(s.Style); err != nil {
+		return err
+	}
+	w.raw(`,"shapes":`)
 	if err := e.lines(len(s.Shapes), func(i int) error { return e.shape(&s.Shapes[i]) }); err != nil {
 		return err
 	}
@@ -66,6 +70,27 @@ func (e *encoder) scene(s *Scene) error {
 	}); err != nil {
 		return err
 	}
+	if len(s.Camera) > 0 {
+		w.raw(`,"camera":`)
+		if err := e.lines(len(s.Camera), func(i int) error {
+			c := &s.Camera[i]
+			w.raw(`{"at":`)
+			w.int(c.At)
+			if err := e.numKey("x", c.X); err != nil {
+				return err
+			}
+			if err := e.numKey("y", c.Y); err != nil {
+				return err
+			}
+			if err := e.numKey("zoom", c.Zoom); err != nil {
+				return err
+			}
+			w.byte('}')
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
 	w.raw(`,"trace":`)
 	if err := e.lines(len(s.Slots), func(i int) error {
 		t := &s.Slots[i]
@@ -80,6 +105,57 @@ func (e *encoder) scene(s *Scene) error {
 	}
 	w.raw("}\n")
 	return nil
+}
+
+// style writes `,"style":{…}` with the fields that differ from the default
+// style, in the order of the format spec; nothing when none does.
+func (e *encoder) style(st *Style) error {
+	if st == nil {
+		return nil
+	}
+	d := DefaultStyle()
+	w := &e.w
+	first := true
+	open := func(k string) {
+		if first {
+			w.raw(`,"style":{`)
+		}
+		w.key(k, first)
+		first = false
+	}
+	str := func(k, v, def string) {
+		if v != def {
+			open(k)
+			w.str(v)
+		}
+	}
+	var err error
+	num := func(k string, v, def float64) {
+		if v != def && err == nil {
+			open(k)
+			err = e.num(v)
+		}
+	}
+	str("sans", st.Sans, d.Sans)
+	str("mono", st.Mono, d.Mono)
+	num("titleSize", st.TitleSize, d.TitleSize)
+	num("labelSize", st.LabelSize, d.LabelSize)
+	num("valueSize", st.ValueSize, d.ValueSize)
+	num("captionSize", st.CaptionSize, d.CaptionSize)
+	num("titleWeight", st.TitleWeight, d.TitleWeight)
+	num("labelWeight", st.LabelWeight, d.LabelWeight)
+	num("tracking", st.Tracking, d.Tracking)
+	num("stroke", st.Stroke, d.Stroke)
+	num("glow", st.Glow, d.Glow)
+	num("shadow", st.Shadow, d.Shadow)
+	num("vignette", st.Vignette, d.Vignette)
+	num("sketch", st.Sketch, d.Sketch)
+	num("drift", st.Drift, d.Drift)
+	str("easing", st.Easing, d.Easing)
+	if !first {
+		w.byte('}')
+	}
+	return err
 }
 
 // lines writes an array of n items, one per line; an empty array is "[]".
@@ -134,7 +210,9 @@ func (e *encoder) shape(s *SceneShape) error {
 		if err := e.numKey("radius", s.Radius); err != nil {
 			return err
 		}
-	case KindLabel:
+	case KindLabel, KindCounter:
+	case KindIcon:
+		w.raw(`"size":32`)
 	case KindLine:
 		w.raw(`"from":`)
 		w.str(s.From)
@@ -169,12 +247,12 @@ func (e *encoder) sceneKey(k *Key) error {
 	w.raw(`{"at":`)
 	w.int(k.At)
 	nums := [...]struct {
-		bit  uint16
+		bit  uint32
 		name string
 		v    float64
 	}{{PX, "x", k.X}, {PY, "y", k.Y}, {PScale, "scale", k.Scale}, {POpacity, "opacity", k.Opacity}, {PRotation, "rotation", k.Rotation}}
 	strs := [...]struct {
-		bit  uint16
+		bit  uint32
 		name string
 		v    string
 	}{{PFill, "fill", k.Fill}, {PStroke, "stroke", k.Stroke}, {PText, "text", k.Text}, {PEffect, "effect", k.Effect}}
@@ -191,6 +269,73 @@ func (e *encoder) sceneKey(k *Key) error {
 			w.str(p.v)
 		}
 	}
+	if k.Set&PPropsV3 != 0 {
+		if err := e.keyV3(k); err != nil {
+			return err
+		}
+	}
 	w.byte('}')
+	return nil
+}
+
+// keyV3 writes the properties of format 0.3 of a key: curve, trail, dash,
+// draw, halo, icon, count, role, face.
+func (e *encoder) keyV3(k *Key) error {
+	w := &e.w
+	for _, p := range [...]struct {
+		bit  uint32
+		name string
+		v    float64
+	}{{PCurve, "curve", k.Curve}, {PTrail, "trail", k.Trail}} {
+		if k.Set&p.bit != 0 {
+			if err := e.numKey(p.name, p.v); err != nil {
+				return err
+			}
+		}
+	}
+	if k.Set&PDash != 0 {
+		w.key("dash", false)
+		if k.DashOn == 0 && k.DashOff == 0 {
+			w.raw("[]")
+		} else {
+			w.byte('[')
+			if err := e.num(k.DashOn); err != nil {
+				return err
+			}
+			w.byte(',')
+			if err := e.num(k.DashOff); err != nil {
+				return err
+			}
+			w.byte(']')
+		}
+	}
+	for _, p := range [...]struct {
+		bit  uint32
+		name string
+		v    float64
+	}{{PDraw, "draw", k.Draw}, {PHalo, "halo", k.Halo}} {
+		if k.Set&p.bit != 0 {
+			if err := e.numKey(p.name, p.v); err != nil {
+				return err
+			}
+		}
+	}
+	if k.Set&PIcon != 0 {
+		w.key("icon", false)
+		w.str(k.Icon)
+	}
+	if k.Set&PCount != 0 {
+		if err := e.numKey("count", k.Count); err != nil {
+			return err
+		}
+	}
+	if k.Set&PRole != 0 {
+		w.key("role", false)
+		w.str(k.Role)
+	}
+	if k.Set&PFace != 0 {
+		w.key("face", false)
+		w.str(k.Face)
+	}
 	return nil
 }

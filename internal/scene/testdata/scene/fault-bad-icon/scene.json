@@ -1,0 +1,5 @@
+{"format":"synod-scene/1","duration":0,"canvas":{"w":1600,"h":1000},"theme":{"Paper":"#151A2E","Ink":"#EDE9E1","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A"},"shapes":[],"markers":[
+{"at":0,"kind":"failed","text":"look lk/lk.synod:6:9: error[bad-argument]: there is no icon \"castle\""}
+],"trace":[
+{"seq":1,"at":0}
+]}

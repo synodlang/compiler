@@ -1,0 +1,19 @@
+# package lk
+use std/look
+use std/net
+use std/sim
+
+when sim.Started
+  look.Layout "row"
+  look.Focus look.Center zoom 1.5 over 0s
+
+when (sim.Added n)
+  draw (look.Card for n) as card for n
+
+when (net.Sent m from a to b)
+  look.Focus (card of a) zoom 2 over 500ms
+
+when (net.Arrived m from a to b)
+  look.Focus (card of b) zoom 2 over 300ms
+  after 100ms
+    look.Focus look.Center zoom 1 over 1s
