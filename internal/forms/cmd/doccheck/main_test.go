@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -22,6 +23,9 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	synodBin = filepath.Join(dir, "synod")
+	if runtime.GOOS == "windows" {
+		synodBin += ".exe"
+	}
 	if out, err := exec.Command("go", "build", "-o", synodBin, "github.com/synodlang/compiler/cmd/synod").CombinedOutput(); err != nil {
 		os.Stderr.Write(out)
 		os.RemoveAll(dir)
