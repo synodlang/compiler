@@ -331,7 +331,7 @@ func TestLibraryHelper(t *testing.T) {
 	b, _ := os.ReadFile(path)
 	text := strings.Replace(string(b), "use example.com/library/time/shared\n", "", 1)
 	os.WriteFile(path, []byte(strings.Replace(text, "shared.Step", "1s", 1)), 0o644)
-	wantProblem(t, cfg.checkLibrary(), "time/shared: has no main file, so it is a helper package, and no example imports it")
+	wantProblem(t, cfg.checkLibrary(), filepath.Join("time", "shared")+": has no main file, so it is a helper package, and no example imports it")
 }
 
 func TestLibraryExpect(t *testing.T) {
