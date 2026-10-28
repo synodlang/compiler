@@ -74,7 +74,7 @@ func TestRunOK(t *testing.T) {
 	}
 	tr := read(t, out)
 	lines := strings.Split(strings.TrimSuffix(tr, "\n"), "\n")
-	if !strings.HasPrefix(lines[0], `{"format":"synod-trace/1","synod":"0.2","seed":5,"program":"example.com/t/p",`) {
+	if !strings.HasPrefix(lines[0], `{"format":"synod-trace/1","synod":"0.3","seed":5,"program":"example.com/t/p",`) {
 		t.Errorf("header %s", lines[0])
 	}
 	if last := lines[len(lines)-1]; !strings.Contains(last, `"ev":"sim.Ended","reason":"empty"`) {

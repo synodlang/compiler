@@ -1,2 +1,2 @@
 module example.com/library
-synod 0.2
+synod 0.3

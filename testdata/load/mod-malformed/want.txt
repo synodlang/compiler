@@ -8,7 +8,7 @@ synod.mod:1:1: error[syntax]: "module" takes one module path
   hint: write "module <path>"
 synod.mod:2:1: error[syntax]: unknown directive "modul"
   hint: directives are "module", "synod" and "require"
-synod.mod:3:1: error[syntax]: module needs Synod 9.1; this compiler implements 0.2
+synod.mod:3:1: error[syntax]: module needs Synod 9.1; this compiler implements 0.3
 synod.mod:4:1: error[syntax]: bad version "1.2"
   hint: a version looks like "v1.2.0"
 synod.mod:6:1: error[syntax]: module "github.com/a/c" is required twice

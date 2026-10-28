@@ -27,7 +27,7 @@ func TestNewDefault(t *testing.T) {
 		t.Errorf("out %q", out)
 	}
 	mod, _ := os.ReadFile(filepath.Join(dir, "synod.mod"))
-	if string(mod) != "module hello\nsynod 0.2\n" {
+	if string(mod) != "module hello\nsynod 0.3\n" {
 		t.Errorf("synod.mod %q", mod)
 	}
 	gi, _ := os.ReadFile(filepath.Join(dir, ".gitignore"))
@@ -65,7 +65,7 @@ func TestNewLibAndModule(t *testing.T) {
 		t.Error("demo.synod exists")
 	}
 	mod, _ := os.ReadFile(filepath.Join(dir, "synod.mod"))
-	if string(mod) != "module example.com/x/hello\nsynod 0.2\n" {
+	if string(mod) != "module example.com/x/hello\nsynod 0.3\n" {
 		t.Errorf("synod.mod %q", mod)
 	}
 	if c, _, e := call(runCheck, dir); c != 0 {

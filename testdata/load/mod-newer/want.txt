@@ -2,6 +2,6 @@ package example.com/t/a name=a dir=a module=example.com/t
   file a/a.synod
   deps 
 targets example.com/t/a
-module "example.com/t" dir=. version= synod=0.3 requires=0
+module "example.com/t" dir=. version= synod=0.4 requires=0
 diagnostics 1
-synod.mod:2:1: error[syntax]: module needs Synod 0.3; this compiler implements 0.2
+synod.mod:2:1: error[syntax]: module needs Synod 0.4; this compiler implements 0.3

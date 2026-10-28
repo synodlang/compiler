@@ -1,4 +1,4 @@
-{"format":"synod-trace/1","synod":"0.2","seed":1,"program":"example.com/t/p","packages":["example.com/t/p","std/sim"]}
+{"format":"synod-trace/1","synod":"0.3","seed":1,"program":"example.com/t/p","packages":["example.com/t/p","std/sim"]}
 {"seq":1,"t":0,"ev":"sim.Started"}
 {"seq":2,"t":0,"ev":"sim.Added","node":"n1","runs":["std/sim","example.com/t/p"],"state":{"p.Count":0,"p.Items":[]}}
 {"seq":3,"t":0,"ev":"sim.Injected","node":"n1","record":{"type":"p.Ping","fields":{"seq":"…"}}}

@@ -191,7 +191,7 @@ func TestIOErrorBeatsDiagnostics(t *testing.T) {
 
 func TestVersion(t *testing.T) {
 	code, out, _ := exec("version")
-	want := "language 0.2\ncompiler dev\nformats synod-trace/1 synod-scene/1 synod-check/1 synod-doc/1 synod-explain/1\n"
+	want := "language 0.3\ncompiler dev\nformats synod-trace/1 synod-scene/1 synod-check/1 synod-doc/1 synod-explain/1\n"
 	if code != 0 || out != want {
 		t.Errorf("code=%d out=%q", code, out)
 	}

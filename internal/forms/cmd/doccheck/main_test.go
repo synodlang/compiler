@@ -245,7 +245,7 @@ func TestWhyWithoutDirective(t *testing.T) {
 func TestRequireVersion(t *testing.T) {
 	cfg := tutorialConfig(t)
 	cfg.pkgChapter = 2
-	edit(t, cfg, "code/02-counter/step2/synod.mod", "synod 0.2\n", "synod 0.2\nrequire "+examplesModule+" v0.1.0\n")
+	edit(t, cfg, "code/02-counter/step2/synod.mod", "synod 0.3\n", "synod 0.3\nrequire "+examplesModule+" v0.1.0\n")
 	wantProblem(t, cfg.check(false), "requires "+examplesModule+" v0.1.0, versions.env pins EXAMPLES_VERSION v0.2.1")
 }
 
@@ -347,4 +347,14 @@ func TestLibraryMissingFolder(t *testing.T) {
 	cfg := libraryConfig(t)
 	cfg.packages = []string{"std/time", "std/maps"}
 	wantProblem(t, cfg.checkLibrary(), "no folder maps/ for std/maps")
+}
+
+// A std package without exported phrases (a theme package) needs no Library
+// folder; one with phrases still does.
+func TestLibraryPhraselessPackage(t *testing.T) {
+	cfg := libraryConfig(t)
+	cfg.packages = []string{"std/time", "std/theme/default"}
+	if got := cfg.checkLibrary(); got != "" {
+		t.Errorf("a package without phrases needs no folder:\n%s", got)
+	}
 }

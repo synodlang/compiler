@@ -93,7 +93,7 @@ func (e *Entry) Command() string {
 func (e *Entry) Kind() string { return KindOf(e.Code) }
 
 // DefaultMod is the synod.mod of an example that lists none.
-const DefaultMod = "module example.com/explain\nsynod 0.2\n"
+const DefaultMod = "module example.com/explain\nsynod 0.3\n"
 
 // ExampleFiles returns the example files with the implied synod.mod added.
 func (e *Entry) ExampleFiles() []File { return withMod(e.Example) }

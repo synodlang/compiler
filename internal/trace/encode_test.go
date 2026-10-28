@@ -50,7 +50,7 @@ func enc(t *testing.T, facts []Fact, o Options) string {
 	return b.String()
 }
 
-const wantHeader = `{"format":"synod-trace/1","synod":"0.2","seed":7,"program":"examples/paxos","packages":["paxos","std/net","std/sim"]}` + "\n"
+const wantHeader = `{"format":"synod-trace/1","synod":"0.3","seed":7,"program":"examples/paxos","packages":["paxos","std/net","std/sim"]}` + "\n"
 
 func TestEncodeEvents(t *testing.T) {
 	o := Options{Paths: map[string]string{"../x/paxos.synod": "paxos/paxos.synod"}}

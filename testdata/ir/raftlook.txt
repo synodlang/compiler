@@ -221,7 +221,7 @@
       (body
         (each i#2 s#3 l#0
           (native "look.tween" "scale" s#3 0 (time 0))
-          (after (times:time d#1 (minus i#2 1))
+          (after (times:time d#1 i#2)
             (call "look.PopIn" s#3)))))
     (phrase "Fade … to"
       (vars (0 s param shape) (1 o param number))

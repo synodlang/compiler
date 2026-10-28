@@ -48,7 +48,11 @@ func checkLibrary(cfg *config, p *problems) {
 		var helpers []string
 		entries, err := os.ReadDir(filepath.Join(cfg.library, folder))
 		if err != nil {
-			p.add(cfg.library, "no folder %s/ for %s", folder, pkg)
+			// A package with no exported phrases (a theme package) has
+			// nothing for an example to use, so it needs no folder.
+			if len(phrases[pkg]) > 0 {
+				p.add(cfg.library, "no folder %s/ for %s", folder, pkg)
+			}
 			continue
 		}
 		for _, e := range entries {

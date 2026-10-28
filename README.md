@@ -9,7 +9,7 @@ The `synod` command: it formats, checks and runs Synod programs, deterministical
 Synod is a small, consistent language for describing distributed systems.
 A program is simulated on a deterministic clock, and the run can later be
 animated. This repository holds the `synod` binary, written in Go with the
-standard library only. It implements Synod 0.2.
+standard library only. It implements Synod 0.3.
 
 ## Where it fits
 
@@ -409,6 +409,10 @@ A release is built on every tag that starts with `v`.
   means this repository releases `v0.2.x`. A patch is a bug fix or more of the
   same language implemented. A new language feature raises MINOR, after the
   specification changes in dsl.
+- A compiler accepts a `synod.mod` that names an older language version of the
+  same MAJOR (a 0.3 compiler reads `synod 0.2`) and rejects a newer one. The
+  version line is not a gate: a `# theme` header in a module that says
+  `synod 0.2` compiles. `synod new` writes the compiler's own version.
 
 ## Status and roadmap
 
@@ -431,6 +435,6 @@ The [change log](CHANGELOG.md) lists what each release added.
 Synod is named after the Synod protocol, the core consensus algorithm in Leslie Lamport's paper "The Part-Time Parliament" (ACM Transactions on Computer Systems, 1998; first submitted in 1990). The paper tells it as the story of the parliament of the ancient Greek island of Paxos, whose part-time legislators could agree on decrees although they came and went; today the algorithm is known as Paxos. Lamport later explained it plainly in "Paxos Made Simple" (2001), and in 2013 he received the ACM A.M. Turing Award for fundamental contributions to the theory and practice of distributed and concurrent systems. His "Time, Clocks, and the Ordering of Events in a Distributed System" (1978) and his TLA+ specification language shaped how we reason about such systems. We are grateful for his work, and we hope Synod honours it by making these ideas easier to watch and understand. The compiler simulates programs deterministically, in the spirit of reasoning carefully about the order of events.
 
 
-Implements Synod 0.2 (specification: https://github.com/synodlang/dsl).
+Implements Synod 0.3 (specification: https://github.com/synodlang/dsl).
 
 Licensed under the [Apache License 2.0](LICENSE).

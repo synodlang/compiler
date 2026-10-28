@@ -1,0 +1,6 @@
+package example.com/t/a name=a dir=a module=example.com/t
+  file a/a.synod
+  deps 
+targets example.com/t/a
+module "example.com/t" dir=. version= synod=0.2 requires=0
+diagnostics 0

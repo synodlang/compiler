@@ -412,7 +412,7 @@ func TestFormatDiagnostics(t *testing.T) {
 func TestVersion(t *testing.T) {
 	v := Version("v1.2.3")
 	plain(t, "result", v)
-	if v["api"] != 1 || v["language"] != "0.2" || v["error"] != nil || v["exitCode"] != 0 {
+	if v["api"] != 1 || v["language"] != "0.3" || v["error"] != nil || v["exitCode"] != 0 {
 		t.Errorf("%v", v)
 	}
 	if !reflect.DeepEqual(v["formats"], []any{"synod-trace/1", "synod-scene/1", "synod-check/1", "synod-doc/1", "synod-explain/1"}) {

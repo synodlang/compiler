@@ -10,7 +10,7 @@ import (
 )
 
 // LanguageVersion is the Synod version this compiler implements.
-const LanguageVersion = "0.2"
+const LanguageVersion = "0.3"
 
 // StdModule is the module path of the standard library.
 const StdModule = "github.com/synodlang/std"
@@ -20,7 +20,7 @@ type Module struct {
 	Path     string            // module path; "" for a folder without synod.mod
 	Dir      string            // slash path of the module root; "$std" for std
 	Version  string            // "v1.2.0" for a vendored module, else ""
-	Synod    string            // language version, "0.2"
+	Synod    string            // language version, "0.3"
 	Requires map[string]string // module path → version
 	Std      bool
 	// File is the display path of synod.mod ("" if there is none).

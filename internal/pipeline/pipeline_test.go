@@ -125,7 +125,7 @@ func TestFormatSceneLength(t *testing.T) {
 }
 
 func TestVersionText(t *testing.T) {
-	want := "language 0.2\ncompiler v1\nformats synod-trace/1 synod-scene/1 synod-check/1 synod-doc/1 synod-explain/1\n"
+	want := "language 0.3\ncompiler v1\nformats synod-trace/1 synod-scene/1 synod-check/1 synod-doc/1 synod-explain/1\n"
 	if got := VersionText("v1"); got != want {
 		t.Errorf("got %q", got)
 	}

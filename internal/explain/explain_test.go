@@ -195,7 +195,7 @@ func TestFixedFiles(t *testing.T) {
 	for _, f := range e.FixedFiles() {
 		got = append(got, f.Path+"="+strings.TrimSpace(f.Content))
 	}
-	want := "synod.mod=module example.com/explain\nsynod 0.2 a/a.synod=3 a/c.synod=4"
+	want := "synod.mod=module example.com/explain\nsynod 0.3 a/a.synod=3 a/c.synod=4"
 	if strings.Join(got, " ") != want {
 		t.Errorf("got %q want %q", strings.Join(got, " "), want)
 	}

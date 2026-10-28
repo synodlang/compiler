@@ -8,7 +8,7 @@ import (
 )
 
 // Language is the language version the compiler implements.
-const Language = "0.2"
+const Language = "0.3"
 
 // Formats are the document formats the compiler writes.
 var Formats = [...]string{"synod-trace/1", "synod-scene/1", "synod-check/1", "synod-doc/1", "synod-explain/1"}

@@ -1,2 +1,2 @@
 module example.com/tutorial
-synod 0.2
+synod 0.3

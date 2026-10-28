@@ -1,4 +1,4 @@
-{"format":"synod-trace/1","synod":"0.2","seed":1,"program":"github.com/synodlang/examples/wal","packages":["github.com/synodlang/examples/wal","std/disk","std/lesson","std/lists","std/sim","std/text","std/time"]}
+{"format":"synod-trace/1","synod":"0.3","seed":1,"program":"github.com/synodlang/examples/wal","packages":["github.com/synodlang/examples/wal","std/disk","std/lesson","std/lists","std/sim","std/text","std/time"]}
 {"seq":1,"t":0,"ev":"sim.Started"}
 {"seq":2,"t":0,"ev":"sim.Added","node":"n1","runs":["std/disk","std/lists","std/sim","std/text","std/time","github.com/synodlang/examples/wal"],"state":{"wal.Table":{"map":[]},"wal.Lsn":0,"wal.Flushed":0}}
 {"seq":3,"t":0,"ev":"sim.Emitted","node":"n1","record":{"type":"wal.Recovered","fields":{"Replayed":0}}}

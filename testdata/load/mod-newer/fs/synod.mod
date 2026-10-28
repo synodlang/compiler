@@ -1,2 +1,2 @@
 module example.com/t
-synod 0.3
+synod 0.4
