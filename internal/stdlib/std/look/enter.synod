@@ -15,5 +15,5 @@ define PopIn [s: shape]
 define Enter [l: list of shape] every [d: time]
   each i, s in l
     Tween "scale" of s to 0 over 0s
-    after (d times (i minus 1))
+    after (d times i)
       PopIn s
