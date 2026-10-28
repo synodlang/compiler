@@ -1,0 +1,7 @@
+t/t.synod:1:1: error[bad-theme]: theme "t" does not define "Ink"
+  |
+1 | # theme t
+  | ^^^^^^^^^
+  |
+  = note: 2 names are missing: Glow
+  = note: copy std/theme/default and change its values

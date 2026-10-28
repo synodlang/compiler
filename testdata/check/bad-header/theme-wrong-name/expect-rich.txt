@@ -1,0 +1,11 @@
+t/t.synod:1:1: error[bad-header]: theme "u" must be the folder name "t"
+  |
+1 | # theme u
+  | ^^^^^^^^^
+  |
+  = note: a main file writes "# package main"
+help: write the folder name "t"
+  |
+1 | # theme t
+  |         ~
+  |

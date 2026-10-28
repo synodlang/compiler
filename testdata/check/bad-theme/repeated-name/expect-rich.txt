@@ -1,0 +1,7 @@
+t/t.synod:104:8: error[bad-theme]: "Ink" is defined twice
+    |
+  5 | define Ink
+    |        --- first defined here
+...
+104 | define Ink
+    |        ^^^

@@ -1,0 +1,1 @@
+p/main.synod:4:5: error[extra-theme]: a second theme "std/theme/default"; the program's theme is "example.com/t/warm"

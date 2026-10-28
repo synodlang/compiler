@@ -214,7 +214,7 @@ func hoistImports(t *parse.File) {
 		return
 	}
 	sort.SliceStable(uses, func(i, j int) bool { return importPath(uses[i]) < importPath(uses[j]) })
-	if t.Header == nil && len(uses[0].Leading) > 0 && strings.HasPrefix(uses[0].Leading[0].Text, "package ") {
+	if t.Header == nil && len(uses[0].Leading) > 0 && (strings.HasPrefix(uses[0].Leading[0].Text, "package ") || strings.HasPrefix(uses[0].Leading[0].Text, "theme ")) {
 		return
 	}
 	body := make([]parse.Node, 0, len(t.Body))

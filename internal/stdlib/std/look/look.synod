@@ -2,13 +2,13 @@
 # A circle of radius `r` points
 define Circle [r: number] native "look.circle"
 
-# A rounded rectangle
+# A rectangle with the corner radius `theme.CornerRadius`
 define Rect [w: number] by [h: number] native "look.rect"
 
 # Text
 define Label [t: text] native "look.label"
 
-# A line that follows both shapes
+# A line that follows both shapes, at opacity `theme.LinkOpacity`
 define Line from [a: shape] to [b: shape] native "look.line"
 
 # Shapes moved and faded together
@@ -23,10 +23,10 @@ define Stroke [s: shape] with [c: color] native "look.stroke"
 # The only motion primitive (`spec/09`); of `"x"` or `"y"` it also takes a shape: that shape's position
 define Tween [p: text] of [s: shape] to [v: value] over [d: time] native "look.tween"
 
-# `"glow"`, `"blur"` or `"trail"`, for 600ms
+# `"glow"` (600ms), `"indicate"` (600ms), `"flash"` (500ms), `"circumscribe"` (900ms), `"ripple"` (700ms) or `"sweep"` (800ms), scaled by pace
 define Effect [e: text] on [s: shape] native "look.effect"
 
-# `"ring"`, `"row"` or `"grid"` for node cards
+# `"ring"`, `"row"` or `"grid"` for node cards, spaced by `theme.Fill`
 define Layout [kind: text] native "look.layout"
 
 # Position relative to another shape; likewise `below`, `beside`
@@ -49,3 +49,30 @@ define Flight [s: shape] from [a: shape] to [b: shape] for [m: msg] native "look
 
 # Unexported: delete the shape now (used by `Remove`)
 define delete [s: shape] native "look.delete"
+
+# An icon of the fixed set, 32 units, stroked
+define Icon [name: text] native "look.icon"
+
+# A whole number whose digits roll when it changes
+define Counter [v: number] native "look.counter"
+
+# Type role of a label or counter: `"title"`, `"label"`, `"value"` or `"caption"`
+define Role [s: shape] as [r: text] native "look.role"
+
+# Font face of a label or counter: `"sans"` or `"mono"`
+define Face [s: shape] as [f: text] native "look.face"
+
+# Dashed outline; `on 0` draws solid
+define Dash [s: shape] on [a: number] off [b: number] native "look.dash"
+
+# Later moves of `s` follow an arc bent by `c` (−1..1) of their length
+define Bend [s: shape] by [c: number] native "look.bend"
+
+# Moving `s` leaves a fading trail `d` long (0s to 2s)
+define Trail [s: shape] for [d: time] native "look.trail"
+
+# Move the camera to `s` at zoom `z` (0.5..4)
+define Focus [s: shape] zoom [z: number] over [d: time] native "look.focus"
+
+# One of `theme.Message1`..`4`, chosen by the record type of `m`
+define MessageColor [m: msg] native "look.messageColor"

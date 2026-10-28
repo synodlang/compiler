@@ -1,0 +1,1 @@
+t/t.synod:1:1: error[bad-header]: theme "u" must be the folder name "t"

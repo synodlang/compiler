@@ -1,0 +1,136 @@
+# theme default
+# scene ground
+define Paper
+  result #151A2E
+
+# node cards, primary text
+define Ink
+  result #EDE9E1
+
+# links, borders
+define Line
+  result #3A4366
+
+# secondary text, idle nodes
+define Quiet
+  result #8A90A8
+
+# messages, the one thing to look at
+define Accent
+  result #F4A340
+
+# success, committed
+define Good
+  result #5CC8B8
+
+# candidate, pending
+define Warning
+  result #E8C35A
+
+# broken invariant, crashed
+define Critical
+  result #E86F5A
+
+# message color 1
+define Message1
+  result #F4A340
+
+# message color 2
+define Message2
+  result #7FB2F0
+
+# message color 3
+define Message3
+  result #C79BEA
+
+# message color 4
+define Message4
+  result #F08FB0
+
+# edges not darkened
+define Vignette
+  result 0
+
+# outlines not wobbled
+define Sketch
+  result 0
+
+# glow blur
+define Glow
+  result 24
+
+# no shadow
+define Shadow
+  result 0
+
+# outline width
+define StrokeWidth
+  result 2
+
+# rect corners
+define CornerRadius
+  result 12
+
+# node cards are rects
+define NodeShape
+  result "card"
+
+# node cards are filled
+define NodeFill
+  result "solid"
+
+# links are opaque
+define LinkOpacity
+  result 1
+
+# smootherstep moves
+define Easing
+  result "smooth"
+
+# no drift
+define Drift
+  result 0
+
+# default sans face
+define Sans
+  result "Inter"
+
+# default mono face
+define Mono
+  result "JetBrains Mono"
+
+# title role
+define TitleSize
+  result 28
+
+# label role
+define LabelSize
+  result 16
+
+# value role
+define ValueSize
+  result 15
+
+# caption role
+define CaptionSize
+  result 20
+
+# title role
+define TitleWeight
+  result 600
+
+# label, value, caption roles
+define LabelWeight
+  result 500
+
+# no letter spacing
+define Tracking
+  result 0
+
+# `look.Frame` inset
+define Margin
+  result 4
+
+# layout scale
+define Fill
+  result 1

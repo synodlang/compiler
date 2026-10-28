@@ -1,32 +1,102 @@
 # package theme
-# scene ground
-define Paper
-  result #151A2E
+# Scene ground color
+define Paper native "theme.Paper"
 
-# node cards, primary text
-define Ink
-  result #EDE9E1
+# Node cards and primary text color
+define Ink native "theme.Ink"
 
-# links, borders
-define Line
-  result #3A4366
+# Links and borders color
+define Line native "theme.Line"
 
-# secondary text, idle nodes
-define Quiet
-  result #8A90A8
+# Secondary text and idle nodes color
+define Quiet native "theme.Quiet"
 
-# messages, the one thing to look at
-define Accent
-  result #F4A340
+# Messages color: the one thing to look at
+define Accent native "theme.Accent"
 
-# success, committed
-define Good
-  result #5CC8B8
+# Success and committed color
+define Good native "theme.Good"
 
-# candidate, pending
-define Warning
-  result #E8C35A
+# Candidate and pending color
+define Warning native "theme.Warning"
 
-# broken invariant, crashed
-define Critical
-  result #E86F5A
+# Broken invariant and crashed color
+define Critical native "theme.Critical"
+
+# First of four message colors, picked by `look.MessageColor`
+define Message1 native "theme.Message1"
+
+# Second of four message colors
+define Message2 native "theme.Message2"
+
+# Third of four message colors
+define Message3 native "theme.Message3"
+
+# Fourth of four message colors
+define Message4 native "theme.Message4"
+
+# Darkening of the scene edges, 0 to 1
+define Vignette native "theme.Vignette"
+
+# Hand-drawn wobble of outlines, 0 to 1
+define Sketch native "theme.Sketch"
+
+# Glow blur in units, 0 to 48
+define Glow native "theme.Glow"
+
+# Shadow strength of filled shapes, 0 to 1
+define Shadow native "theme.Shadow"
+
+# Outline width in units, 0.5 to 6
+define StrokeWidth native "theme.StrokeWidth"
+
+# Corner radius of rects in units, 0 to 40
+define CornerRadius native "theme.CornerRadius"
+
+# Shape of a node card: `"card"` or `"circle"`
+define NodeShape native "theme.NodeShape"
+
+# Fill of a node card: `"solid"` or `"outline"`
+define NodeFill native "theme.NodeFill"
+
+# Opacity of links, 0 to 1
+define LinkOpacity native "theme.LinkOpacity"
+
+# Curve of position, scale, rotation and camera moves: `"smooth"` or `"spring"`
+define Easing native "theme.Easing"
+
+# Slow camera drift in units, 0 to 24
+define Drift native "theme.Drift"
+
+# Family of the sans face: `"Inter"`, `"JetBrains Mono"`, `"Source Serif 4"` or `"Shantell Sans"`
+define Sans native "theme.Sans"
+
+# Family of the mono face: `"Inter"`, `"JetBrains Mono"`, `"Source Serif 4"` or `"Shantell Sans"`
+define Mono native "theme.Mono"
+
+# Size of the title role in units, 12 to 64
+define TitleSize native "theme.TitleSize"
+
+# Size of the label role in units, 10 to 40
+define LabelSize native "theme.LabelSize"
+
+# Size of the value role in units, 10 to 40
+define ValueSize native "theme.ValueSize"
+
+# Size of the caption role in units, 12 to 48
+define CaptionSize native "theme.CaptionSize"
+
+# Weight of the title role: 400, 500, 600 or 700
+define TitleWeight native "theme.TitleWeight"
+
+# Weight of the label, value and caption roles: 400, 500, 600 or 700
+define LabelWeight native "theme.LabelWeight"
+
+# Letter spacing in em, -0.05 to 0.2
+define Tracking native "theme.Tracking"
+
+# Inset of `look.Frame` in units, 0 to 100
+define Margin native "theme.Margin"
+
+# Scale of layout radii and spacing, 0.5 to 1.5
+define Fill native "theme.Fill"

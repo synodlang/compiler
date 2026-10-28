@@ -1,0 +1,4 @@
+t/t.synod:3:10: error[bad-theme]: "Paper" must be a color such as #151A2E
+t/t.synod:45:10: error[bad-theme]: "Glow" must be a number from 0 to 48
+t/t.synod:57:10: error[bad-theme]: "NodeShape" must be "card" or "circle"
+t/t.synod:66:10: error[bad-theme]: "Easing" must be "smooth" or "spring"

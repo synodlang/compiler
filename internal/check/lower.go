@@ -25,14 +25,25 @@ func Lower(all []*resolve.Package, infos map[string]*Info) map[string]*ir.Progra
 // paths in std (for instance "std/look/basic") that is among all. Every
 // program comes from the same lowering, so they share their *ir.Package,
 // *ir.Record and *ir.Field values.
-func LowerStd(all []*resolve.Package, infos map[string]*Info, std ...string) map[string]*ir.Program {
+func LowerStd(everything []*resolve.Package, infos map[string]*Info, std ...string) map[string]*ir.Program {
+	// A theme is not a package of the program: it is read into Program.Theme.
+	var all []*resolve.Package
+	themes := map[string]*resolve.Package{}
+	for _, rp := range everything {
+		if rp.IsTheme {
+			themes[rp.Path] = rp
+		} else {
+			all = append(all, rp)
+		}
+	}
 	l := &lowerer{
-		infos: infos,
-		pk:    map[*resolve.Package]*ir.Package{},
-		proc:  map[*resolve.Phrase]*ir.Proc{},
-		fn:    map[*resolve.Phrase]*fnc{},
-		field: map[*resolve.Field]*ir.Field{},
-		rec:   map[*resolve.Record]*ir.Record{},
+		themes: themes,
+		infos:  infos,
+		pk:     map[*resolve.Package]*ir.Package{},
+		proc:   map[*resolve.Phrase]*ir.Proc{},
+		fn:     map[*resolve.Phrase]*fnc{},
+		field:  map[*resolve.Field]*ir.Field{},
+		rec:    map[*resolve.Record]*ir.Record{},
 	}
 	for _, rp := range all {
 		l.declarePackage(rp)
@@ -57,12 +68,13 @@ func LowerStd(all []*resolve.Package, infos map[string]*Info, std ...string) map
 }
 
 type lowerer struct {
-	infos map[string]*Info
-	pk    map[*resolve.Package]*ir.Package
-	proc  map[*resolve.Phrase]*ir.Proc
-	fn    map[*resolve.Phrase]*fnc
-	field map[*resolve.Field]*ir.Field
-	rec   map[*resolve.Record]*ir.Record
+	themes map[string]*resolve.Package // the theme packages, by path
+	infos  map[string]*Info
+	pk     map[*resolve.Package]*ir.Package
+	proc   map[*resolve.Phrase]*ir.Proc
+	fn     map[*resolve.Phrase]*fnc
+	field  map[*resolve.Field]*ir.Field
+	rec    map[*resolve.Record]*ir.Record
 }
 
 // fnc is the frame being built for one body.
@@ -114,7 +126,7 @@ func uses(rp *resolve.Package) []*resolve.Package {
 	seen := map[*resolve.Package]bool{}
 	var out []*resolve.Package
 	for _, imp := range rp.Imports {
-		if imp.Pkg != nil && !seen[imp.Pkg] {
+		if imp.Pkg != nil && !imp.Pkg.IsTheme && !seen[imp.Pkg] {
 			seen[imp.Pkg] = true
 			out = append(out, imp.Pkg)
 		}
@@ -326,7 +338,7 @@ func (l *lowerer) fieldTy(rp *resolve.Package, rf *resolve.Field) types.Type {
 // program assembles the program whose entry is rp.
 func (l *lowerer) program(rp *resolve.Package) *ir.Program {
 	p := l.pk[rp]
-	prog := &ir.Program{Name: rp.Path, Packages: p.Runs}
+	prog := &ir.Program{Name: rp.Path, Packages: p.Runs, Theme: l.theme(rp)}
 	if rp.Main != nil {
 		prog.Main = l.proc[rp.Main]
 	}
@@ -335,4 +347,24 @@ func (l *lowerer) program(rp *resolve.Package) *ir.Program {
 		prog.Invariants = append(prog.Invariants, q.Invariants...)
 	}
 	return prog
+}
+
+// theme returns the theme of the program whose entry is rp: the theme its
+// main file imports, else std/theme/default (spec/06 section 6.7). It is nil
+// only when the graph lacks the default theme.
+func (l *lowerer) theme(rp *resolve.Package) *ir.Theme {
+	path := stdlib.DefaultThemePath
+	if rp.IsMain {
+		for _, imp := range rp.Imports {
+			if imp.Pkg != nil && imp.Pkg.IsTheme {
+				path = imp.Pkg.Path
+				break
+			}
+		}
+	}
+	in := l.infos[path]
+	if l.themes[path] == nil || in == nil || len(in.Theme) != len(stdlib.ThemeNames) {
+		return nil
+	}
+	return &ir.Theme{Path: path, Values: in.Theme}
 }

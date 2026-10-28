@@ -1,0 +1,1 @@
+t/t.synod:1:1: error[bad-theme]: theme "t" does not define "Ink"

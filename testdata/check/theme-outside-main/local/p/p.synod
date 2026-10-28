@@ -1,0 +1,5 @@
+# package p
+use example.com/t/warm
+
+define One
+  result 1

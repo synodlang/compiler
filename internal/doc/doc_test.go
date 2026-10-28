@@ -85,8 +85,8 @@ func TestTitles(t *testing.T) {
 			got[m[1]] = m[2]
 		}
 	}
-	if len(got) != 12 {
-		t.Fatalf("README has %d std headings, want 12", len(got))
+	if len(got) != 13 {
+		t.Fatalf("README has %d std headings, want 13", len(got))
 	}
 	for p, title := range got {
 		if Title(p) != title {
@@ -98,8 +98,8 @@ func TestTitles(t *testing.T) {
 			t.Errorf("titles has %s, which README has no heading for", p)
 		}
 	}
-	if len(StdPackages()) != 13 {
-		t.Errorf("StdPackages = %v, want 13", StdPackages())
+	if len(StdPackages()) != 14 {
+		t.Errorf("StdPackages = %v, want 14", StdPackages())
 	}
 }
 
@@ -120,6 +120,7 @@ func TestCatalogRows(t *testing.T) {
 	cat := Catalog(stdBuilt(t))
 	type row struct{ gives, ctx, meaning string }
 	have := map[string]row{}
+	haveTheme := map[string]string{} // name -> "value|use" of std/theme/default
 	section := ""
 	for _, l := range strings.Split(cat, "\n") {
 		if m := headingRe.FindStringSubmatch(l); m != nil {
@@ -127,7 +128,9 @@ func TestCatalogRows(t *testing.T) {
 		}
 		if strings.HasPrefix(l, "| `") {
 			cs := cells(l)
-			if len(cs) == 4 {
+			if section == "std/theme/default" {
+				haveTheme[strings.Trim(cs[0], "`")] = cs[1] + "|" + cs[2]
+			} else if len(cs) == 4 {
 				have[section+"|"+strings.Trim(cs[0], "`")] = row{strings.ReplaceAll(cs[1], "`", ""), cs[2], cs[3]}
 			}
 		}
@@ -138,7 +141,16 @@ func TestCatalogRows(t *testing.T) {
 		if m := headingRe.FindStringSubmatch(l); m != nil {
 			section = m[1]
 		}
-		if !strings.HasPrefix(l, "| `") || section == "" || section == "std/theme" {
+		if !strings.HasPrefix(l, "| `") || section == "" {
+			continue
+		}
+		if section == "std/theme/default" {
+			cs := cells(l)
+			name := strings.Trim(cs[0], "`")
+			if got, want := haveTheme[name], cs[1]+"|"+cs[2]; got != want {
+				t.Errorf("std/theme/default %s: catalog has %q, README says %q", name, got, want)
+			}
+			delete(haveTheme, name)
 			continue
 		}
 		cs := cells(l)
@@ -163,12 +175,17 @@ func TestCatalogRows(t *testing.T) {
 			t.Errorf("%s %s: catalog row is %+v, README says gives %q, ctx %q, meaning %q", section, pattern, got, gives, ctx, meaning)
 		}
 	}
+	for name := range haveTheme {
+		t.Errorf("std/theme/default: the catalog has %s, README does not", name)
+	}
 	if checked < 60 {
 		t.Errorf("only %d rows compared", checked)
 	}
-	for _, p := range []string{"theme.Paper", "theme.Critical"} {
-		if !strings.Contains(cat, "| `"+p+"` | `#") {
-			t.Errorf("the catalog has no color row for %s", p)
+	// std/theme/default is listed as Name | Value | Use, with the literals of
+	// default.synod.
+	for _, row := range []string{"| `Paper` | `#151A2E` | scene ground |", "| `Glow` | `24` | glow blur |", "| `NodeShape` | `\"card\"` | node cards are rects |"} {
+		if !strings.Contains(cat, row) {
+			t.Errorf("the catalog has no row %q", row)
 		}
 	}
 }
@@ -251,5 +268,51 @@ func TestPatternsMatchItems(t *testing.T) {
 				t.Errorf("%s has no doc comment", ph.Pattern)
 			}
 		}
+	}
+}
+
+// TestThemePackageDoc: a theme package is documented by its values
+// (implementation/04-formats.md, synod-doc/1): kind "theme", the 34 values in
+// file order with their types and doc comments, and no phrase.
+func TestThemePackageDoc(t *testing.T) {
+	res := driver.Check(driver.Options{Load: load.Config{ExtraStd: []string{"std/theme", "std/theme/default"}}}, nil)
+	if len(res.Diags) > 0 {
+		t.Fatalf("%v", res.Diags[0])
+	}
+	rp := res.ByPath["std/theme/default"]
+	p := Build(res, rp, ViewOf(rp))
+	if p.Kind != "theme" || len(p.Values) != len(stdlib.ThemeNames) || len(p.Phrases) != 0 || p.Title != "the default theme values" {
+		t.Fatalf("package = kind %q, %d values, %d phrases, title %q", p.Kind, len(p.Values), len(p.Phrases), p.Title)
+	}
+	for i, n := range stdlib.ThemeNames {
+		v := p.Values[i]
+		if v.Name != n.Name || v.Doc == "" || v.Def.Line == 0 {
+			t.Errorf("value %d = %+v, want %s with a doc and a position", i, v, n.Name)
+		}
+		want := "number"
+		switch n.Type {
+		case types.TColor:
+			want = "color"
+		case types.TText:
+			want = "text"
+		}
+		if v.Type != want {
+			t.Errorf("%s has type %s, want %s", n.Name, v.Type, want)
+		}
+	}
+	var buf strings.Builder
+	if err := WriteJSON(&buf, nil, nil, []*Package{p}); err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`"title":"the default theme values","kind":"theme","values":[{"name":"Paper","type":"color","value":"#151A2E","doc":"scene ground"`, `"name":"Glow","type":"number","value":24,`, `"name":"NodeShape","type":"text","value":"card",`, `"std":true,"activates":false,"phrases":[]`} {
+		if !strings.Contains(buf.String(), want) {
+			t.Errorf("JSON lacks %s", want)
+		}
+	}
+	other := res.ByPath["std/theme"]
+	var o strings.Builder
+	WriteJSON(&o, nil, nil, []*Package{Build(res, other, ViewOf(other))})
+	if strings.Contains(o.String(), `"kind":"theme"`) || strings.Contains(o.String(), `"values"`) {
+		t.Error("a package that is not a theme has kind or values")
 	}
 }

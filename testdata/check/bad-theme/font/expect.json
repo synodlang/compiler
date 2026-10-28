@@ -1,0 +1,1 @@
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"t/t.synod","line":72,"col":10,"end":{"line":72,"col":22},"severity":"error","code":"bad-theme","message":"\"Sans\" must be one of \"Inter\", \"JetBrains Mono\", \"Source Serif 4\" or \"Shantell Sans\""}]}

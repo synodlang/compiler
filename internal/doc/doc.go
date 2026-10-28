@@ -9,6 +9,7 @@ import (
 
 	"github.com/synodlang/compiler/internal/check"
 	"github.com/synodlang/compiler/internal/driver"
+	"github.com/synodlang/compiler/internal/ir"
 	"github.com/synodlang/compiler/internal/parse"
 	"github.com/synodlang/compiler/internal/resolve"
 	"github.com/synodlang/compiler/internal/stdlib"
@@ -84,22 +85,34 @@ type Node struct {
 
 // Package is the documentation of one package.
 type Package struct {
-	Path      string   `json:"path"`
-	Name      string   `json:"name"`
-	Qualifier string   `json:"qualifier"`
-	Title     string   `json:"title"`
-	Std       bool     `json:"std"`
-	Activates bool     `json:"activates"`
-	Phrases   []Phrase `json:"phrases"`
-	Records   []Record `json:"records"`
-	Node      *Node    `json:"node"`
+	Path      string `json:"path"`
+	Name      string `json:"name"`
+	Qualifier string `json:"qualifier"`
+	Title     string `json:"title"`
+	// Kind is "theme" for a theme package (spec/06 section 6.7) and "" for
+	// any other; Values lists the definitions of a theme in file order.
+	Kind      string       `json:"kind,omitempty"`
+	Values    []ThemeValue `json:"values,omitempty"`
+	Std       bool         `json:"std"`
+	Activates bool         `json:"activates"`
+	Phrases   []Phrase     `json:"phrases"`
+	Records   []Record     `json:"records"`
+	Node      *Node        `json:"node"`
 
 	// Observers and Invariants count what importing the package activates.
 	Observers  int `json:"-"`
 	Invariants int `json:"-"`
+}
 
-	// colors holds the std/theme values by head, for the catalog.
-	colors map[string]string
+// ThemeValue is one definition of a theme package: its name, the type of
+// its literal ("color", "number" or "text"), the literal as JSON (a color as
+// its hex text), its doc comment and where it is defined.
+type ThemeValue struct {
+	Name  string `json:"name"`
+	Type  string `json:"type"`
+	Value any    `json:"value"`
+	Doc   string `json:"doc"`
+	Def   Def    `json:"def"`
 }
 
 // View says how a package is read: which names are listed and how they are
@@ -151,6 +164,11 @@ func Build(res driver.Result, rp *resolve.Package, v View) *Package {
 	if rp.IsStd {
 		p.Title = Title(p.Path)
 	}
+	if rp.IsTheme {
+		p.Kind = "theme"
+		p.Values = themeValues(res.Infos[rp.Path], rp)
+		return p
+	}
 	for _, h := range rp.Handlers {
 		if h.Kind == stdlib.TraceEvent {
 			p.Observers++
@@ -184,14 +202,6 @@ func Build(res driver.Result, rp *resolve.Package, v View) *Package {
 			continue
 		}
 		p.Phrases = append(p.Phrases, buildPhrase(ph, v, info, docs, typeText))
-		if rp.IsStd && rp.Path == "std/theme" {
-			if c := colorOf(ph); c != "" {
-				if p.colors == nil {
-					p.colors = map[string]string{}
-				}
-				p.colors[ph.Head] = c
-			}
-		}
 	}
 	for _, r := range rp.Records {
 		if !v.All && !r.Exported {
@@ -300,16 +310,41 @@ func DocText(cs []*parse.Comment) string {
 	return strings.Join(parts, " ")
 }
 
-// colorOf returns the color of a zero-hole phrase whose body is "result
-// #RRGGBB", or "".
-func colorOf(ph *resolve.Phrase) string {
-	if ph.Body == nil || len(ph.Body.Stmts) != 1 {
-		return ""
-	}
-	if r, ok := ph.Body.Stmts[0].(*resolve.Result); ok {
-		if c, ok := r.Value.(*resolve.ColorLit); ok {
-			return c.Hex
+// themeValues lists the definitions of the theme package rp in file order,
+// with the values the checker read.
+func themeValues(info *check.Info, rp *resolve.Package) []ThemeValue {
+	vals := map[string]ir.ThemeValue{}
+	if info != nil {
+		for _, v := range info.Theme {
+			vals[v.Name] = v
 		}
 	}
-	return ""
+	var out []ThemeValue
+	for _, f := range rp.Files {
+		for _, n := range f.Load.Tree.Body {
+			l, ok := n.(*parse.Line)
+			if !ok || len(l.Sentence.Groups) != 1 || len(l.Sentence.Groups[0]) != 2 || !parse.IsWord(l.Sentence.Groups[0][0], "define") {
+				continue
+			}
+			w, ok := l.Sentence.Groups[0][1].(*parse.Word)
+			if !ok {
+				continue
+			}
+			v, ok := vals[w.Name]
+			if !ok {
+				continue
+			}
+			tv := ThemeValue{Name: w.Name, Value: v.V, Doc: DocText(l.Leading), Def: Def{File: f.Path, Line: l.Pos.Line, Col: l.Pos.Col}}
+			switch v.Type {
+			case types.TColor:
+				tv.Type = "color"
+			case types.TNumber:
+				tv.Type = "number"
+			default:
+				tv.Type = "text"
+			}
+			out = append(out, tv)
+		}
+	}
+	return out
 }

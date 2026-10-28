@@ -66,8 +66,11 @@ func Check(opts Options, targets []string) Result {
 	if cfg.Std == nil {
 		cfg.Std = stdlib.Root()
 	}
+	// The default theme is always loaded: it is the theme of a program whose
+	// main file imports none (spec/06 section 6.7).
+	cfg.ExtraStd = append(append([]string(nil), cfg.ExtraStd...), stdlib.DefaultThemePath)
 	if opts.DefaultLook {
-		cfg.ExtraStd = append(append([]string(nil), cfg.ExtraStd...), DefaultLookPath)
+		cfg.ExtraStd = append(cfg.ExtraStd, DefaultLookPath)
 	}
 	g, diags := load.Load(cfg, targets)
 	res := Result{Graph: g, ByPath: map[string]*resolve.Package{}, Fixes: map[string][]format.Fix{}, Sources: map[string]*source.File{}}

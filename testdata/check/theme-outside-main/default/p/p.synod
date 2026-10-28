@@ -1,0 +1,5 @@
+# package p
+use std/theme/default
+
+define One
+  result 1

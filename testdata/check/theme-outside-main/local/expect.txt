@@ -1,0 +1,1 @@
+p/p.synod:2:5: error[theme-outside-main]: "example.com/t/warm" is a theme, and only a main file imports a theme

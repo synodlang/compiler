@@ -134,6 +134,9 @@ func itemText(it parse.Item) string {
 // defsOf returns the define lines of a file in order.
 func defsOf(f *stdFile) []*def {
 	var out []*def
+	if f.Tree.Theme {
+		return nil // the definitions of a theme are values, see themeDefaults
+	}
 	for _, n := range f.Tree.Body {
 		l, ok := n.(*parse.Line)
 		if !ok || len(l.Sentence.Groups) != 1 {
@@ -202,6 +205,46 @@ func readmeBlocks(text string) []string {
 			body = append(body, lines[i])
 		}
 		out = append(out, strings.Join(body, "\n")+"\n")
+	}
+	return out
+}
+
+// themeValue is one definition of a theme file: its name and its literal.
+type themeValue struct {
+	Name    string
+	Literal parse.Item
+	Comment string
+}
+
+// themeDefaults returns the definitions of std/theme/default in file order.
+func themeDefaults(t *testing.T) []themeValue {
+	t.Helper()
+	var out []themeValue
+	for _, f := range loadStd(t) {
+		if f.pkgPath() != "theme/default" {
+			continue
+		}
+		for _, n := range f.Tree.Body {
+			l, ok := n.(*parse.Line)
+			if !ok {
+				continue
+			}
+			g := l.Sentence.Groups[0]
+			if len(g) != 2 || !parse.IsWord(g[0], "define") || l.Block == nil || len(l.Block.Lines) != 1 {
+				t.Errorf("%s:%d: not a theme definition", f.Path, l.Pos.Line)
+				continue
+			}
+			r := l.Block.Lines[0].Sentence.Groups[0]
+			if len(r) != 2 || !parse.IsWord(r[0], "result") {
+				t.Errorf("%s:%d: not one result line", f.Path, l.Pos.Line)
+				continue
+			}
+			v := themeValue{Name: g[1].(*parse.Word).Name, Literal: r[1]}
+			if len(l.Leading) > 0 {
+				v.Comment = l.Leading[len(l.Leading)-1].Text
+			}
+			out = append(out, v)
+		}
 	}
 	return out
 }

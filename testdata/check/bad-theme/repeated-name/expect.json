@@ -1,0 +1,1 @@
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"t/t.synod","line":104,"col":8,"end":{"line":104,"col":11},"severity":"error","code":"bad-theme","message":"\"Ink\" is defined twice","labels":[{"file":"t/t.synod","line":5,"col":8,"end":{"line":5,"col":11},"text":"first defined here"}]}]}

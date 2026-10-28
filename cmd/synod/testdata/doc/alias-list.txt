@@ -9,7 +9,8 @@ std/net  the simulated network
 std/random  deterministic randomness
 std/sim  nodes, runs, faults
 std/text
-std/theme  named colors
+std/theme  the program's theme values
+std/theme/default  the default theme values
 std/time
 example.com/a/raft
 example.com/b/raft

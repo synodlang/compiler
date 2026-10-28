@@ -32,6 +32,10 @@ type Fix struct {
 	// when the sentence has exactly those words, each once, and each
 	// setting is a word followed by a single item.
 	Order []string
+	// DropLine removes the top-level line that starts at Pos, with the
+	// comments above it: the "use std/theme/default" of a main file
+	// (spec/06 section 6.7).
+	DropLine bool
 }
 
 // FormatWith is Format after applying fixes to the freshly parsed tree,
@@ -59,11 +63,17 @@ func applyFixes(t *parse.File, fixes []Fix) {
 			fx.byPos[f.Pos] = f
 		}
 	}
+	body := t.Body[:0:0]
 	for _, n := range t.Body {
 		if l, ok := n.(*parse.Line); ok {
+			if f, ok := fx.byPos[l.Pos]; ok && f.DropLine {
+				continue
+			}
 			fx.line(l)
 		}
+		body = append(body, n)
 	}
+	t.Body = body
 }
 
 func (fx *fixer) line(l *parse.Line) {

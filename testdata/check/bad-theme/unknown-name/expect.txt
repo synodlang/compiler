@@ -1,0 +1,1 @@
+t/t.synod:104:8: error[bad-theme]: "Sparkle" is not a name of the theme table

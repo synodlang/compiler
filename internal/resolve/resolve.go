@@ -44,6 +44,10 @@ type Package struct {
 	Name   string // qualifier: last segment of Path, or "main"
 	IsMain bool
 	IsStd  bool
+	// IsTheme reports a theme package (spec/06 section 6.7): it declares no
+	// phrase, record or node field, exports nothing, and its files are read
+	// by the checker's theme pass. Node is nil.
+	IsTheme bool
 
 	// Files are the files of the package in name order.
 	Files []*File

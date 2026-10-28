@@ -73,6 +73,9 @@ type Package struct {
 	Module *Module
 	IsMain bool
 	IsStd  bool
+	// IsTheme reports a library package whose files start "# theme <word>"
+	// (spec/06 section 6.7). A theme imports nothing and exports no phrase.
+	IsTheme bool
 	// Broken reports that a file failed to lex or parse; its Tree is nil.
 	Broken  bool
 	Files   []*File    // sorted by base name
@@ -551,6 +554,7 @@ func (l *loader) folder(dir string, mod *Module, ipath, name string) *folder {
 	}
 	if len(libFiles) > 0 {
 		fo.lib = &Package{Path: ipath, Name: name, Dir: dir, Module: mod, IsStd: mod.Std, Broken: libBroken, Files: libFiles}
+		fo.libDiags = append(fo.libDiags, l.kindDiags(libFiles, fo.lib)...)
 	}
 	if len(mainFiles) > 0 {
 		first := mainFiles[0]
@@ -563,12 +567,45 @@ func (l *loader) folder(dir string, mod *Module, ipath, name string) *folder {
 		}
 	}
 	for _, p := range []*Package{fo.lib, fo.main} {
-		if p != nil {
+		if p != nil && !p.IsTheme {
 			p.Imports = importsOf(p)
 		}
 	}
 	l.folders[dir] = fo
 	return fo
+}
+
+// kindDiags decides whether the library package p is a theme, from the header
+// of its first parsed file, and reports the files of another header kind
+// (spec/06 section 6.7: all library files of a folder share one kind).
+func (l *loader) kindDiags(files []*File, p *Package) []source.Diagnostic {
+	var first *File
+	for _, f := range files {
+		if f.Tree != nil && f.Tree.Header != nil && f.Tree.Package != "" {
+			first = f
+			break
+		}
+	}
+	if first == nil {
+		return nil
+	}
+	p.IsTheme = first.Tree.Theme
+	kind := func(t *parse.File) string {
+		if t.Theme {
+			return "theme"
+		}
+		return "package"
+	}
+	var out []source.Diagnostic
+	for _, f := range files {
+		if f == first || f.Tree == nil || f.Tree.Header == nil || f.Tree.Package == "" || f.Tree.Theme == first.Tree.Theme {
+			continue
+		}
+		out = append(out, source.NewSpan(f.Src, parse.CommentSpan(f.Tree.Header), source.BadHeader,
+			`this file has a "# `+kind(f.Tree)+`" header, but the library files of a folder share one header kind`, "",
+			source.Also(first.Src.Path, parse.CommentSpan(first.Tree.Header), `the "# `+kind(first.Tree)+`" header of the first file`)))
+	}
+	return out
 }
 
 func (l *loader) dirShown(dir string, m *Module) string {

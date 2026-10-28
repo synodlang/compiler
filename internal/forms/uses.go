@@ -443,7 +443,10 @@ func (c *collector) expr(e resolve.Expr) {
 // ---- parse tree ----
 
 func (c *collector) tree(t *parse.File) {
-	if t.Header != nil {
+	switch {
+	case t.Header != nil && t.Theme:
+		c.form("header-theme")
+	case t.Header != nil:
 		c.form("header")
 	}
 	if len(t.Trailing) > 0 {

@@ -1,0 +1,9 @@
+t/t.synod:99:10: error[bad-theme]: "Margin" must be a number from 0 to 100
+   |
+99 |   result sim.Now
+   |          ^^^^^^^
+
+t/t.synod:102:3: error[bad-theme]: "Fill" is defined by one "result" line holding a literal
+    |
+102 |   result 1 plus 1
+    |   ^^^^^^^^^^^^^^^

@@ -27,6 +27,9 @@ context  A statement is not allowed in the context it runs in.
 foreign-state  Node code reaches another node's state.
 color-literal  A color literal stands where only a named color is allowed.
 native-outside-std  `native` is used outside `std/`.
+theme-outside-main  A library file imports a theme.
+extra-theme  A main file imports more than one theme.
+bad-theme  A theme file is not a complete theme.
 missing-key  A map was asked for a key it does not hold.
 index-range  A list index is not a whole number from 0 up to one less than the size of the list.
 disk-type  A value read from a node's disk does not have the type of the default given to `disk.Read`.

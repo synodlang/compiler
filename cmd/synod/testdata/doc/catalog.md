@@ -42,25 +42,38 @@ Records:
 
 | Phrase | Gives | Context | Meaning |
 | --- | --- | --- | --- |
-| `look.Card for [n: node]` | shape | look | The standard node card: rounded rect, name label |
+| `look.Card for [n: node]` | shape | look | The standard node card: a box and a name label, shaped and filled by `theme.NodeShape` and `theme.NodeFill` |
 | `look.Travel [s: shape] from [a: shape] to [b: shape] over [d: time]` | — | look | Move along a straight path |
 | `look.Remove [s: shape]` | — | look | Fade out, then delete |
+| `look.Frame` | shape | look | A rect of the canvas inset by `theme.Margin` |
+| `look.Reveal [s: shape]` | — | look | Draw `s` on: its outline, then its fill; a label writes itself |
+| `look.PopIn [s: shape]` | — | look | Grow from 0 past 1.12 to 1 over 400ms |
+| `look.Enter [l: list of shape] every [d: time]` | — | look | `PopIn` each shape, `d` after the one before |
 | `look.Circle [r: number]` | shape | look | A circle of radius `r` points |
-| `look.Rect [w: number] by [h: number]` | shape | look | A rounded rectangle |
+| `look.Rect [w: number] by [h: number]` | shape | look | A rectangle with the corner radius `theme.CornerRadius` |
 | `look.Label [t: text]` | shape | look | Text |
-| `look.Line from [a: shape] to [b: shape]` | shape | look | A line that follows both shapes |
+| `look.Line from [a: shape] to [b: shape]` | shape | look | A line that follows both shapes, at opacity `theme.LinkOpacity` |
 | `look.Group [l: list of shape]` | shape | look | Shapes moved and faded together |
 | `look.Fill [s: shape] with [c: color]` | — | look | Fill color (morphs) |
 | `look.Stroke [s: shape] with [c: color]` | — | look | Outline color (morphs) |
 | `look.Tween [p: text] of [s: shape] to [v: value] over [d: time]` | — | look | The only motion primitive (`spec/09`); of `"x"` or `"y"` it also takes a shape: that shape's position |
-| `look.Effect [e: text] on [s: shape]` | — | look | `"glow"`, `"blur"` or `"trail"`, for 600ms |
-| `look.Layout [kind: text]` | — | look | `"ring"`, `"row"` or `"grid"` for node cards |
+| `look.Effect [e: text] on [s: shape]` | — | look | `"glow"` (600ms), `"indicate"` (600ms), `"flash"` (500ms), `"circumscribe"` (900ms), `"ripple"` (700ms) or `"sweep"` (800ms), scaled by pace |
+| `look.Layout [kind: text]` | — | look | `"ring"`, `"row"` or `"grid"` for node cards, spaced by `theme.Fill` |
 | `look.Place [s: shape] above [t: shape]` | — | look | Position relative to another shape; likewise `below`, `beside` |
 | `look.Place [s: shape] below [t: shape]` | — | look | Position relative to another shape: below |
 | `look.Place [s: shape] beside [t: shape]` | — | look | Position relative to another shape: beside |
 | `look.Center` | shape | look | An invisible point at the scene centre |
 | `look.Orbit [s: shape] around [c: shape] at [f: number]` | — | look | Place on a circle of radius 300 around `c`, at fraction `f` of a turn (0 is 12 o'clock, clockwise) |
 | `look.Flight [s: shape] from [a: shape] to [b: shape] for [m: msg]` | — | look | Move `s` from `a` to `b`, landing when `m` arrives (halfway when dropped) |
+| `look.Icon [name: text]` | shape | look | An icon of the fixed set, 32 units, stroked |
+| `look.Counter [v: number]` | shape | look | A whole number whose digits roll when it changes |
+| `look.Role [s: shape] as [r: text]` | — | look | Type role of a label or counter: `"title"`, `"label"`, `"value"` or `"caption"` |
+| `look.Face [s: shape] as [f: text]` | — | look | Font face of a label or counter: `"sans"` or `"mono"` |
+| `look.Dash [s: shape] on [a: number] off [b: number]` | — | look | Dashed outline; `on 0` draws solid |
+| `look.Bend [s: shape] by [c: number]` | — | look | Later moves of `s` follow an arc bent by `c` (−1..1) of their length |
+| `look.Trail [s: shape] for [d: time]` | — | look | Moving `s` leaves a fading trail `d` long (0s to 2s) |
+| `look.Focus [s: shape] zoom [z: number] over [d: time]` | — | look | Move the camera to `s` at zoom `z` (0.5..4) |
+| `look.MessageColor [m: msg]` | color | look | One of `theme.Message1`..`4`, chosen by the record type of `m` |
 | `look.Fade [s: shape] to [o: number]` | — | look | Opacity over 300ms |
 | `look.Pulse [s: shape]` | — | look | Scale to 1.15 and back over 300ms |
 
@@ -168,18 +181,83 @@ Trace events:
 | `text.Join [l: list of text]` | text | any | Concatenate a list of texts |
 | `text.Size [t: text]` | number | any | Number of characters |
 
-## std/theme — named colors
+## std/theme — the program's theme values
+
+| Phrase | Gives | Context | Meaning |
+| --- | --- | --- | --- |
+| `theme.Paper` | color | look | Scene ground color |
+| `theme.Ink` | color | look | Node cards and primary text color |
+| `theme.Line` | color | look | Links and borders color |
+| `theme.Quiet` | color | look | Secondary text and idle nodes color |
+| `theme.Accent` | color | look | Messages color: the one thing to look at |
+| `theme.Good` | color | look | Success and committed color |
+| `theme.Warning` | color | look | Candidate and pending color |
+| `theme.Critical` | color | look | Broken invariant and crashed color |
+| `theme.Message1` | color | look | First of four message colors, picked by `look.MessageColor` |
+| `theme.Message2` | color | look | Second of four message colors |
+| `theme.Message3` | color | look | Third of four message colors |
+| `theme.Message4` | color | look | Fourth of four message colors |
+| `theme.Vignette` | number | look | Darkening of the scene edges, 0 to 1 |
+| `theme.Sketch` | number | look | Hand-drawn wobble of outlines, 0 to 1 |
+| `theme.Glow` | number | look | Glow blur in units, 0 to 48 |
+| `theme.Shadow` | number | look | Shadow strength of filled shapes, 0 to 1 |
+| `theme.StrokeWidth` | number | look | Outline width in units, 0.5 to 6 |
+| `theme.CornerRadius` | number | look | Corner radius of rects in units, 0 to 40 |
+| `theme.NodeShape` | text | look | Shape of a node card: `"card"` or `"circle"` |
+| `theme.NodeFill` | text | look | Fill of a node card: `"solid"` or `"outline"` |
+| `theme.LinkOpacity` | number | look | Opacity of links, 0 to 1 |
+| `theme.Easing` | text | look | Curve of position, scale, rotation and camera moves: `"smooth"` or `"spring"` |
+| `theme.Drift` | number | look | Slow camera drift in units, 0 to 24 |
+| `theme.Sans` | text | look | Family of the sans face: `"Inter"`, `"JetBrains Mono"`, `"Source Serif 4"` or `"Shantell Sans"` |
+| `theme.Mono` | text | look | Family of the mono face: `"Inter"`, `"JetBrains Mono"`, `"Source Serif 4"` or `"Shantell Sans"` |
+| `theme.TitleSize` | number | look | Size of the title role in units, 12 to 64 |
+| `theme.LabelSize` | number | look | Size of the label role in units, 10 to 40 |
+| `theme.ValueSize` | number | look | Size of the value role in units, 10 to 40 |
+| `theme.CaptionSize` | number | look | Size of the caption role in units, 12 to 48 |
+| `theme.TitleWeight` | number | look | Weight of the title role: 400, 500, 600 or 700 |
+| `theme.LabelWeight` | number | look | Weight of the label, value and caption roles: 400, 500, 600 or 700 |
+| `theme.Tracking` | number | look | Letter spacing in em, -0.05 to 0.2 |
+| `theme.Margin` | number | look | Inset of `look.Frame` in units, 0 to 100 |
+| `theme.Fill` | number | look | Scale of layout radii and spacing, 0.5 to 1.5 |
+
+## std/theme/default — the default theme values
 
 | Name | Value | Use |
 | --- | --- | --- |
-| `theme.Paper` | `#151A2E` | scene ground |
-| `theme.Ink` | `#EDE9E1` | node cards, primary text |
-| `theme.Line` | `#3A4366` | links, borders |
-| `theme.Quiet` | `#8A90A8` | secondary text, idle nodes |
-| `theme.Accent` | `#F4A340` | messages, the one thing to look at |
-| `theme.Good` | `#5CC8B8` | success, committed |
-| `theme.Warning` | `#E8C35A` | candidate, pending |
-| `theme.Critical` | `#E86F5A` | broken invariant, crashed |
+| `Paper` | `#151A2E` | scene ground |
+| `Ink` | `#EDE9E1` | node cards, primary text |
+| `Line` | `#3A4366` | links, borders |
+| `Quiet` | `#8A90A8` | secondary text, idle nodes |
+| `Accent` | `#F4A340` | messages, the one thing to look at |
+| `Good` | `#5CC8B8` | success, committed |
+| `Warning` | `#E8C35A` | candidate, pending |
+| `Critical` | `#E86F5A` | broken invariant, crashed |
+| `Message1` | `#F4A340` | message color 1 |
+| `Message2` | `#7FB2F0` | message color 2 |
+| `Message3` | `#C79BEA` | message color 3 |
+| `Message4` | `#F08FB0` | message color 4 |
+| `Vignette` | `0` | edges not darkened |
+| `Sketch` | `0` | outlines not wobbled |
+| `Glow` | `24` | glow blur |
+| `Shadow` | `0` | no shadow |
+| `StrokeWidth` | `2` | outline width |
+| `CornerRadius` | `12` | rect corners |
+| `NodeShape` | `"card"` | node cards are rects |
+| `NodeFill` | `"solid"` | node cards are filled |
+| `LinkOpacity` | `1` | links are opaque |
+| `Easing` | `"smooth"` | smootherstep moves |
+| `Drift` | `0` | no drift |
+| `Sans` | `"Inter"` | default sans face |
+| `Mono` | `"JetBrains Mono"` | default mono face |
+| `TitleSize` | `28` | title role |
+| `LabelSize` | `16` | label role |
+| `ValueSize` | `15` | value role |
+| `CaptionSize` | `20` | caption role |
+| `TitleWeight` | `600` | title role |
+| `LabelWeight` | `500` | label, value, caption roles |
+| `Tracking` | `0` | no letter spacing |
+| `Margin` | `4` | `look.Frame` inset |
+| `Fill` | `1` | layout scale |
 
 ## std/time
 

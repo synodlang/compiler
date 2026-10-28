@@ -95,7 +95,7 @@ func TestContextDiagnostics(t *testing.T) {
 // TestFixesRoundTrip applies the fixes of the non-canonical cases and checks
 // that the result is canonical and resolves cleanly.
 func TestFixesRoundTrip(t *testing.T) {
-	cases := []string{"settings-order", "own-qualifier", "names"}
+	cases := []string{"settings-order", "own-qualifier", "names", "default-theme"}
 	for _, c := range cases {
 		dir := filepath.Join("../../testdata/check/non-canonical", c)
 		res := checkDir(t, dir, false)

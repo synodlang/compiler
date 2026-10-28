@@ -55,6 +55,7 @@ func p(names ...string) []string { return names }
 
 var formItems = []Item{
 	f("header", "spec/06 §6.1", nil),
+	f("header-theme", "spec/06 §6.7", nil),
 	f("comment", "spec/02 §2.1", nil),
 	f("block", "spec/02 §2.1", p("block")),
 	f("paren", "spec/02 §2.1", p("arg"), "(", ")"),
@@ -146,8 +147,11 @@ var contextItems = []Item{
 	{ID: "look", Spec: "spec/05 §5.4"},
 }
 
-// proseOnly lists the items that need no step.
-var proseOnly = map[string]bool{"form:define-native": true, "type:value": true}
+// proseOnly lists the items that need no step: a reader's program cannot
+// write them (define native, type value) or never imports them
+// (std/theme/default is the template to copy, and a main file that imports it
+// is non-canonical).
+var proseOnly = map[string]bool{"form:define-native": true, "type:value": true, "package:std/theme/default": true}
 
 // Catalog returns every item: the forms, the types, the contexts and the std
 // packages (those of doc.StdPackages, in byte order).

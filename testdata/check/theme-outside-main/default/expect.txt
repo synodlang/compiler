@@ -1,0 +1,1 @@
+p/p.synod:2:5: error[theme-outside-main]: "std/theme/default" is a theme, and only a main file imports a theme

@@ -1,0 +1,1 @@
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"t/t.synod","line":104,"col":8,"end":{"line":104,"col":15},"severity":"error","code":"bad-theme","message":"\"Sparkle\" is not a name of the theme table","notes":["a theme defines exactly the 34 names of std/theme/default"]}]}

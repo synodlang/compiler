@@ -30,7 +30,7 @@ var compileCodes = []string{
 	"action-as-value", "unexported", "unused-name", "unused-import",
 	"unneeded-alias", "unknown-import", "import-cycle", "missing-main",
 	"extra-main", "context", "foreign-state", "color-literal",
-	"native-outside-std",
+	"native-outside-std", "theme-outside-main", "extra-theme", "bad-theme",
 }
 
 var runCodes = []string{

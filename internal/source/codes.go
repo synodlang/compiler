@@ -34,6 +34,12 @@ const (
 	ForeignState     Code = "foreign-state"
 	ColorLiteral     Code = "color-literal"
 	NativeOutsideStd Code = "native-outside-std"
+	// The theme codes (spec/06 section 6.7): a library file imports a theme,
+	// a main file imports a second theme, a theme file is not a complete
+	// theme.
+	ThemeOutsideMain Code = "theme-outside-main"
+	ExtraTheme       Code = "extra-theme"
+	BadTheme         Code = "bad-theme"
 )
 
 // Run-time error codes (spec/11 section 11.3), raised by the simulator and

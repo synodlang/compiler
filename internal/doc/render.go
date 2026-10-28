@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/synodlang/compiler/internal/source"
@@ -79,6 +80,13 @@ func Write(w io.Writer, p *Package, st Style) error {
 	for i := range p.Phrases {
 		ph := &p.Phrases[i]
 		entries = append(entries, []string{st.bold(ph.Pattern), st.dim("    " + ph.detail())})
+	}
+	for _, v := range p.Values {
+		line := v.Type + " " + v.literal()
+		if v.Doc != "" {
+			line += "; " + v.Doc
+		}
+		entries = append(entries, []string{st.bold(v.Name), st.dim("    " + line)})
 	}
 	for _, r := range p.Records {
 		entries = append(entries, []string{fieldsLine(st, "record "+r.Name+":", r.Fields)})
@@ -191,7 +199,6 @@ func Catalog(pkgs []*Package) string {
 		}
 		b.WriteString("\n\n")
 		var rows, nodeEv, traceEv []*Phrase
-		var colors []*Phrase
 		for i := range p.Phrases {
 			ph := &p.Phrases[i]
 			switch {
@@ -199,8 +206,6 @@ func Catalog(pkgs []*Package) string {
 				nodeEv = append(nodeEv, ph)
 			case ph.Kind == "trace-event":
 				traceEv = append(traceEv, ph)
-			case p.colors[headOf(ph)] != "":
-				colors = append(colors, ph)
 			default:
 				rows = append(rows, ph)
 			}
@@ -214,11 +219,11 @@ func Catalog(pkgs []*Package) string {
 			}
 			b.WriteString("\n")
 		}
-		if len(colors) > 0 {
+		if len(p.Values) > 0 {
 			empty = false
 			b.WriteString("| Name | Value | Use |\n| --- | --- | --- |\n")
-			for _, ph := range colors {
-				fmt.Fprintf(&b, "| `%s` | `%s` | %s |\n", ph.Pattern, p.colors[headOf(ph)], cell(ph.Doc))
+			for _, v := range p.Values {
+				fmt.Fprintf(&b, "| `%s` | `%s` | %s |\n", v.Name, v.literal(), cell(v.Doc))
 			}
 			b.WriteString("\n")
 		}
@@ -271,3 +276,18 @@ func headOf(ph *Phrase) string {
 
 // Contexts returns the contexts of a std phrase as a set.
 func (ph *Phrase) ContextSet() stdlib.Ctx { return ph.ctx }
+
+// literal prints the value as the theme file writes it: a hex color, a
+// number, a quoted text.
+func (v ThemeValue) literal() string {
+	switch x := v.Value.(type) {
+	case string:
+		if v.Type == "text" {
+			return strconv.Quote(x)
+		}
+		return x
+	case float64:
+		return strconv.FormatFloat(x, 'f', -1, 64)
+	}
+	return fmt.Sprint(v.Value)
+}

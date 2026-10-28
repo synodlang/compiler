@@ -75,9 +75,10 @@ func parseTokens(f *source.File, toks []lex.Token) (file *File, d *source.Diagno
 		}
 	}()
 	file = &File{Source: f}
-	if t := p.tok(); t.Kind == lex.COMMENT && t.Own && strings.HasPrefix(commentText(t), headerPrefix) {
+	if t := p.tok(); t.Kind == lex.COMMENT && t.Own && isHeaderText(commentText(t)) {
 		file.Header = p.comment()
 		file.Package = packageName(file.Header.Text)
+		file.Theme = strings.HasPrefix(file.Header.Text, themePrefix)
 		p.skipNewline()
 	}
 	body := p.seq(0)

@@ -1,0 +1,19 @@
+# package look
+# Draw `s` on: its outline, then its fill; a label writes itself
+define Reveal [s: shape]
+  Tween "draw" of s to 0 over 0s
+  Tween "draw" of s to 1 over 600ms
+
+# Grow from 0 past 1.12 to 1 over 400ms
+define PopIn [s: shape]
+  Tween "scale" of s to 0 over 0s
+  Tween "scale" of s to 1.12 over 280ms
+  after 280ms
+    Tween "scale" of s to 1 over 120ms
+
+# `PopIn` each shape, `d` after the one before
+define Enter [l: list of shape] every [d: time]
+  each i, s in l
+    Tween "scale" of s to 0 over 0s
+    after (d times (i minus 1))
+      PopIn s

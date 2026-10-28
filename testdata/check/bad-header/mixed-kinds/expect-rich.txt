@@ -1,0 +1,9 @@
+t/b.synod:1:1: error[bad-header]: this file has a "# theme" header, but the library files of a folder share one header kind
+  |
+1 | # theme t
+  | ^^^^^^^^^
+  |
+ ::: t/a.synod:1:1
+  |
+1 | # package t
+  | ----------- the "# package" header of the first file

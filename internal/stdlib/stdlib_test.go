@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 	"unicode"
@@ -22,7 +23,7 @@ func TestStdSources(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := "module github.com/synodlang/std\nsynod 0.2\n"; string(mod) != want {
+	if want := "module github.com/synodlang/std\nsynod 0.3\n"; string(mod) != want {
 		t.Errorf("synod.mod = %q, want %q", mod, want)
 	}
 	files := loadStd(t)
@@ -152,6 +153,9 @@ func TestNatives(t *testing.T) {
 			t.Errorf("%s: id is not namespaced by package %s", id, d.Pkg)
 		}
 		wantID := d.Pkg + "." + strings.ToLower(d.Head[:1]) + d.Head[1:]
+		if d.Pkg == "theme" {
+			wantID = "theme." + d.Head // the id is the name of the theme table
+		}
 		if d.Head == "Place" {
 			wantID = "look.place" + strings.ToUpper(d.Skeleton[len("Place "):len("Place ")+1]) + d.Skeleton[len("Place ")+1:]
 		}
@@ -278,7 +282,7 @@ func TestCtxString(t *testing.T) {
 // ---- the catalog ----
 
 var (
-	sectionRe = regexp.MustCompile(`^## std/(\w+)`)
+	sectionRe = regexp.MustCompile(`^## std/([\w/]+)`)
 	eventRe   = regexp.MustCompile("(?s)\\*\\*(Node event|Trace events?):\\*\\*(.*?)(?:\\n\\n|\\z)")
 	tickRe    = regexp.MustCompile("`([^`]+)`")
 )
@@ -328,8 +332,11 @@ func parseCatalog(t *testing.T, text string) *catalog {
 				continue
 			}
 			cs := cells(line)
-			if pkg == "theme" {
-				c.Theme = append(c.Theme, catRow{Pkg: pkg, Pattern: strings.Trim(cs[0], "`"), Gives: strings.Trim(cs[1], "`")})
+			if pkg == "theme/default" {
+				if len(cs) != 3 {
+					t.Fatalf("theme default row %q has %d cells, want Name | Value | Use", line, len(cs))
+				}
+				c.Theme = append(c.Theme, catRow{Pkg: pkg, Pattern: strings.Trim(cs[0], "`"), Gives: strings.Trim(cs[1], "`"), Meaning: cs[2]})
 				continue
 			}
 			r := catRow{Pkg: pkg, Pattern: strings.Trim(cs[0], "`"), Gives: cs[1]}
@@ -416,6 +423,8 @@ func wantRule(gives string, holes []*parse.Hole) (Rule, bool) {
 		return Fixed(types.TTime), true
 	case "shape":
 		return Fixed(types.TShape), true
+	case "color":
+		return Fixed(types.TColor), true
 	case "node":
 		return Fixed(types.TNode), true
 	case "list of node":
@@ -452,8 +461,8 @@ func TestCatalog(t *testing.T) {
 		t.Fatal(err)
 	}
 	cat := parseCatalog(t, string(data))
-	if len(cat.Rows) < 50 || len(cat.Events) < 20 || len(cat.Theme) != 8 {
-		t.Fatalf("catalog parse looks wrong: %d rows, %d events, %d theme colors", len(cat.Rows), len(cat.Events), len(cat.Theme))
+	if len(cat.Rows) < 50 || len(cat.Events) < 20 || len(cat.Theme) != 34 {
+		t.Fatalf("catalog parse looks wrong: %d rows, %d events, %d theme values", len(cat.Rows), len(cat.Events), len(cat.Theme))
 	}
 
 	defs := allDefs(t)
@@ -548,23 +557,51 @@ func TestCatalog(t *testing.T) {
 		}
 	}
 
-	for _, r := range cat.Theme {
-		d := one("theme", r.Pattern)
-		if d == nil {
+	// std/theme/default: the catalog lists the 34 names of the theme table in
+	// order, with the literal of std/theme/default/default.synod, which lies
+	// in the domain of its name.
+	defaults := themeDefaults(t)
+	if len(defaults) != len(ThemeNames) || len(cat.Theme) != len(ThemeNames) {
+		t.Errorf("theme table has %d names, default.synod %d, catalog %d", len(ThemeNames), len(defaults), len(cat.Theme))
+	}
+	for i, n := range ThemeNames {
+		if s := Natives["theme."+n.Name]; s == nil || s.Contexts != Look || s.Result.Kind != RuleFixed || !types.Equal(s.Result.T, n.Type) {
+			t.Errorf("theme.%s: native is missing, not look-only or of another type", n.Name)
+		}
+		if i >= len(defaults) || i >= len(cat.Theme) {
 			continue
 		}
-		seen[d] = true
-		if d.Native != "" || !d.HasBody || len(d.Line.Block.Lines) != 1 {
-			t.Errorf("theme %s: want one result line", r.Pattern)
+		dv, r := defaults[i], cat.Theme[i]
+		if dv.Name != n.Name || r.Pattern != n.Name {
+			t.Errorf("theme row %d: table %q, default.synod %q, catalog %q", i+1, n.Name, dv.Name, r.Pattern)
 			continue
 		}
-		items := d.Line.Block.Lines[0].Sentence.Groups[0]
-		c, ok := items[len(items)-1].(*parse.Color)
-		if len(items) != 2 || !parse.IsWord(items[0], "result") || !ok || c.Text != r.Gives {
-			t.Errorf("theme %s: body is not \"result %s\"", r.Pattern, r.Gives)
+		var lit string
+		switch v := dv.Literal.(type) {
+		case *parse.Color:
+			lit = v.Text
+			if n.Type != types.TColor {
+				t.Errorf("theme %s: a color for a %s", n.Name, n.Type)
+			}
+		case *parse.Number:
+			lit = v.Text
+			x, err := strconv.ParseFloat(v.Text, 64)
+			if n.Type != types.TNumber || err != nil || !n.AcceptsNumber(x) {
+				t.Errorf("theme %s: default %s is outside the domain %s", n.Name, v.Text, n.Domain())
+			}
+		case *parse.Text:
+			lit = v.Raw
+			if n.Type != types.TText || !n.AcceptsText(strings.Trim(v.Raw, `"`)) {
+				t.Errorf("theme %s: default %s is outside the domain %s", n.Name, v.Raw, n.Domain())
+			}
+		default:
+			t.Errorf("theme %s: the default is not a literal", n.Name)
 		}
-		if got := Contexts["theme."+r.Pattern]; got != Look {
-			t.Errorf("theme %s: context %q, want look", r.Pattern, got)
+		if lit != r.Gives {
+			t.Errorf("theme %s: default.synod has %s, catalog says %s", n.Name, lit, r.Gives)
+		}
+		if dv.Comment != r.Meaning {
+			t.Errorf("theme %s: comment %q, catalog use %q", n.Name, dv.Comment, r.Meaning)
 		}
 	}
 
@@ -624,6 +661,17 @@ func TestReadmeSnippets(t *testing.T) {
 	complete := 0
 	for _, b := range blocks {
 		first, _, _ := strings.Cut(b, "\n")
+		if strings.HasPrefix(first, "# theme ") {
+			// An excerpt: the beginning of the file of that theme.
+			ok := false
+			for _, f := range loadStd(t) {
+				ok = ok || f.Tree.Theme && strings.HasPrefix(string(f.Data), b) && first == "# theme "+f.Folder
+			}
+			if !ok {
+				t.Errorf("block %q is not the beginning of a std theme file", first)
+			}
+			continue
+		}
 		if !strings.HasPrefix(first, "# package ") {
 			continue
 		}

@@ -1,0 +1,102 @@
+# theme t
+define Paper
+  result 1
+
+define Ink
+  result #EDE9E1
+
+define Line
+  result #3A4366
+
+define Quiet
+  result #8A90A8
+
+define Accent
+  result #F4A340
+
+define Good
+  result #5CC8B8
+
+define Warning
+  result #E8C35A
+
+define Critical
+  result #E86F5A
+
+define Message1
+  result #F4A340
+
+define Message2
+  result #7FB2F0
+
+define Message3
+  result #C79BEA
+
+define Message4
+  result #F08FB0
+
+define Vignette
+  result 0
+
+define Sketch
+  result 0
+
+define Glow
+  result #FFFFFF
+
+define Shadow
+  result 0
+
+define StrokeWidth
+  result 2
+
+define CornerRadius
+  result 12
+
+define NodeShape
+  result card
+
+define NodeFill
+  result "solid"
+
+define LinkOpacity
+  result 1
+
+define Easing
+  result 3
+
+define Drift
+  result 0
+
+define Sans
+  result "Inter"
+
+define Mono
+  result "JetBrains Mono"
+
+define TitleSize
+  result 28
+
+define LabelSize
+  result 16
+
+define ValueSize
+  result 15
+
+define CaptionSize
+  result 20
+
+define TitleWeight
+  result 600
+
+define LabelWeight
+  result 500
+
+define Tracking
+  result 0
+
+define Margin
+  result 4
+
+define Fill
+  result 1

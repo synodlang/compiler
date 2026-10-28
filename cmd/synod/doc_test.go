@@ -322,7 +322,7 @@ func TestDocListWithoutModule(t *testing.T) {
 	write(t, filepath.Join(tmp, "x.synod"), "# package x\n")
 	out := okDoc(t, tmp)
 	lines := strings.Split(strings.TrimSpace(out), "\n")
-	if len(lines) != 14 || lines[0] != "std/disk  storage that survives crashes" || lines[13] != "." {
+	if len(lines) != 15 || lines[0] != "std/disk  storage that survives crashes" || lines[14] != "." {
 		t.Errorf("list: %q", lines)
 	}
 }

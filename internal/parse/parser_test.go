@@ -276,3 +276,33 @@ func TestPositions(t *testing.T) {
 		t.Errorf("paren pos %v", p.P)
 	}
 }
+
+func TestThemeHeader(t *testing.T) {
+	f := source.NewFile("t.synod", []byte("# theme warm\ndefine Paper\n  result #151A2E\n"))
+	tree, d := Parse(f)
+	if d != nil {
+		t.Fatal(d)
+	}
+	if tree.Header == nil || tree.Package != "warm" || !tree.Theme {
+		t.Errorf("header %v package %q theme %v", tree.Header, tree.Package, tree.Theme)
+	}
+	if d := HeaderDiagnostic(tree, "warm"); d != nil {
+		t.Errorf("theme named after its folder: %s", d)
+	}
+	d = HeaderDiagnostic(tree, "cold")
+	if d == nil || d.Code != source.BadHeader || !strings.Contains(d.Message, `theme "warm" must be the folder name "cold"`) {
+		t.Errorf("theme with another name: %v", d)
+	}
+	p, _ := Parse(source.NewFile("p.synod", []byte("# package main\n")))
+	if p.Theme || p.Package != "main" {
+		t.Errorf("package header: theme %v package %q", p.Theme, p.Package)
+	}
+	// "# theme" is not a header when the word is not a single name.
+	b, _ := Parse(source.NewFile("b.synod", []byte("# theme two words\n")))
+	if b.Header == nil || b.Package != "" {
+		t.Errorf("bad theme header: %v %q", b.Header, b.Package)
+	}
+	if d := HeaderDiagnostic(b, "x"); d == nil || d.Code != source.BadHeader {
+		t.Errorf("bad theme header diagnostic: %v", d)
+	}
+}

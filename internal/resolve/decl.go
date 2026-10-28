@@ -72,7 +72,7 @@ func Resolve(lp *load.Package, deps map[string]*Package) (*Package, []source.Dia
 		byLine: map[*parse.Line]*Phrase{},
 	}
 	p := &Package{
-		Load: lp, Path: lp.Path, Name: lp.Name, IsMain: lp.IsMain, IsStd: lp.IsStd,
+		Load: lp, Path: lp.Path, Name: lp.Name, IsMain: lp.IsMain, IsStd: lp.IsStd, IsTheme: lp.IsTheme,
 		Fixes:   r.fixes,
 		Tokens:  map[*load.File][]Token{},
 		heads:   map[string][]*Phrase{},
@@ -81,7 +81,7 @@ func Resolve(lp *load.Package, deps map[string]*Package) (*Package, []source.Dia
 		names:   map[string]*decl{},
 	}
 	r.pkg = p
-	if !p.IsMain {
+	if !p.IsMain && !p.IsTheme {
 		p.Node = &Record{Pkg: p, Name: "Node", Exported: true, IsNode: true}
 	}
 	for _, lf := range lp.Files {
@@ -89,6 +89,14 @@ func Resolve(lp *load.Package, deps map[string]*Package) (*Package, []source.Dia
 			return p, nil
 		}
 		p.Files = append(p.Files, &File{Load: lf, Path: lf.Src.Path, byQual: map[string]*Import{}})
+	}
+	if p.IsTheme {
+		// A theme declares nothing: the checker reads its definitions
+		// (internal/check/theme.go). It still has tokens.
+		for _, f := range p.Files {
+			p.Tokens[f.Load] = LexicalTokens(f.Load.Src)
+		}
+		return p, nil
 	}
 	r.imports()
 	// Pass 1: record types and node fields; pass 2: phrases; claims; pass 3:
@@ -248,6 +256,7 @@ func aliasWord(li *load.Import) source.Span {
 
 // finishImports reports unused imports and upper-case aliases.
 func (r *resolver) finishImports() {
+	r.themeImports()
 	for _, imp := range r.pkg.Imports {
 		if a := imp.Imp.Alias; a != "" && Exported(a) {
 			r.renameAlias(imp)
@@ -255,7 +264,7 @@ func (r *resolver) finishImports() {
 		if imp.Pkg == nil || imp.Used {
 			continue
 		}
-		if imp.Pkg.Observers {
+		if imp.Pkg.Observers || imp.Pkg.IsTheme {
 			continue
 		}
 		r.err(imp.File, imp.Sp, source.UnusedImport, `"`+imp.Imp.Path+`" is imported but not used`, "",
@@ -1083,5 +1092,43 @@ func (r *resolver) renameAlias(imp *Import) {
 	r.addFix(imp.File, format.Fix{Pos: imp.Imp.AliasPos, Rename: lower})
 	for _, pos := range imp.refs {
 		r.addFix(imp.File, format.Fix{Pos: pos, Rename: lower})
+	}
+}
+
+// themeImports applies the selection rules of spec/06 section 6.7: only a main
+// file imports a theme, at most one, and `std/theme/default` is the theme of
+// a program that imports none, so a main file that imports only it writes a
+// line that format removes. Importing a theme selects it, so the import is
+// used.
+func (r *resolver) themeImports() {
+	var themes []*Import
+	for _, imp := range r.pkg.Imports {
+		if imp.Pkg != nil && imp.Pkg.IsTheme {
+			imp.Used = true
+			themes = append(themes, imp)
+		}
+	}
+	if len(themes) == 0 {
+		return
+	}
+	if !r.pkg.IsMain {
+		for _, imp := range themes {
+			r.err(imp.File, imp.Sp, source.ThemeOutsideMain,
+				`"`+imp.Imp.Path+`" is a theme, and only a main file imports a theme`, "",
+				source.HelpEdit("remove the line", deleteLine(imp.Imp.LineSpan.Start.Line)),
+				source.Note("the main file of the program selects its theme"))
+		}
+		return
+	}
+	first := themes[0]
+	for _, imp := range themes[1:] {
+		r.err(imp.File, imp.Sp, source.ExtraTheme,
+			`a second theme "`+imp.Imp.Path+`"; the program's theme is "`+first.Imp.Path+`"`, "",
+			imp.File.also(first.Sp, "first theme here"),
+			source.HelpEdit("remove the line", deleteLine(imp.Imp.LineSpan.Start.Line)),
+			source.Note(`"`+stdlib.DefaultThemePath+`" counts as a theme: a program that imports none uses it`))
+	}
+	if len(themes) == 1 && first.Imp.Path == stdlib.DefaultThemePath {
+		r.addFix(first.File, format.Fix{Pos: first.Imp.Line.Pos, DropLine: true})
 	}
 }

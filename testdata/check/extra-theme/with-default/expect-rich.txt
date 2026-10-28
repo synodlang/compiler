@@ -1,0 +1,13 @@
+p/main.synod:4:5: error[extra-theme]: a second theme "std/theme/default"; the program's theme is "example.com/t/warm"
+  |
+2 | use example.com/t/warm
+  |     ------------------ first theme here
+3 | use std/sim
+4 | use std/theme/default
+  |     ^^^^^^^^^^^^^^^^^
+  |
+  = note: "std/theme/default" counts as a theme: a program that imports none uses it
+help: remove the line
+  |
+4 - use std/theme/default
+  |

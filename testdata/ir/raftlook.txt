@@ -147,50 +147,45 @@
             (set-field n#0 raft.lastHeard (native "time.now"))))))
     (always "raft/raft.synod:54: always LeadersAgree" (call "raft.LeadersAgree") (slots 0)))
   (package "std/theme" std
-    (runs "std/theme")
-    (phrase "Paper" (result color)
-      (vars)
-      (body
-        (result #151A2E)))
-    (phrase "Ink" (result color)
-      (vars)
-      (body
-        (result #EDE9E1)))
-    (phrase "Line" (result color)
-      (vars)
-      (body
-        (result #3A4366)))
-    (phrase "Quiet" (result color)
-      (vars)
-      (body
-        (result #8A90A8)))
-    (phrase "Accent" (result color)
-      (vars)
-      (body
-        (result #F4A340)))
-    (phrase "Good" (result color)
-      (vars)
-      (body
-        (result #5CC8B8)))
-    (phrase "Warning" (result color)
-      (vars)
-      (body
-        (result #E8C35A)))
-    (phrase "Critical" (result color)
-      (vars)
-      (body
-        (result #E86F5A))))
+    (runs "std/theme"))
   (package "std/look" std
     (uses "std/sim" "std/theme")
     (runs "std/sim" "std/theme" "std/look")
     (phrase "Card for" (result shape)
-      (vars (0 n param node) (1 box draw shape) (2 name draw shape))
+      (vars (0 n param node) (1 box draw shape) (2 name draw shape) (3 box draw shape) (4 name draw shape))
       (body
-        (draw (native "look.rect" 96 56) box#1)
-        (native "look.fill" box#1 (call "theme.Ink"))
-        (draw (native "look.label" (native "sim.name" n#0)) name#2)
-        (native "look.fill" name#2 (call "theme.Paper"))
-        (result (native "look.group" (list box#1 name#2)))))
+        (if (is (native "theme.NodeShape") "circle")
+          (then
+            (draw (native "look.circle" 32) box#1)
+            (if (is (native "theme.NodeFill") "solid")
+              (then
+                (native "look.fill" box#1 (native "theme.Ink"))))
+            (if (is (native "theme.NodeFill") "outline")
+              (then
+                (native "look.stroke" box#1 (native "theme.Ink"))))
+            (draw (native "look.label" (native "sim.name" n#0)) name#2)
+            (if (is (native "theme.NodeFill") "solid")
+              (then
+                (native "look.fill" name#2 (native "theme.Paper"))))
+            (if (is (native "theme.NodeFill") "outline")
+              (then
+                (native "look.fill" name#2 (native "theme.Ink"))))
+            (result (native "look.group" (list box#1 name#2)))))
+        (draw (native "look.rect" 96 56) box#3)
+        (if (is (native "theme.NodeFill") "solid")
+          (then
+            (native "look.fill" box#3 (native "theme.Ink"))))
+        (if (is (native "theme.NodeFill") "outline")
+          (then
+            (native "look.stroke" box#3 (native "theme.Ink"))))
+        (draw (native "look.label" (native "sim.name" n#0)) name#4)
+        (if (is (native "theme.NodeFill") "solid")
+          (then
+            (native "look.fill" name#4 (native "theme.Paper"))))
+        (if (is (native "theme.NodeFill") "outline")
+          (then
+            (native "look.fill" name#4 (native "theme.Ink"))))
+        (result (native "look.group" (list box#3 name#4)))))
     (phrase "Travel … from … to … over"
       (vars (0 s param shape) (1 a param shape) (2 b param shape) (3 d param time))
       (body
@@ -204,6 +199,30 @@
         (call "look.Fade … to" s#0 0)
         (after (time 300000)
           (native "look.delete" s#0))))
+    (phrase "Frame" (result shape)
+      (vars (0 frame draw shape))
+      (body
+        (draw (native "look.rect" (minus 1600 (times 2 (native "theme.Margin"))) (minus 1000 (times 2 (native "theme.Margin")))) frame#0)
+        (result frame#0)))
+    (phrase "Reveal"
+      (vars (0 s param shape))
+      (body
+        (native "look.tween" "draw" s#0 0 (time 0))
+        (native "look.tween" "draw" s#0 1 (time 600000))))
+    (phrase "PopIn"
+      (vars (0 s param shape))
+      (body
+        (native "look.tween" "scale" s#0 0 (time 0))
+        (native "look.tween" "scale" s#0 1.12 (time 280000))
+        (after (time 280000)
+          (native "look.tween" "scale" s#0 1 (time 120000)))))
+    (phrase "Enter … every"
+      (vars (0 l param list of shape) (1 d param time) (2 i each number) (3 s each shape))
+      (body
+        (each i#2 s#3 l#0
+          (native "look.tween" "scale" s#3 0 (time 0))
+          (after (times:time d#1 (minus i#2 1))
+            (call "look.PopIn" s#3)))))
     (phrase "Fade … to"
       (vars (0 s param shape) (1 o param number))
       (body
@@ -244,7 +263,7 @@
       (body
         (native "look.layout" "ring")
         (draw (native "look.rect" 1592 992) border#0 (for "border" "border"))
-        (native "look.stroke" border#0 (call "theme.Critical"))
+        (native "look.stroke" border#0 (native "theme.Critical"))
         (native "look.tween" "opacity" border#0 0 (time 0))))
     (when-trace "sim.added"
       (vars (0 n binding node) (1 card draw shape) (2 above local shape) (3 i each number) (4 line each text) (5 row draw shape))
@@ -262,12 +281,12 @@
       (vars (0 n binding node))
       (match 0 bind n#0)
       (body
-        (native "look.fill" (attached "card" n#0) (call "theme.Quiet"))))
+        (native "look.fill" (attached "card" n#0) (native "theme.Quiet"))))
     (when-trace "sim.restarted"
       (vars (0 n binding node))
       (match 0 bind n#0)
       (body
-        (native "look.fill" (attached "card" n#0) (call "theme.Ink"))))
+        (native "look.fill" (attached "card" n#0) (native "theme.Ink"))))
     (when-trace "sim.removed"
       (vars (0 n binding node) (1 i each number))
       (match 0 bind n#0)
@@ -282,7 +301,7 @@
       (match 2 bind b#2)
       (body
         (draw (native "look.circle" 6) ball#3)
-        (native "look.fill" ball#3 (call "theme.Accent"))
+        (native "look.fill" ball#3 (native "theme.Accent"))
         (draw (native "look.label" (native "net.type" m#0)) tag#4)
         (native "look.placeAbove" tag#4 ball#3)
         (draw (native "look.group" (list ball#3 tag#4)) dot#5 (for "dot" (native "net.id" m#0)))
@@ -325,11 +344,11 @@
       (body
         (if (is r#0 "leader")
           (then
-            (result (call "theme.Accent"))))
+            (result (native "theme.Accent"))))
         (if (is r#0 "candidate")
           (then
-            (result (call "theme.Warning"))))
-        (result (call "theme.Ink"))))
+            (result (native "theme.Warning"))))
+        (result (native "theme.Ink"))))
     (when-trace "sim.added"
       (vars (0 n binding raft.Node) (1 card draw shape))
       (match 0 node "github.com/synodlang/examples/raft" n#0)

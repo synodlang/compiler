@@ -1,0 +1,5 @@
+t/t.synod:2:1: error[bad-theme]: a theme imports nothing
+t/t.synod:103:1: error[bad-theme]: a theme file holds only definitions of theme names
+t/t.synod:106:1: error[bad-theme]: a theme definition is `define <Name>`, with no holes and no native
+t/t.synod:109:1: error[bad-theme]: a theme definition is `define <Name>`, with no holes and no native
+t/t.synod:111:1: error[bad-theme]: "Margin" is defined by one "result" line holding a literal

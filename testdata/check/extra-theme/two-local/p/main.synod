@@ -1,0 +1,7 @@
+# package main
+use example.com/t/cool
+use example.com/t/warm
+use std/sim
+
+define main
+  sim.Seed 1

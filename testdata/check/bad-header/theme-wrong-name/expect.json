@@ -1,0 +1,1 @@
+{"format":"synod-check/1","ok":false,"diagnostics":[{"file":"t/t.synod","line":1,"col":1,"end":{"line":1,"col":10},"severity":"error","code":"bad-header","message":"theme \"u\" must be the folder name \"t\"","help":[{"text":"write the folder name \"t\"","edits":[{"line":1,"col":9,"end":{"line":1,"col":10},"new":"t"}]}],"notes":["a main file writes \"# package main\""]}]}

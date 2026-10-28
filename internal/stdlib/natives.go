@@ -141,7 +141,7 @@ var Natives = buildNatives()
 // Contexts holds the contexts of the phrases that std writes in Synod,
 // keyed by "<package>.<skeleton>", where the skeleton is the head and the
 // literal words of the pattern, joined by single spaces: "time.Every",
-// "lesson.Ask", "look.Fade to", "look.Travel from to over", "theme.Accent".
+// "lesson.Ask", "look.Fade to", "look.Travel from to over".
 // The catalog's Context column is enforced at the call site for every std
 // phrase, native or not (the bodies of std phrases are not walked).
 var Contexts = map[string]Ctx{
@@ -154,14 +154,10 @@ var Contexts = map[string]Ctx{
 	"look.Pulse":               Look,
 	"look.Travel from to over": Look,
 	"look.Remove":              Look,
-	"theme.Paper":              Look,
-	"theme.Ink":                Look,
-	"theme.Line":               Look,
-	"theme.Quiet":              Look,
-	"theme.Accent":             Look,
-	"theme.Good":               Look,
-	"theme.Warning":            Look,
-	"theme.Critical":           Look,
+	"look.Frame":               Look,
+	"look.Reveal":              Look,
+	"look.PopIn":               Look,
+	"look.Enter every":         Look,
 }
 
 func buildNatives() map[string]*Sig {
@@ -265,5 +261,16 @@ func buildNatives() map[string]*Sig {
 	}
 	act("look.flight", Look)
 	act("look.delete", Look)
+	val("look.icon", Look, shape)
+	val("look.counter", Look, shape)
+	val("look.messageColor", Look, types.TColor)
+	for _, id := range []string{"role", "face", "dash", "bend", "trail", "focus"} {
+		act("look."+id, Look)
+	}
+
+	// std/theme: the values of the program's theme, in look context only.
+	for _, n := range ThemeNames {
+		val("theme."+n.Name, Look, n.Type)
+	}
 	return m
 }

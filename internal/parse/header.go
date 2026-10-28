@@ -6,13 +6,27 @@ import (
 	"github.com/synodlang/compiler/internal/source"
 )
 
-// headerPrefix starts the text of a package header comment.
-const headerPrefix = "package "
+// headerPrefix starts the text of a package header comment, themePrefix that
+// of a theme header (spec/06 section 6.7).
+const (
+	headerPrefix = "package "
+	themePrefix  = "theme "
+)
 
-// packageName returns the name of a header text such as "package gossip", or
-// "" if the name is not a single word [A-Za-z][A-Za-z0-9]*.
+// isHeaderText reports whether the text of an own-line comment starts a
+// header, "package ..." or "theme ...".
+func isHeaderText(text string) bool {
+	return strings.HasPrefix(text, headerPrefix) || strings.HasPrefix(text, themePrefix)
+}
+
+// packageName returns the name of a header text such as "package gossip" or
+// "theme terminal", or "" if the name is not a single word
+// [A-Za-z][A-Za-z0-9]*.
 func packageName(text string) string {
-	name := strings.TrimPrefix(text, headerPrefix)
+	name := strings.TrimPrefix(strings.TrimPrefix(text, headerPrefix), themePrefix)
+	if name == text {
+		return ""
+	}
 	if name == "" {
 		return ""
 	}
@@ -26,10 +40,11 @@ func packageName(text string) string {
 	return name
 }
 
-// HeaderDiagnostic checks the package header of f against folder, the base
-// name of the folder holding the file (spec/06 section 6.1). The header must
-// be "# package <word>" with the word equal to folder or to "main". It
-// returns nil if the header is fine.
+// HeaderDiagnostic checks the header of f against folder, the base name of
+// the folder holding the file (spec/06 sections 6.1 and 6.7). The header must
+// be "# package <word>" with the word equal to folder or to "main", or
+// "# theme <word>" with the word equal to folder. It returns nil if the
+// header is fine.
 func HeaderDiagnostic(f *File, folder string) *source.Diagnostic {
 	fail := func(sp source.Span, msg, hint string, more ...source.Extra) *source.Diagnostic {
 		d := source.NewSpan(f.Source, sp, source.BadHeader, msg, hint, more...)
@@ -47,7 +62,14 @@ func HeaderDiagnostic(f *File, folder string) *source.Diagnostic {
 		return fail(sp, `bad package header "# `+f.Header.Text+`"`,
 			`write "# package <name>"`,
 			source.HelpEdit(`write "`+want+`"`, source.EditAt(sp, want)))
-	case f.Package != folder && f.Package != "main":
+	case f.Theme && f.Package != folder:
+		nameAt := source.Pos{Line: f.Header.Pos.Line, Col: f.Header.Pos.Col + width("# "+themePrefix)}
+		name := source.Span{Start: nameAt, End: after(nameAt, width(f.Package))}
+		return fail(CommentSpan(f.Header),
+			`theme "`+f.Package+`" must be the folder name "`+folder+`"`, "",
+			source.HelpEdit(`write the folder name "`+folder+`"`, source.EditAt(name, folder)),
+			source.Note(`a main file writes "# package main"`))
+	case !f.Theme && f.Package != folder && f.Package != "main":
 		// The span is the whole header, so that the position stays at its
 		// start; the edit changes the name.
 		nameAt := source.Pos{Line: f.Header.Pos.Line, Col: f.Header.Pos.Col + width(headerPrefixMark)}

@@ -21,8 +21,8 @@ func TestCodesCovered(t *testing.T) {
 	text, _, _ := strings.Cut(string(src), "\n// Run-time error codes")
 	re := regexp.MustCompile(`(?m)^\s+\w+\s+Code = "([a-z-]+)"`)
 	ms := re.FindAllStringSubmatch(text, -1)
-	if len(ms) != 29 {
-		t.Fatalf("found %d codes in codes.go, want 29", len(ms))
+	if len(ms) != 32 {
+		t.Fatalf("found %d codes in codes.go, want 32", len(ms))
 	}
 	for _, m := range ms {
 		code := m[1]

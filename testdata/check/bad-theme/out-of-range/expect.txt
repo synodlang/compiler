@@ -1,0 +1,5 @@
+t/t.synod:45:10: error[bad-theme]: "Glow" must be a number from 0 to 48
+t/t.synod:60:10: error[bad-theme]: "NodeFill" must be "solid" or "outline"
+t/t.synod:90:10: error[bad-theme]: "TitleWeight" must be one of 400, 500, 600 or 700
+t/t.synod:96:10: error[bad-theme]: "Tracking" must be a number from -0.05 to 0.2
+t/t.synod:99:10: error[bad-theme]: "Margin" must be a number from 0 to 100

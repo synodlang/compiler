@@ -1,0 +1,6 @@
+# package main
+use std/sim
+use std/theme/default
+
+define main
+  sim.Seed 1

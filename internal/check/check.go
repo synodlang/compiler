@@ -42,6 +42,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/synodlang/compiler/internal/ir"
 	"github.com/synodlang/compiler/internal/resolve"
 	"github.com/synodlang/compiler/internal/source"
 	"github.com/synodlang/compiler/internal/types"
@@ -93,6 +94,9 @@ type Info struct {
 	LocalTy map[*resolve.Local]types.Type
 	// Sel holds the settled member reads.
 	Sel map[*resolve.Select]*SelInfo
+	// Theme holds the values of a theme package, in table order; it is
+	// complete only when the package has no bad-theme diagnostic.
+	Theme []ir.ThemeValue
 }
 
 // FieldType returns the type of f, a field of this package.
@@ -180,6 +184,11 @@ func Package(rp *resolve.Package, deps map[string]*Info) (*Info, []source.Diagno
 		LocalTy:  map[*resolve.Local]types.Type{},
 		Sel:      map[*resolve.Select]*SelInfo{},
 	}
+	if rp.IsTheme {
+		var ds []source.Diagnostic
+		info.Theme, ds = checkTheme(rp)
+		return info, ds
+	}
 	c := &checker{
 		rp: rp, info: info, deps: deps,
 		all: map[string]*Info{}, pkgs: map[string]*resolve.Package{},
@@ -199,7 +208,7 @@ func Package(rp *resolve.Package, deps map[string]*Info) (*Info, []source.Diagno
 	c.all[rp.Path] = info
 	c.pkgs[rp.Path] = rp
 	for _, imp := range rp.Imports {
-		if imp.Pkg == nil {
+		if imp.Pkg == nil || imp.Pkg.IsTheme {
 			continue
 		}
 		if d := deps[imp.Pkg.Path]; d != nil {

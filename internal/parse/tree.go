@@ -9,7 +9,7 @@
 //
 // Every own-line comment ends up in exactly one place:
 //
-//   - File.Header, for a leading "# package <name>" comment;
+//   - File.Header, for a leading "# package <name>" or "# theme <name>" comment;
 //   - Line.Leading or Continuation.Leading, when it stands directly above a
 //     line (blank lines inside a block, and between a block and its
 //     continuation lines, are ignored);
@@ -41,11 +41,14 @@ import (
 type File struct {
 	Source *source.File
 	// Header is the first non-blank line when it is an own-line comment
-	// whose text starts with "package ".
+	// whose text starts with "package " or "theme ".
 	Header *Comment
 	// Package is the name in the header when the header is exactly
-	// "# package <word>", and "" otherwise (also when there is no header).
+	// "# package <word>" or "# theme <word>", and "" otherwise (also when
+	// there is no header).
 	Package string
+	// Theme reports a header "# theme <word>" (spec/06 section 6.7).
+	Theme bool
 	// Body holds the top level in source order: *Line or *CommentGroup.
 	Body []Node
 	// Trailing holds the own-line comments after the last top-level line.

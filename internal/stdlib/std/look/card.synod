@@ -2,12 +2,30 @@
 use std/sim
 use std/theme
 
-# The standard node card: rounded rect, name label
+# The standard node card: a box and a name label, shaped and filled by `theme.NodeShape` and `theme.NodeFill`
 define Card for [n: node]
+  if (theme.NodeShape is "circle")
+    draw (Circle 32) as box
+    if (theme.NodeFill is "solid")
+      Fill box with theme.Ink
+    if (theme.NodeFill is "outline")
+      Stroke box with theme.Ink
+    draw (Label (sim.Name n)) as name
+    if (theme.NodeFill is "solid")
+      Fill name with theme.Paper
+    if (theme.NodeFill is "outline")
+      Fill name with theme.Ink
+    result (Group {box, name})
   draw (Rect 96 by 56) as box
-  Fill box with theme.Ink
+  if (theme.NodeFill is "solid")
+    Fill box with theme.Ink
+  if (theme.NodeFill is "outline")
+    Stroke box with theme.Ink
   draw (Label (sim.Name n)) as name
-  Fill name with theme.Paper
+  if (theme.NodeFill is "solid")
+    Fill name with theme.Paper
+  if (theme.NodeFill is "outline")
+    Fill name with theme.Ink
   result (Group {box, name})
 
 # Move along a straight path
@@ -22,3 +40,8 @@ define Remove [s: shape]
   Fade s to 0
   after 300ms
     delete s
+
+# A rect of the canvas inset by `theme.Margin`
+define Frame
+  draw (Rect (1600 minus (2 times theme.Margin)) by (1000 minus (2 times theme.Margin))) as frame
+  result frame

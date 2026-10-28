@@ -1,0 +1,1 @@
+p/main.synod:3:1: error[non-canonical]: unexpected line

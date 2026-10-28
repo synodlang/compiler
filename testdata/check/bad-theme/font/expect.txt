@@ -1,0 +1,1 @@
+t/t.synod:72:10: error[bad-theme]: "Sans" must be one of "Inter", "JetBrains Mono", "Source Serif 4" or "Shantell Sans"

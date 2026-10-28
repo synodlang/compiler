@@ -1,0 +1,9 @@
+p/main.synod:3:1: error[non-canonical]: unexpected line
+  |
+3 | use std/theme/default
+  | ^^^^^^^^^^^^^^^^^^^^^
+  |
+help: remove the line (synod fmt does this)
+  |
+3 - use std/theme/default
+  |

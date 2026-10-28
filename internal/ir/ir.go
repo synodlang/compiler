@@ -69,6 +69,46 @@ type Program struct {
 	Observers []*Handler
 	// Invariants are the always lines of all packages, in the same order.
 	Invariants []*Invariant
+	// Theme is the program's theme, evaluated at compile time (spec/06
+	// section 6.7): the theme its main file imports, else std/theme/default.
+	// A theme is not a package of the program: it is in none of Packages,
+	// Uses or Runs, and only look-context natives (std/theme) read it, so a
+	// run is the same under every theme. Never nil in a program from
+	// driver.Check.
+	Theme *Theme
+}
+
+// Theme is the evaluated theme of a program.
+type Theme struct {
+	// Path is the import path of the theme package, "std/theme/default" or
+	// the theme the main file imports.
+	Path string
+	// Values holds the 34 values of the theme table (spec/09 section 9.5),
+	// in table order (stdlib.ThemeNames). They are checked: each has the
+	// type and lies in the domain of its name.
+	Values []ThemeValue
+}
+
+// ThemeValue is one value of a theme.
+type ThemeValue struct {
+	Name string
+	// Type is types.TColor, types.TNumber or types.TText.
+	Type types.Type
+	// V is "#RRGGBB" (upper-case) for a color, a float64 for a number and
+	// the unquoted string for a text, as in Const.
+	V any
+}
+
+// Get returns the value called name (a bare name such as "Paper").
+func (t *Theme) Get(name string) (ThemeValue, bool) {
+	if t != nil {
+		for _, v := range t.Values {
+			if v.Name == name {
+				return v, true
+			}
+		}
+	}
+	return ThemeValue{}, false
 }
 
 // Package is the lowered form of one package.
