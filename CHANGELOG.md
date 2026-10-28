@@ -3,7 +3,7 @@
 All notable changes to the `synod` command. Each released version's
 section is the text of its GitHub release page.
 
-## Unreleased
+## v0.2.7 — 2026-10-28
 
 Implements Synod 0.2. The documentation is now checked against the compiler, and `synod get` downloads are byte-exact.
 

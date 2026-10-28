@@ -19,7 +19,7 @@ repository turns that specification into a tool.
 | Repository | Role | Status |
 | --- | --- | --- |
 | [dsl](https://github.com/synodlang/dsl) | The specification, the std catalog, the implementation guides | Released (v0.2) |
-| `compiler` (this one) | `synod` (`new`, `fmt`, `check`, `run`, `get`, `doc`, `explain`, `mcp`) | Released (v0.2.6) |
+| `compiler` (this one) | `synod` (`new`, `fmt`, `check`, `run`, `get`, `doc`, `explain`, `mcp`) | Released (v0.2.7) |
 | [std](https://github.com/synodlang/std) | The standard library, embedded in the binary | Released |
 | [examples](https://github.com/synodlang/examples) | Sample programs; the acceptance tests | Released |
 | `player`, Mac app, agent skills | Playback and tooling around the trace and the scene | Later milestones |
@@ -412,7 +412,7 @@ A release is built on every tag that starts with `v`.
 
 ## Status and roadmap
 
-Today (v0.2.5, implements Synod 0.2): `synod fmt`, `synod check` with every
+Today (v0.2.7, implements Synod 0.2): `synod fmt`, `synod check` with every
 compile-time error of the specification, rich diagnostics, and `synod run`
 with the deterministic simulator, `trace.jsonl` and `--summary`. Every native
 phrase of `std/sim`, `net`, `time`, `random`, `lists`, `maps`, `math`, `text`
