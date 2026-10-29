@@ -416,7 +416,7 @@ A release is built on every tag that starts with `v`.
 
 ## Status and roadmap
 
-Today (v0.2.7, implements Synod 0.2): `synod fmt`, `synod check` with every
+Today (v0.3.0, implements Synod 0.3): `synod fmt`, `synod check` with every
 compile-time error of the specification, rich diagnostics, and `synod run`
 with the deterministic simulator, `trace.jsonl` and `--summary`. Every native
 phrase of `std/sim`, `net`, `time`, `random`, `lists`, `maps`, `math`, `text`
@@ -425,7 +425,9 @@ and `disk` works.
 Released: the `look` phrases and observers, the scene builder and
 `scene.json` (v0.2.3), and `synod.wasm` for browsers (v0.2.4).
 
-Not yet: `--watch` and `--json-events`, and then the player, the Mac app, the editor modes and the agent skills (M7 to M11).
+Also released: the player, the Mac app with its editor and learning modes, the agent skills and the site (M7 to M11), and in v0.3.0 the `# theme` header, the richer drawing phrases and the looks and themes of M12.
+
+Not yet: `--watch` and `--json-events`.
 The order and acceptance checks are in the
 [roadmap](https://github.com/synodlang/dsl/blob/main/implementation/10-roadmap.md).
 The [change log](CHANGELOG.md) lists what each release added.

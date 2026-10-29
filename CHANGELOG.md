@@ -3,7 +3,7 @@
 All notable changes to the `synod` command. Each released version's
 section is the text of its GitHub release page.
 
-## Unreleased
+## v0.3.0 — 2026-10-29
 
 Implements Synod 0.3. `synod version` prints `language 0.3`, `synod new` writes `synod 0.3`, and trace headers say `"synod":"0.3"`. A `synod.mod` that says an older version (`synod 0.2`) is still accepted, and the version line does not gate features; a newer one (`synod 0.4`) is an error.
 
