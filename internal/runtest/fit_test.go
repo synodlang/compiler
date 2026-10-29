@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"testing"
 
 	"github.com/synodlang/compiler/internal/scene"
@@ -31,6 +32,7 @@ type fitShape struct {
 		Y       *float64 `json:"y"`
 		Opacity *float64 `json:"opacity"`
 		Text    *string  `json:"text"`
+		Count   *float64 `json:"count"`
 	} `json:"keys"`
 }
 
@@ -43,12 +45,12 @@ const fitRowChars = scene.StateRowMax
 // there), less the 0.01 rounding of positions.
 const fitClear = scene.PlaceGap - 0.05
 
-// The lesson note and the reason of a run sit at fixed heights on the canvas
-// edge (look/basic, looks/lumen, looks/doodle); they are laid over the stage,
-// so the test measures them against cards and icons but not against rows.
+// The lesson note and the reason of a run sit at fixed heights in the top band
+// of the canvas (look/basic, looks/lumen, looks/doodle). The test measures them
+// against everything else: cards, rows, heads, icons, counters and each other.
 const (
-	fitNoteY   = 604.0
-	fitReasonY = 46.0
+	fitNoteY   = 40.0
+	fitReasonY = 72.0
 )
 
 type fitBox struct {
@@ -122,7 +124,7 @@ func fitScene(t *testing.T, sc []fitShape, canvasW, canvasH float64, at int64) f
 			member[m] = true
 		}
 	}
-	var cards, rows, edges, icons []fitBox
+	var cards, rows, edges, icons, counters []fitBox
 	for i := range sc {
 		s := &sc[i]
 		st := stateAt(s, at)
@@ -165,6 +167,16 @@ func fitScene(t *testing.T, sc []fitShape, canvasW, canvasH float64, at int64) f
 			} else {
 				rows = append(rows, b)
 			}
+		case s.Kind == "counter":
+			// the widest the counter has been up to this moment
+			most := 0.0
+			for _, k := range s.Keys {
+				if k.At <= at && k.Count != nil {
+					most = math.Max(most, math.Floor(*k.Count+0.5))
+				}
+			}
+			w, h := scene.LabelCharW*float64(len(strconv.FormatFloat(most, 'f', 0, 64))), scene.LabelH
+			counters = append(counters, fitBox{"counter " + s.ID, st.x - w/2, st.y - h/2, st.x + w/2, st.y + h/2})
 		case s.Kind == "circle" && s.Node != "":
 			// a head drawn above a card (looks/doodle)
 			icons = append(icons, fitBox{"head " + s.Node, st.x - s.Props.R, st.y - s.Props.R, st.x + s.Props.R, st.y + s.Props.R})
@@ -179,7 +191,7 @@ func fitScene(t *testing.T, sc []fitShape, canvasW, canvasH float64, at int64) f
 	m := fitMetrics{minClear: math.Inf(1), rows: len(rows), cards: len(cards), icons: len(icons)}
 	m.bbox = fitBox{x0: math.Inf(1), y0: math.Inf(1), x1: math.Inf(-1), y1: math.Inf(-1)}
 	// (a) everything inside the canvas
-	for _, bs := range [][]fitBox{cards, rows, edges, icons} {
+	for _, bs := range [][]fitBox{cards, rows, edges, icons, counters} {
 		for _, b := range bs {
 			if b.x0 < 0 || b.y0 < 0 || b.x1 > canvasW || b.y1 > canvasH {
 				t.Errorf("@%d %s (%.0f,%.0f)-(%.0f,%.0f) leaves the %.0fx%.0f canvas", at, b.name, b.x0, b.y0, b.x1, b.y1, canvasW, canvasH)
@@ -196,8 +208,10 @@ func fitScene(t *testing.T, sc []fitShape, canvasW, canvasH float64, at int64) f
 			}
 		}
 	}
-	for _, e := range edges {
-		for _, bs := range [][]fitBox{cards, icons} {
+	// a note or a reason is a label like a state row: 8 clear of every card,
+	// row, head, icon and counter, and of every other note or reason
+	for i, e := range edges {
+		for _, bs := range [][]fitBox{cards, rows, icons, counters, edges[i+1:]} {
 			for _, b := range bs {
 				if g := e.gap(b); g < fitClear {
 					t.Errorf("@%d %s is %.1f from %s, the least is %.0f", at, e.name, g, b.name, scene.PlaceGap)
@@ -214,7 +228,7 @@ func fitScene(t *testing.T, sc []fitShape, canvasW, canvasH float64, at int64) f
 			m.longestLabel = r.name[len("row "):]
 		}
 		// (b) a row is at least the Place gap clear of every card and icon
-		for _, bs := range [][]fitBox{cards, icons} {
+		for _, bs := range [][]fitBox{cards, icons, counters} {
 			for _, b := range bs {
 				g := r.gap(b)
 				m.minClear = math.Min(m.minClear, g)
@@ -279,9 +293,10 @@ func checkSceneFile(t *testing.T, f string) {
 }
 
 // TestExamplesFitCanvas: in every example scene, at its middle key and at its
-// last key, every node card, state row, icon and head lies inside the canvas, no
-// two cards overlap, no state row has more than 24 characters, every row is
-// 8 clear of every card and icon, and no two labels overlap (the guard for the
+// last key, every node card, state row, note, reason, icon, head and counter lies
+// inside the canvas, no two cards overlap, no state row has more than 24
+// characters, every row, note and reason is 8 clear of every card, icon and
+// counter, every note and reason is 8 clear of every row, and no two labels overlap (the guard for the
 // canvas, ring and row constants of internal/scene, spec/09 §9.2 to §9.4).
 func TestExamplesFitCanvas(t *testing.T) {
 	files, err := filepath.Glob(filepath.Join("..", "..", "testdata", "run", "examples", "*", "scene.json"))

@@ -1,5 +1,5 @@
 (program "github.com/synodlang/examples/paxos#main"
-  (packages "std/lists" "std/math" "std/net" "std/sim" "std/text" "github.com/synodlang/examples/paxos" "std/lesson" "github.com/synodlang/examples/paxos#main")
+  (packages "std/disk" "std/lists" "std/math" "std/net" "std/sim" "std/text" "github.com/synodlang/examples/paxos" "std/lesson" "github.com/synodlang/examples/paxos#main")
   (main "main"
     (vars (0 nodes local list of paxos.Node))
     (body
@@ -12,6 +12,8 @@
         (deliver (message paxos.Start (Value "y")) (item nodes#0 2))
         (call "lesson.Ask … choosing" "Two proposers are racing. Can both x and y be chosen?" (list "Yes: each proposer's value is chosen at its own ballot" "No: the higher ballot wins, so y alone is chosen" "No: the second proposer learns of x and proposes x too" "Neither: the proposers block each other forever")))
       (native "sim.stopAt" (time 2000000))))
+  (package "std/disk" std
+    (runs "std/disk"))
   (package "std/lists" std
     (runs "std/lists"))
   (package "std/math" std
@@ -23,8 +25,8 @@
   (package "std/text" std
     (runs "std/text"))
   (package "github.com/synodlang/examples/paxos"
-    (uses "std/lists" "std/math" "std/net" "std/sim" "std/text")
-    (runs "std/lists" "std/math" "std/net" "std/sim" "std/text" "github.com/synodlang/examples/paxos")
+    (uses "std/disk" "std/lists" "std/math" "std/net" "std/sim" "std/text")
+    (runs "std/disk" "std/lists" "std/math" "std/net" "std/sim" "std/text" "github.com/synodlang/examples/paxos")
     (node-fields
       (field Peers list of paxos.Node exported (empty list of paxos.Node))
       (field Promised number exported 0)
@@ -52,6 +54,13 @@
     (record Accepted exported
       (field number number 0)
       (field value text ""))
+    (start "start"
+      (vars (0 n receiver paxos.Node))
+      (body
+        (set-field n#0 paxos.Promised (native "disk.read" "promised" n#0 0))
+        (set-field n#0 paxos.AcceptedBallot (native "disk.read" "acceptedBallot" n#0 0))
+        (set-field n#0 paxos.AcceptedValue (native "disk.read" "acceptedValue" n#0 ""))
+        (set-field n#0 paxos.round (native "disk.read" "round" n#0 0))))
     (phrase "Meet"
       (vars (0 ns param list of paxos.Node) (1 n each paxos.Node))
       (body
@@ -65,6 +74,7 @@
       (vars (0 n receiver paxos.Node) (1 v param text) (2 p each paxos.Node))
       (body
         (set-field n#0 paxos.round (plus (nodefield n#0 paxos.round) 1))
+        (native "disk.write" (nodefield n#0 paxos.round) "round" n#0)
         (set-field n#0 paxos.ballot (plus (times (nodefield n#0 paxos.round) 100) (native "sim.id" n#0)))
         (set-field n#0 paxos.proposal v#1)
         (set-field n#0 paxos.promises (empty list of paxos.Promise))
@@ -93,6 +103,7 @@
         (if (more-than (recfield Prepare#1 number) (nodefield n#0 paxos.Promised))
           (then
             (set-field n#0 paxos.Promised (recfield Prepare#1 number))
+            (native "disk.write" (nodefield n#0 paxos.Promised) "promised" n#0)
             (native "net.send" (message paxos.Promise (number (nodefield n#0 paxos.Promised)) (prior (nodefield n#0 paxos.AcceptedBallot)) (priorValue (nodefield n#0 paxos.AcceptedValue))) n#0 proposer#2)))))
     (when-node "net.received"
       (vars (0 n receiver paxos.Node) (1 Promise binding paxos.Promise) (2 acceptor binding node) (3 best local number) (4 p each paxos.Promise) (5 a each paxos.Node))
@@ -122,6 +133,9 @@
             (set-field n#0 paxos.Promised (recfield Accept#1 number))
             (set-field n#0 paxos.AcceptedBallot (recfield Accept#1 number))
             (set-field n#0 paxos.AcceptedValue (recfield Accept#1 value))
+            (native "disk.write" (nodefield n#0 paxos.Promised) "promised" n#0)
+            (native "disk.write" (nodefield n#0 paxos.AcceptedBallot) "acceptedBallot" n#0)
+            (native "disk.write" (nodefield n#0 paxos.AcceptedValue) "acceptedValue" n#0)
             (each _ p#3 (nodefield n#0 paxos.Peers)
               (native "net.send" (message paxos.Accepted (number (recfield Accept#1 number)) (value (recfield Accept#1 value))) n#0 p#3))))))
     (when-node "net.received"
@@ -139,7 +153,7 @@
           (then
             (set-field n#0 paxos.Chosen (recfield Accepted#1 value))
             (emit (message paxos.Learned (Value (nodefield n#0 paxos.Chosen))) n#0)))))
-    (always "paxos/paxos.synod:109: always ((lists.Size ChosenValues) at most 1)" (at-most (native "lists.size" (call "paxos.ChosenValues")) 1) (slots 0)))
+    (always "paxos/paxos.synod:125: always ((lists.Size ChosenValues) at most 1)" (at-most (native "lists.size" (call "paxos.ChosenValues")) 1) (slots 0)))
   (package "std/lesson" std
     (uses "std/sim")
     (runs "std/sim" "std/lesson")
@@ -162,4 +176,4 @@
         (emit (message lesson.Noted (Text t#0)) (native "sim.nobody")))))
   (package "github.com/synodlang/examples/paxos#main" main
     (uses "github.com/synodlang/examples/paxos" "std/lesson" "std/net" "std/sim")
-    (runs "std/lists" "std/math" "std/net" "std/sim" "std/text" "github.com/synodlang/examples/paxos" "std/lesson" "github.com/synodlang/examples/paxos#main")))
+    (runs "std/disk" "std/lists" "std/math" "std/net" "std/sim" "std/text" "github.com/synodlang/examples/paxos" "std/lesson" "github.com/synodlang/examples/paxos#main")))

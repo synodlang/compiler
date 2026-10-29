@@ -339,7 +339,7 @@
       (match 1 bind origin#1)
       (body
         (draw (native "look.label" (recfield lesson.Noted#0 Text)) caption#2 (for "caption" "caption"))
-        (native "look.tween" "y" caption#2 604 (time 0)))))
+        (native "look.tween" "y" caption#2 40 (time 0)))))
   (package "github.com/synodlang/examples/raftlook"
     (uses "github.com/synodlang/examples/raft" "std/look" "std/look/basic" "std/sim" "std/theme")
     (runs "std/lists" "std/math" "std/net" "std/random" "std/sim" "std/time" "github.com/synodlang/examples/raft" "std/theme" "std/look" "std/lesson" "std/text" "std/look/basic" "github.com/synodlang/examples/raftlook")

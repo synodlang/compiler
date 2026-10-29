@@ -1,4 +1,5 @@
 # package paxos
+use std/disk
 use std/lists
 use std/math
 use std/net
@@ -46,9 +47,20 @@ define Meet [ns: list of Node]
 define Majority of [n: number]
   result ((math.Floor (n divided by 2)) plus 1)
 
-# Proposer, phase 1: ask every acceptor to promise a fresh, unique ballot
+# Paxos needs stable storage: a restart wipes every field, so the promise, the
+# accepted proposal and the proposer's round are read back from disk
+define [n: Node] start
+  set n.Promised to (disk.Read "promised" on n or 0)
+  set n.AcceptedBallot to (disk.Read "acceptedBallot" on n or 0)
+  set n.AcceptedValue to (disk.Read "acceptedValue" on n or "")
+  set n.round to (disk.Read "round" on n or 0)
+
+# Proposer, phase 1: ask every acceptor to promise a fresh, unique ballot.
+# Ballot numbers (round * 100 + id) are unique for clusters below 100 nodes,
+# and the round is stored first, so a restarted proposer never reuses a ballot
 define [n: Node] Propose [v: text]
   set n.round to (n.round plus 1)
+  disk.Write n.round at "round" on n
   set n.ballot to ((n.round times 100) plus (sim.Id n))
   set n.proposal to v
   set n.promises to {}
@@ -62,6 +74,7 @@ when [n: Node] (sim.Delivered Start)
 when [n: Node] (net.Received Prepare from proposer)
   if (Prepare.number more than n.Promised)
     set n.Promised to Prepare.number
+    disk.Write n.Promised at "promised" on n
     net.Send (message Promise with number n.Promised, prior n.AcceptedBallot, priorValue n.AcceptedValue) from n to proposer
 
 # Proposer, phase 2: with a majority of promises, adopt the highest prior value
@@ -83,6 +96,9 @@ when [n: Node] (net.Received Accept from proposer)
     set n.Promised to Accept.number
     set n.AcceptedBallot to Accept.number
     set n.AcceptedValue to Accept.value
+    disk.Write n.Promised at "promised" on n
+    disk.Write n.AcceptedBallot at "acceptedBallot" on n
+    disk.Write n.AcceptedValue at "acceptedValue" on n
     each p in n.Peers
       net.Send (message Accepted with number Accept.number, value Accept.value) from n to p
 

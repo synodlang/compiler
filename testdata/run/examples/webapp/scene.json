@@ -27,7 +27,7 @@
 {"id":"s7ddc5380b368","kind":"label","props":{},"keys":[{"at":180,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n6"}]},
 {"id":"s80dc5380b881","kind":"group","node":"n6","props":{"items":["s7edc5380b51b","s7ddc5380b368"]},"keys":[{"at":180,"x":140,"y":315,"opacity":1}]},
 {"id":"s7fdc5380b6ce","kind":"label","props":{},"keys":[{"at":180,"x":140,"y":360,"opacity":1,"fill":"Ink","text":"Queries 0"},{"at":3539,"text":"Queries 0"},{"at":3839,"text":"Queries 1"},{"at":4139,"text":"Queries 2"},{"at":4634,"text":"Queries 2"},{"at":4934,"text":"Queries 3"},{"at":5234,"text":"Queries 4"},{"at":5749,"text":"Queries 4"},{"at":6049,"text":"Queries 5"},{"at":6349,"text":"Queries 6"},{"at":6599,"text":"Queries 6"},{"at":6899,"text":"Queries 7"},{"at":7199,"text":"Queries 8"},{"at":8062,"text":"Queries 8"},{"at":8362,"text":"Queries 9"}]},
-{"id":"sfcc826bb95e1","kind":"label","props":{},"keys":[{"at":1500,"x":520,"y":604,"opacity":1,"fill":"Ink","text":"Misses go to the database and fill the cache; hits come back fast."}]},
+{"id":"sfcc826bb95e1","kind":"label","props":{},"keys":[{"at":1500,"x":520,"y":40,"opacity":1,"fill":"Ink","text":"Misses go to the database and fill the cache; hits come back fast."}]},
 {"id":"sde581b0c4d66","kind":"circle","props":{"r":6},"keys":[{"at":1690,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":2390},
 {"id":"sdf581b0c4f19","kind":"label","props":{},"keys":[{"at":1690,"x":0,"y":-23,"opacity":0,"fill":"Ink","text":"Get"},{"at":1810,"opacity":1},{"at":1890,"opacity":1},{"at":2190,"opacity":0}],"end":2390},
 {"id":"sdc581b0c4a00","kind":"group","msg":1,"props":{"items":["sde581b0c4d66","sdf581b0c4f19"]},"keys":[{"at":1690,"x":398,"y":167.78,"opacity":1},{"at":2090,"x":642,"opacity":1},{"at":2390,"opacity":0}],"end":2390},

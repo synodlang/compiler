@@ -1,7 +1,7 @@
 run github.com/synodlang/examples/paxos seed 105
-end: empty at 134.285ms, 3 nodes, 37 steps, 90 events
+end: empty at 134.285ms, 3 nodes, 37 steps, 110 events
 always:
-  holds          paxos/paxos.synod:109: always ((lists.Size ChosenValues) at most 1)
+  holds          paxos/paxos.synod:125: always ((lists.Size ChosenValues) at most 1)
 steps:
 @0s main
   sim.Started
@@ -13,37 +13,44 @@ steps:
   sim.Changed paxos.Peers of n3 from {} to {n1, n2, n3}
   sim.Injected paxos.Start{Value "x"} into n1
 @0s deliver n1
+  disk.Written "round" on n1
   net.Sent #1 paxos.Prepare{number 101} from n1 to n1
   net.Sent #2 paxos.Prepare{number 101} from n1 to n2
   net.Sent #3 paxos.Prepare{number 101} from n1 to n3
 @12.025ms receive n1
   net.Arrived #1 paxos.Prepare{number 101} from n1 to n1
   sim.Changed paxos.Promised of n1 from 0 to 101
+  disk.Written "promised" on n1
   net.Sent #4 paxos.Promise{number 101, prior 0, priorValue ""} from n1 to n1
 @13.534ms receive n3
   net.Arrived #3 paxos.Prepare{number 101} from n1 to n3
   sim.Changed paxos.Promised of n3 from 0 to 101
+  disk.Written "promised" on n3
   net.Sent #5 paxos.Promise{number 101, prior 0, priorValue ""} from n3 to n1
 @15ms timer main
   sim.Injected paxos.Start{Value "y"} into n3
   sim.Emitted lesson.Asked{Question "Two proposers are racing. Can both x and y be chosen?", Choices {"Yes: each proposer's value is chosen at its own ballot", "No: the higher ballot wins, so y alone is chosen", "No: the second proposer learns of x and proposes x too", "Neither: the proposers block each other forever"}} by nobody
 @15ms deliver n3
+  disk.Written "round" on n3
   net.Sent #6 paxos.Prepare{number 103} from n3 to n1
   net.Sent #7 paxos.Prepare{number 103} from n3 to n2
   net.Sent #8 paxos.Prepare{number 103} from n3 to n3
 @16.899ms receive n2
   net.Arrived #2 paxos.Prepare{number 101} from n1 to n2
   sim.Changed paxos.Promised of n2 from 0 to 101
+  disk.Written "promised" on n2
   net.Sent #9 paxos.Promise{number 101, prior 0, priorValue ""} from n2 to n1
 @26.196ms receive n2
   net.Arrived #7 paxos.Prepare{number 103} from n3 to n2
   sim.Changed paxos.Promised of n2 from 101 to 103
+  disk.Written "promised" on n2
   net.Sent #10 paxos.Promise{number 103, prior 0, priorValue ""} from n2 to n3
 @37.062ms receive n1
   net.Arrived #5 paxos.Promise{number 101, prior 0, priorValue ""} from n3 to n1
 @37.339ms receive n1
   net.Arrived #6 paxos.Prepare{number 103} from n3 to n1
   sim.Changed paxos.Promised of n1 from 101 to 103
+  disk.Written "promised" on n1
   net.Sent #11 paxos.Promise{number 103, prior 0, priorValue ""} from n1 to n3
 @39.177ms receive n1
   net.Arrived #4 paxos.Promise{number 101, prior 0, priorValue ""} from n1 to n1
@@ -56,6 +63,9 @@ steps:
   net.Arrived #14 paxos.Accept{number 101, value "x"} from n1 to n3
   sim.Changed paxos.AcceptedBallot of n3 from 0 to 101
   sim.Changed paxos.AcceptedValue of n3 from "" to "x"
+  disk.Written "promised" on n3
+  disk.Written "acceptedBallot" on n3
+  disk.Written "acceptedValue" on n3
   net.Sent #15 paxos.Accepted{number 101, value "x"} from n3 to n1
   net.Sent #16 paxos.Accepted{number 101, value "x"} from n3 to n2
   net.Sent #17 paxos.Accepted{number 101, value "x"} from n3 to n3
@@ -64,6 +74,7 @@ steps:
 @50.24ms receive n3
   net.Arrived #8 paxos.Prepare{number 103} from n3 to n3
   sim.Changed paxos.Promised of n3 from 101 to 103
+  disk.Written "promised" on n3
   net.Sent #18 paxos.Promise{number 103, prior 101, priorValue "x"} from n3 to n3
 @50.671ms receive n3
   net.Arrived #10 paxos.Promise{number 103, prior 0, priorValue ""} from n2 to n3
@@ -85,6 +96,9 @@ steps:
 @85.01ms receive n3
   net.Arrived #21 paxos.Accept{number 103, value "x"} from n3 to n3
   sim.Changed paxos.AcceptedBallot of n3 from 101 to 103
+  disk.Written "promised" on n3
+  disk.Written "acceptedBallot" on n3
+  disk.Written "acceptedValue" on n3
   net.Sent #22 paxos.Accepted{number 103, value "x"} from n3 to n1
   net.Sent #23 paxos.Accepted{number 103, value "x"} from n3 to n2
   net.Sent #24 paxos.Accepted{number 103, value "x"} from n3 to n3
@@ -92,6 +106,9 @@ steps:
   net.Arrived #19 paxos.Accept{number 103, value "x"} from n3 to n1
   sim.Changed paxos.AcceptedBallot of n1 from 0 to 103
   sim.Changed paxos.AcceptedValue of n1 from "" to "x"
+  disk.Written "promised" on n1
+  disk.Written "acceptedBallot" on n1
+  disk.Written "acceptedValue" on n1
   net.Sent #25 paxos.Accepted{number 103, value "x"} from n1 to n1
   net.Sent #26 paxos.Accepted{number 103, value "x"} from n1 to n2
   net.Sent #27 paxos.Accepted{number 103, value "x"} from n1 to n3
@@ -111,6 +128,9 @@ steps:
   net.Arrived #20 paxos.Accept{number 103, value "x"} from n3 to n2
   sim.Changed paxos.AcceptedBallot of n2 from 0 to 103
   sim.Changed paxos.AcceptedValue of n2 from "" to "x"
+  disk.Written "promised" on n2
+  disk.Written "acceptedBallot" on n2
+  disk.Written "acceptedValue" on n2
   net.Sent #28 paxos.Accepted{number 103, value "x"} from n2 to n1
   net.Sent #29 paxos.Accepted{number 103, value "x"} from n2 to n2
   net.Sent #30 paxos.Accepted{number 103, value "x"} from n2 to n3

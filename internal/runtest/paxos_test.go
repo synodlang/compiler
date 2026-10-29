@@ -175,7 +175,7 @@ func TestPaxosBroken(t *testing.T) {
 		// The trace names the rule by its module-relative path.
 		p := check(t, dir)["paxos"]
 		tr := string(p.encode(t, p.run(u64(first2))))
-		if !strings.Contains(tr, `"rule":"paxos/paxos.synod:104: always ((lists.Size ChosenValues) at most 1)"`) {
+		if !strings.Contains(tr, `"rule":"paxos/paxos.synod:120: always ((lists.Size ChosenValues) at most 1)"`) {
 			t.Errorf("trace of seed %d has no module-relative rule", first2)
 		}
 	}

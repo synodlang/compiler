@@ -303,7 +303,7 @@
 {"id":"s697457fce00c","kind":"circle","props":{"r":6},"keys":[{"at":64319,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":65019},
 {"id":"s6a7457fce1bf","kind":"label","props":{},"keys":[{"at":64319,"x":0,"y":-23,"opacity":0,"fill":"Ink","text":"digest"},{"at":64439,"opacity":1},{"at":64519,"opacity":1},{"at":64819,"opacity":0}],"end":65019},
 {"id":"s6b7457fce372","kind":"group","msg":87,"props":{"items":["s697457fce00c","s6a7457fce1bf"]},"keys":[{"at":64319,"x":220,"y":294.34,"opacity":1},{"at":64719,"x":630,"y":188.44,"opacity":1},{"at":65019,"opacity":0}],"end":65019},
-{"id":"sfcc826bb95e1","kind":"label","props":{},"keys":[{"at":66012,"x":520,"y":604,"opacity":1,"fill":"Ink","text":"n3 comes back with a new generation, so its lower heartbeat is still believed."}]},
+{"id":"sfcc826bb95e1","kind":"label","props":{},"keys":[{"at":66012,"x":520,"y":40,"opacity":1,"fill":"Ink","text":"n3 comes back with a new generation, so its lower heartbeat is still believed."}]},
 {"id":"s8c745cd9bed3","kind":"circle","props":{"r":6},"keys":[{"at":66402,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":69728},
 {"id":"s8b745cd9bd20","kind":"label","props":{},"keys":[{"at":66402,"x":0,"y":-23,"opacity":0,"fill":"Ink","text":"digest"},{"at":66522,"opacity":1},{"at":66602,"opacity":1},{"at":66902,"opacity":0}],"end":69728},
 {"id":"s8e745cd9c239","kind":"group","msg":88,"props":{"items":["s8c745cd9bed3","s8b745cd9bd20"]},"keys":[{"at":66402,"x":410,"y":188.44,"opacity":1},{"at":69428,"x":820,"y":294.34,"opacity":1},{"at":69728,"opacity":0}],"end":69728},

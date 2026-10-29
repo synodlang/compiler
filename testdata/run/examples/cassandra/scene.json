@@ -381,7 +381,7 @@
 {"id":"s56fd8d05ac7d","kind":"circle","props":{"r":6},"keys":[{"at":75229,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":76138},
 {"id":"s55fd8d05aaca","kind":"label","props":{},"keys":[{"at":75229,"x":0,"y":-23,"opacity":0,"fill":"Ink","text":"digest"},{"at":75349,"opacity":1},{"at":75429,"opacity":1},{"at":75729,"opacity":0}],"end":76138},
 {"id":"s54fd8d05a917","kind":"group","msg":109,"props":{"items":["s56fd8d05ac7d","s55fd8d05aaca"]},"keys":[{"at":75229,"x":194.2,"y":273,"opacity":1},{"at":75838,"x":250,"y":229.77,"opacity":1},{"at":76138,"opacity":0}],"end":76138},
-{"id":"sfcc826bb95e1","kind":"label","props":{},"keys":[{"at":77051,"x":520,"y":604,"opacity":1,"fill":"Ink","text":"Data lives in memory here, so the restarted replica is refilled only by hints."}]},
+{"id":"sfcc826bb95e1","kind":"label","props":{},"keys":[{"at":77051,"x":520,"y":40,"opacity":1,"fill":"Ink","text":"Data lives in memory here, so the restarted replica is refilled only by hints."}]},
 {"id":"s93fd882970d6","kind":"circle","props":{"r":6},"keys":[{"at":77741,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":80731},
 {"id":"s94fd88297289","kind":"label","props":{},"keys":[{"at":77741,"x":0,"y":-23,"opacity":0,"fill":"Ink","text":"digest"},{"at":77861,"opacity":1},{"at":77941,"opacity":1},{"at":78241,"opacity":0}],"end":80731},
 {"id":"s91fd88296d70","kind":"group","msg":110,"props":{"items":["s93fd882970d6","s94fd88297289"]},"keys":[{"at":77741,"x":410,"y":229.77,"opacity":1},{"at":80431,"x":655.8,"y":420.22,"opacity":1},{"at":80731,"opacity":0}],"end":80731},

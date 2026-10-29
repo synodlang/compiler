@@ -14,6 +14,8 @@ Implements Synod 0.3. `synod version` prints `language 0.3`, `synod new` writes 
 - The `ring` layout is wider and sits higher: radii 380 and 170 (growth up to 1.4 in height), and the ring, row and grid layouts centre on (520, 315), 10 above the scene centre, since state rows hang below the cards. An even number of cards turns half a slot counter-clockwise, so `n1` is at the left or top left. Scenes change; traces are unchanged.
 - `sim.StateRows` gives each row at most 24 characters (`StateRowMax`): a longer one keeps its first 23 and ends in `…`. Look-only, so traces keep full values. The embedded std and the vendored examples follow `std` and `examples`.
 - The fit test also checks a mid-scene key, that every state row has at most 24 characters, that rows clear other cards and icons by 8, and that no two labels overlap.
+- The embedded `look/basic` writes the lesson note at the top of the canvas (`y` 40). The fit test measures notes and reasons against cards, rows, heads, icons, counters and each other, with no exclusion, and counts a counter as a box.
+- The embedded and vendored `paxos` keeps its promise, accepted proposal and round on `std/disk`; only the paxos trace gains `disk.Written` events, every other trace is byte-identical.
 - Scenes use a 1040 by 650 canvas with its centre at (520, 325), `look.Orbit` has radius 200, and the `ring` layout is an ellipse (radii 300 and 150, turned half a slot for an even number of cards, growing up to 1.4 with the number of cards). Default-theme scenes change once; traces are unchanged. The embedded std and the vendored examples follow `std` and `examples`.
 
 ### Fixed

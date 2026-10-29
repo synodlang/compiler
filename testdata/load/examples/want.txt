@@ -72,12 +72,13 @@ package github.com/synodlang/examples/gossip#main name=main dir=gossip module=gi
   deps github.com/synodlang/examples/gossip std/lesson std/sim
 package github.com/synodlang/examples/paxos name=paxos dir=paxos module=github.com/synodlang/examples
   file paxos/paxos.synod
-  import std/lists at 2:5 -> std/lists
-  import std/math at 3:5 -> std/math
-  import std/net at 4:5 -> std/net
-  import std/sim at 5:5 -> std/sim
-  import std/text at 6:5 -> std/text
-  deps std/lists std/math std/net std/sim std/text
+  import std/disk at 2:5 -> std/disk
+  import std/lists at 3:5 -> std/lists
+  import std/math at 4:5 -> std/math
+  import std/net at 5:5 -> std/net
+  import std/sim at 6:5 -> std/sim
+  import std/text at 7:5 -> std/text
+  deps std/disk std/lists std/math std/net std/sim std/text
 package github.com/synodlang/examples/paxos#main name=main dir=paxos module=github.com/synodlang/examples main
   file paxos/demo.synod
   import github.com/synodlang/examples/paxos at 2:5 -> github.com/synodlang/examples/paxos
