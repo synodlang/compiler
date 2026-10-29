@@ -17,6 +17,7 @@ Implements Synod 0.3. `synod version` prints `language 0.3`, `synod new` writes 
 - The embedded `look/basic` writes the lesson note at the top of the canvas (`y` 40). The fit test measures notes and reasons against cards, rows, heads, icons, counters and each other, with no exclusion, and counts a counter as a box.
 - The embedded and vendored `paxos` keeps its promise, accepted proposal and round on `std/disk`; only the paxos trace gains `disk.Written` events, every other trace is byte-identical.
 - Scenes use a 1040 by 650 canvas with its centre at (520, 325), `look.Orbit` has radius 200, and the `ring` layout is an ellipse (radii 300 and 150, turned half a slot for an even number of cards, growing up to 1.4 with the number of cards). Default-theme scenes change once; traces are unchanged. The embedded std and the vendored examples follow `std` and `examples`.
+- `look.Place s beside t` puts `s` on the right of `t` when its box lies inside the canvas there (`t` at the position it settles at) and on the left of `t` otherwise, with the same gap and sizes; the side is chosen when the `Place` runs. Scenes with a note beside a card at the right edge change; traces are unchanged. The fit test also checks every label at each of its own key times.
 
 ### Fixed
 

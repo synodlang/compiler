@@ -61,7 +61,7 @@ Records:
 | `look.Layout [kind: text]` | — | look | `"ring"`, `"row"` or `"grid"` for node cards, spaced by `theme.Fill` |
 | `look.Place [s: shape] above [t: shape]` | — | look | Position relative to another shape; likewise `below`, `beside` |
 | `look.Place [s: shape] below [t: shape]` | — | look | Position relative to another shape: below |
-| `look.Place [s: shape] beside [t: shape]` | — | look | Position relative to another shape: beside |
+| `look.Place [s: shape] beside [t: shape]` | — | look | Position relative to another shape: beside, on its right when the box lies inside the canvas there and on its left otherwise |
 | `look.Center` | shape | look | An invisible point at the scene centre |
 | `look.Orbit [s: shape] around [c: shape] at [f: number]` | — | look | Place on a circle of radius 200 around `c`, at fraction `f` of a turn (0 is 12 o'clock, clockwise) |
 | `look.Flight [s: shape] from [a: shape] to [b: shape] for [m: msg]` | — | look | Move `s` from the edge of `a` to the edge of `b`, landing when `m` arrives (halfway when dropped) |

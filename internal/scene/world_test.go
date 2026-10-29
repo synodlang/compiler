@@ -364,11 +364,11 @@ func TestPlaceFollowsAndBreaks(t *testing.T) {
 func TestPlaceMidTweenCopiesFutureKeys(t *testing.T) {
 	w := newTW(1000)
 	a := w.mk(t, trace.KindRect, 0)
-	must(t, w.tween(a, trace.PX, pv{N: 1000}, 100, 500)) // runs until 600
+	must(t, w.tween(a, trace.PX, pv{N: 800}, 100, 500)) // runs until 600
 	s := w.mk(t, trace.KindRect, 200)
 	must(t, w.place(s, "beside", a, 200))
 	ks := w.shapes[s].keys
-	if k := ks[len(ks)-1]; k.At != 600 || k.X != 1000+104 {
+	if k := ks[len(ks)-1]; k.At != 600 || k.X != 800+104 {
 		t.Fatalf("follower did not copy the running tween: %s", desc(ks))
 	}
 }
@@ -597,4 +597,69 @@ func TestIDsViaEmit(t *testing.T) {
 		t.Fatalf("id %s", sc.Shapes[0].ID)
 	}
 	_ = s
+}
+
+// A shape placed beside another is on its right when its box lies inside the
+// canvas there, on its left otherwise, with the same gap and sizes.
+func TestPlaceBesideSide(t *testing.T) {
+	w := newTW(1000)
+	card := w.mk(t, trace.KindRect, 0) // 96 by 56
+	must(t, w.tween(card, trace.PX, pv{N: 900}, 0, 0))
+	a := w.mk(t, trace.KindLabel, 0) // 16 by 18
+	must(t, w.place(a, "beside", card, 0))
+	// dx = 48 + 8 + 8 = 64; the box ends at 900 + 64 + 8 = 972
+	if x, _ := w.worldPos(a, 0); x != 964 {
+		t.Fatalf("right of the card: x %v", x)
+	}
+	// 1000 + 72 > 1040: the label goes to the left
+	must(t, w.tween(card, trace.PX, pv{N: 1000}, 1000, 0))
+	b := w.mk(t, trace.KindLabel, 1000)
+	must(t, w.place(b, "beside", card, 1000))
+	if x, _ := w.worldPos(b, 1000); x != 936 {
+		t.Fatalf("left of the card: x %v", x)
+	}
+	// the box ending exactly on the edge is inside
+	must(t, w.tween(card, trace.PX, pv{N: 968}, 2000, 0))
+	c := w.mk(t, trace.KindLabel, 2000)
+	must(t, w.place(c, "beside", card, 2000))
+	if x, _ := w.worldPos(c, 2000); x != 1032 {
+		t.Fatalf("on the edge: x %v", x)
+	}
+	// the side is kept when the card moves on
+	must(t, w.tween(card, trace.PX, pv{N: 200}, 3000, 0))
+	if x, _ := w.worldPos(c, 3000); x != 264 {
+		t.Fatalf("follows on its side: x %v", x)
+	}
+	must(t, w.tween(card, trace.PX, pv{N: 1000}, 4000, 0))
+	must(t, w.place(b, "beside", card, 4000))
+	must(t, w.tween(card, trace.PX, pv{N: 300}, 5000, 0))
+	if x, _ := w.worldPos(b, 5000); x != 236 {
+		t.Fatalf("left side kept: x %v", x)
+	}
+}
+
+// A group placed beside a shape counts by its bounding box; the same
+// card at the same place gives the same side on every run.
+func TestPlaceBesideGroup(t *testing.T) {
+	w := newTW(1000)
+	card := w.mk(t, trace.KindRect, 0)
+	must(t, w.tween(card, trace.PX, pv{N: 800}, 0, 0))
+	m1 := w.mk(t, trace.KindLabel, 0)
+	m2 := w.mk(t, trace.KindLabel, 0)
+	g, err := w.group([]int{m1, m2}, "g", 0)
+	must(t, err)
+	// both members at the group position: 16 by 18; 800 + 64 + 8 fits
+	must(t, w.place(g, "beside", card, 0))
+	if x, _ := w.worldPos(g, 0); x != 864 {
+		t.Fatalf("group right: x %v", x)
+	}
+	// move the second member out: 56 wide members make a 96-wide group
+	must(t, w.tween(m1, trace.PX, pv{N: -40}, 1000, 0))
+	must(t, w.tween(m2, trace.PX, pv{N: 40}, 1000, 0))
+	must(t, w.tween(card, trace.PX, pv{N: 940}, 1000, 0))
+	must(t, w.place(g, "beside", card, 1000))
+	// dx = 48 + 8 + 48 = 104; 940 + 104 + 48 = 1092 > 1040: left, x = 836
+	if x, _ := w.worldPos(g, 9000); x != 836 {
+		t.Fatalf("group left: x %v", x)
+	}
 }

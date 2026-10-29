@@ -633,6 +633,9 @@ func flightKs(ka, kb, dist float64) (float64, float64) {
 // "beside"): s gets an offset from t and follows every later x and y change
 // of t, with the same times, until s is moved itself or placed again. s moves
 // by the morph rule and is pinned. A cycle (or s == t) is bad-argument.
+// "beside" is on the right of t when the box of s lies inside the canvas
+// there, with t at the position it settles at, and on the left otherwise; the
+// side is chosen here, at the Place, and the offset keeps it.
 func (w *world) place(i int, rel string, t int, now int64) error {
 	s, a := w.shapes[i], w.shapes[t]
 	if i == t {
@@ -661,6 +664,9 @@ func (w *world) place(i int, rel string, t int, now int64) error {
 		dy = float64(ht/2) + PlaceGap + float64(hs/2)
 	default:
 		dx = float64(wt/2) + PlaceGap + float64(ws/2)
+		if fx, _ := w.worldPos(t, math.MaxInt64); rnd(fx+dx+float64(ws/2)) > CanvasW {
+			dx = -dx
+		}
 	}
 	dx, dy = rnd(dx), rnd(dy)
 	s.anchor, s.dx, s.dy = t, dx, dy

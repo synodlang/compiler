@@ -9,7 +9,8 @@ when sim.Started
     look.Fill wheel with theme.Paper
     look.Stroke wheel with theme.Line
 
-# A node is a small disc at its first token, drawn over the marks of all its tokens; its keys are listed beside it
+# A node is a small disc at its first token, drawn over the marks of all its tokens; its keys are listed beside it,
+# and a join starts every column again at its owner, since the keys are then written again
 when (sim.Added n)
   each t in (ring.TokensOf n)
     draw (look.Circle 4) as mark
@@ -21,8 +22,10 @@ when (sim.Added n)
     look.Fill name with theme.Paper
   draw (look.Group {disc, name}) as card for n
   look.Orbit card around look.Center at (item 0 of (ring.TokensOf n))
-  draw (look.Rect 64 by 18) as slot for n
-  look.Place slot beside card
+  each m in sim.Nodes
+    draw (look.Rect 64 by 18) as slot for m
+    look.Place slot beside (card of m)
+    look.Tween "y" of slot to (card of m) over 0s
 
 # A key is written at the next free row of its owner's column; a key that changes owner moves to the new owner's column
 when (sim.Emitted ring.Placed by origin)

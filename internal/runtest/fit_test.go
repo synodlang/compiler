@@ -267,6 +267,36 @@ func fitMoments(sc []fitShape) []int64 {
 	return []int64{ats[len(ats)/2], math.MaxInt64}
 }
 
+// fitLabelsInCanvas checks that the box of every label (not a group member, not
+// a message) lies inside the canvas at every key time of the label, faded out
+// or not: a change note beside a card at the right edge leaves the canvas for a
+// moment that is neither the middle nor the last key of the scene.
+func fitLabelsInCanvas(t *testing.T, sc []fitShape, canvasW, canvasH float64) {
+	t.Helper()
+	member := map[string]bool{}
+	for i := range sc {
+		for _, m := range sc[i].Props.Items {
+			member[m] = true
+		}
+	}
+	for i := range sc {
+		s := &sc[i]
+		if s.Kind != "label" || member[s.ID] || s.Msg != 0 {
+			continue
+		}
+		for _, k := range s.Keys {
+			st := stateAt(s, k.At)
+			if st.text == "" {
+				continue
+			}
+			w, h := scene.LabelCharW*float64(len([]rune(st.text))), scene.LabelH
+			if x0, y0, x1, y1 := st.x-w/2, st.y-h/2, st.x+w/2, st.y+h/2; x0 < 0 || y0 < 0 || x1 > canvasW || y1 > canvasH {
+				t.Errorf("@%d label %q (%.0f,%.0f)-(%.0f,%.0f) leaves the %.0fx%.0f canvas", k.At, st.text, x0, y0, x1, y1, canvasW, canvasH)
+			}
+		}
+	}
+}
+
 func checkSceneFile(t *testing.T, f string) {
 	t.Helper()
 	b, err := os.ReadFile(f)
@@ -283,6 +313,7 @@ func checkSceneFile(t *testing.T, f string) {
 	if sc.Canvas.W != scene.CanvasW || sc.Canvas.H != scene.CanvasH {
 		t.Fatalf("canvas %vx%v, want %dx%d", sc.Canvas.W, sc.Canvas.H, scene.CanvasW, scene.CanvasH)
 	}
+	fitLabelsInCanvas(t, sc.Shapes, sc.Canvas.W, sc.Canvas.H)
 	for k, at := range fitMoments(sc.Shapes) {
 		m := fitScene(t, sc.Shapes, sc.Canvas.W, sc.Canvas.H, at)
 		if k == 1 {
@@ -296,7 +327,8 @@ func checkSceneFile(t *testing.T, f string) {
 // last key, every node card, state row, note, reason, icon, head and counter lies
 // inside the canvas, no two cards overlap, no state row has more than 24
 // characters, every row, note and reason is 8 clear of every card, icon and
-// counter, every note and reason is 8 clear of every row, and no two labels overlap (the guard for the
+// counter, every note and reason is 8 clear of every row, no two labels overlap, and
+// every label lies inside the canvas at each of its own key times (the guard for the
 // canvas, ring and row constants of internal/scene, spec/09 §9.2 to §9.4).
 func TestExamplesFitCanvas(t *testing.T) {
 	files, err := filepath.Glob(filepath.Join("..", "..", "testdata", "run", "examples", "*", "scene.json"))

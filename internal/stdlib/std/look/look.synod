@@ -35,7 +35,7 @@ define Place [s: shape] above [t: shape] native "look.placeAbove"
 # Position relative to another shape: below
 define Place [s: shape] below [t: shape] native "look.placeBelow"
 
-# Position relative to another shape: beside
+# Position relative to another shape: beside, on its right when the box lies inside the canvas there and on its left otherwise
 define Place [s: shape] beside [t: shape] native "look.placeBeside"
 
 # An invisible point at the scene centre
