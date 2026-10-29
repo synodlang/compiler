@@ -1,0 +1,13 @@
+# package p
+use std/sim
+
+Go has
+  set k to 0
+
+Node has
+  set Short to "abcdefgh"
+  set Exact to "0123456789ABCDEFGH"
+  set Long to "αβγδεζηθικλμνοπρστυφχψω and more"
+
+when [n: Node] (sim.Delivered Go)
+  set n.Short to "ijklmnop"

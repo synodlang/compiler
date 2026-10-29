@@ -1,10 +1,10 @@
 {"format":"synod-scene/1","duration":2980,"canvas":{"w":1040,"h":650},"theme":{"Paper":"#151A2E","Ink":"#EDE9E1","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A"},"shapes":[
 {"id":"saaef7414cafa","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
 {"id":"sabef7414ccad","kind":"label","props":{},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n1"}]},
-{"id":"sa8ef7414c794","kind":"group","node":"n1","props":{"items":["saaef7414cafa","sabef7414ccad"]},"keys":[{"at":30,"x":520,"y":325,"opacity":1},{"at":60,"x":520},{"at":360,"x":440},{"at":420,"effect":"indicate"},{"at":1020,"effect":"none"},{"at":1480,"effect":"indicate"},{"at":2080,"effect":"none"}]},
+{"id":"sa8ef7414c794","kind":"group","node":"n1","props":{"items":["saaef7414cafa","sabef7414ccad"]},"keys":[{"at":30,"x":520,"y":315,"opacity":1},{"at":60,"x":520},{"at":360,"x":440},{"at":420,"effect":"indicate"},{"at":1020,"effect":"none"},{"at":1480,"effect":"indicate"},{"at":2080,"effect":"none"}]},
 {"id":"scdef78f1a9c1","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Ink"}]},
 {"id":"sccef78f1a80e","kind":"label","props":{},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n2"}]},
-{"id":"scbef78f1a65b","kind":"group","node":"n2","props":{"items":["scdef78f1a9c1","sccef78f1a80e"]},"keys":[{"at":60,"x":600,"y":325,"opacity":1},{"at":820,"effect":"flash"},{"at":920,"effect":"ripple"},{"at":1020,"effect":"circumscribe"},{"at":1120,"effect":"sweep"},{"at":1880,"effect":"flash"},{"at":1980,"effect":"ripple"},{"at":2080,"effect":"circumscribe"},{"at":2180,"effect":"sweep"},{"at":2980,"effect":"none"}]}
+{"id":"scbef78f1a65b","kind":"group","node":"n2","props":{"items":["scdef78f1a9c1","sccef78f1a80e"]},"keys":[{"at":60,"x":600,"y":315,"opacity":1},{"at":820,"effect":"flash"},{"at":920,"effect":"ripple"},{"at":1020,"effect":"circumscribe"},{"at":1120,"effect":"sweep"},{"at":1880,"effect":"flash"},{"at":1980,"effect":"ripple"},{"at":2080,"effect":"circumscribe"},{"at":2180,"effect":"sweep"},{"at":2980,"effect":"none"}]}
 ],"markers":[],"trace":[
 {"seq":1,"at":0},
 {"seq":2,"at":30},

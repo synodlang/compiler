@@ -225,13 +225,13 @@ func TestBakedTheme(t *testing.T) {
 	if got := w.keys(l); got != "0{o=0.6 stroke=Line}" {
 		t.Errorf("line %s", got)
 	}
-	if x, y := slotPosF("row", 0, 2, 1.5); x != CenterX-120 || y != CenterY {
+	if x, y := slotPosF("row", 0, 2, 1.5); x != CenterX-120 || y != LayoutCY {
 		t.Errorf("row %v %v", x, y)
 	}
-	if x, y := slotPosF("ring", 0, 3, 1.5); x != CenterX || y != CenterY-RingRY*1.5 {
+	if x, y := slotPosF("ring", 0, 3, 1.5); x != CenterX || y != LayoutCY-RingRY*1.5 {
 		t.Errorf("ring %v %v", x, y)
 	}
-	if x, y := slotPosF("grid", 0, 4, 0.5); x != CenterX-50 || y != CenterY-40 {
+	if x, y := slotPosF("grid", 0, 4, 0.5); x != CenterX-50 || y != LayoutCY-40 {
 		t.Errorf("grid %v %v", x, y)
 	}
 }

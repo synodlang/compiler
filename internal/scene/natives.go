@@ -223,7 +223,8 @@ func lookDelete(b *builder, c *ir.Call, args []value.Value) (value.Value, *value
 
 // simStateRows is sim.StateRows: one line per exported field of the packages
 // n runs, "<Field> <value as text>", with "<package>.<Field>" when two of the
-// packages export the same name. It reads every exported field of n.
+// packages export the same name; a line of more than StateRowMax characters
+// keeps its first StateRowMax-1 and ends in "…". It reads every exported field of n.
 func simStateRows(b *builder, c *ir.Call, args []value.Value) (value.Value, *value.Fault) {
 	n := args[0].NodeID()
 	if n == 0 {
@@ -242,7 +243,11 @@ func simStateRows(b *builder, c *ir.Call, args []value.Value) (value.Value, *val
 		if count[name] > 1 {
 			name = b.qual(r.Field.Pkg) + "." + name
 		}
-		items[i] = value.Text(name + " " + value.Format(r.Value, value.FormatOpts{TopText: true}))
+		line := name + " " + value.Format(r.Value, value.FormatOpts{TopText: true})
+		if rs := []rune(line); len(rs) > StateRowMax {
+			line = string(rs[:StateRowMax-1]) + "…"
+		}
+		items[i] = value.Text(line)
 	}
 	return value.ListOf(items), nil
 }

@@ -152,7 +152,7 @@ Trace events:
 | `sim.Nodes` | `list of node` | main, check, look | All nodes not removed, in creation order |
 | `sim.NodesRunning [p: package]` | `list of p.Node` | main, check, look | Nodes running `p` |
 | `sim.IsUp [n: node]` | bool | main, check, look | Not crashed and not removed |
-| `sim.StateRows [n: node]` | `list of text` | look | One line per exported field of `n`: name and value as text |
+| `sim.StateRows [n: node]` | `list of text` | look | One line per exported field of `n`: name and value as text, at most 24 characters (a longer one ends in `…`) |
 
 Node event:
 

@@ -28,12 +28,14 @@ const (
 	CenterX         = 520.0
 	CenterY         = 325.0
 	OrbitRadius     = 200.0
-	RingRX          = 300.0 // ring ellipse radii at layout scale 1 and growth 1
-	RingRY          = 150.0
+	LayoutCY        = 315.0 // ring, row and grid centre: state rows hang below the cards
+	RingRX          = 380.0 // ring ellipse radii at layout scale 1 and growth 1
+	RingRY          = 170.0
 	RingGrowMax     = 1.4 // largest ring growth factor g
 	PlaceGap        = 8.0
 	LabelCharW      = 8.0
 	LabelH          = 18.0
+	StateRowMax     = 24 // characters (runes) of one sim.StateRows line
 )
 
 // rnd rounds a computed number to 0.01 and never returns -0.

@@ -1,11 +1,11 @@
-{"format":"synod-scene/1","duration":15870,"canvas":{"w":1040,"h":650},"theme":{"Paper":"#151A2E","Ink":"#EDE9E1","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A"},"shapes":[
+{"format":"synod-scene/1","duration":15060,"canvas":{"w":1040,"h":650},"theme":{"Paper":"#151A2E","Ink":"#EDE9E1","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A"},"shapes":[
 {"id":"s648ffc90f4c6","kind":"rect","props":{"w":1032,"h":642,"radius":12},"keys":[{"at":0,"x":520,"y":325,"opacity":0,"stroke":"Critical"}]},
 {"id":"s1fdc3aec8c00","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Ink"},{"at":10710,"fill":"Ink"},{"at":11010,"fill":"Quiet"},{"at":11940,"fill":"Quiet"},{"at":12240,"fill":"Ink"}]},
 {"id":"s20dc3aec8db3","kind":"label","props":{},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n1"}]},
-{"id":"s21dc3aec8f66","kind":"group","node":"n1","props":{"items":["s1fdc3aec8c00","s20dc3aec8db3"]},"keys":[{"at":30,"x":520,"y":325,"opacity":1}]},
-{"id":"s22dc3aec9119","kind":"label","props":{},"keys":[{"at":30,"x":520,"y":370,"opacity":1,"fill":"Ink","text":"Table {}"},{"at":1050,"text":"Table {}"},{"at":1350,"text":"Table {\"k1\": \"1\"}"},{"at":1980,"text":"Table {\"k1\": \"1\"}"},{"at":2280,"text":"Table {\"k1\": \"1\", \"k2\": \"2\"}"},{"at":2910,"text":"Table {\"k1\": \"1\", \"k2\": \"2\"}"},{"at":3210,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\"}"},{"at":3840,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\"}"},{"at":4140,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\"}"},{"at":4770,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\"}"},{"at":5070,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\"}"},{"at":5700,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\"}"},{"at":6000,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\"}"},{"at":7320,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\"}"},{"at":7620,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\"}"},{"at":8250,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\"}"},{"at":8550,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\"}"},{"at":9180,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\"}"},{"at":9480,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\", \"k9\": \"9\"}"},{"at":10110,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\", \"k9\": \"9\"}"},{"at":10410,"text":"Table {\"k1\": \"1\", \"k10\": \"10\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\", \"k9\": \"9\"}"},{"at":11940,"text":"Table {\"k1\": \"1\", \"k10\": \"10\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\", \"k9\": \"9\"}"},{"at":12240,"text":"Table {}"},{"at":12540,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\"}"},{"at":13140,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\"}"},{"at":13440,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\"}"},{"at":13740,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\"}"},{"at":14040,"text":"Table {\"k1\": \"1\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\", \"k9\": \"9\"}"},{"at":14340,"text":"Table {\"k1\": \"1\", \"k10\": \"10\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\", \"k9\": \"9\"}"},{"at":15270,"text":"Table {\"k1\": \"1\", \"k10\": \"10\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\", \"k9\": \"9\"}"},{"at":15570,"text":"Table {\"k1\": \"1\", \"k10\": \"10\", \"k12\": \"12\", \"k2\": \"2\", \"k3\": \"3\", \"k4\": \"4\", \"k5\": \"5\", \"k6\": \"6\", \"k7\": \"7\", \"k8\": \"8\", \"k9\": \"9\"}"}]},
-{"id":"s23dc3aec92cc","kind":"label","props":{},"keys":[{"at":30,"x":520,"y":396,"opacity":1,"fill":"Ink","text":"Lsn 0"},{"at":750,"text":"Lsn 0"},{"at":1050,"text":"Lsn 1"},{"at":1680,"text":"Lsn 1"},{"at":1980,"text":"Lsn 2"},{"at":2610,"text":"Lsn 2"},{"at":2910,"text":"Lsn 3"},{"at":3540,"text":"Lsn 3"},{"at":3840,"text":"Lsn 4"},{"at":4470,"text":"Lsn 4"},{"at":4770,"text":"Lsn 5"},{"at":5400,"text":"Lsn 5"},{"at":5700,"text":"Lsn 6"},{"at":7020,"text":"Lsn 6"},{"at":7320,"text":"Lsn 7"},{"at":7950,"text":"Lsn 7"},{"at":8250,"text":"Lsn 8"},{"at":8880,"text":"Lsn 8"},{"at":9180,"text":"Lsn 9"},{"at":9810,"text":"Lsn 9"},{"at":10110,"text":"Lsn 10"},{"at":11940,"text":"Lsn 10"},{"at":12240,"text":"Lsn 0"},{"at":12840,"text":"Lsn 0"},{"at":13140,"text":"Lsn 10"},{"at":14970,"text":"Lsn 10"},{"at":15270,"text":"Lsn 11"}]},
-{"id":"s24dc3aec947f","kind":"label","props":{},"keys":[{"at":30,"x":520,"y":422,"opacity":1,"fill":"Ink","text":"Flushed 0"},{"at":6390,"text":"Flushed 0"},{"at":6690,"text":"Flushed 6"},{"at":11940,"text":"Flushed 6"},{"at":12240,"text":"Flushed 0"},{"at":12540,"text":"Flushed 0"},{"at":12840,"text":"Flushed 6"},{"at":14340,"text":"Flushed 6"},{"at":14640,"text":"Flushed 10"}]},
+{"id":"s21dc3aec8f66","kind":"group","node":"n1","props":{"items":["s1fdc3aec8c00","s20dc3aec8db3"]},"keys":[{"at":30,"x":520,"y":315,"opacity":1}]},
+{"id":"s22dc3aec9119","kind":"label","props":{},"keys":[{"at":30,"x":520,"y":360,"opacity":1,"fill":"Ink","text":"Table {}"},{"at":1050,"text":"Table {}"},{"at":1350,"text":"Table {\"k1\": \"1\"}"},{"at":1980,"text":"Table {\"k1\": \"1\"}"},{"at":2280,"text":"Table {\"k1\": \"1\", \"k2\":…"},{"at":10110,"text":"Table {\"k1\": \"1\", \"k2\":…"},{"at":10410,"text":"Table {\"k1\": \"1\", \"k10\"…"},{"at":11940,"text":"Table {\"k1\": \"1\", \"k10\"…"},{"at":12240,"text":"Table {}"},{"at":12540,"text":"Table {\"k1\": \"1\", \"k2\":…"},{"at":13230,"text":"Table {\"k1\": \"1\", \"k2\":…"},{"at":13530,"text":"Table {\"k1\": \"1\", \"k10\"…"}]},
+{"id":"s23dc3aec92cc","kind":"label","props":{},"keys":[{"at":30,"x":520,"y":386,"opacity":1,"fill":"Ink","text":"Lsn 0"},{"at":750,"text":"Lsn 0"},{"at":1050,"text":"Lsn 1"},{"at":1680,"text":"Lsn 1"},{"at":1980,"text":"Lsn 2"},{"at":2610,"text":"Lsn 2"},{"at":2910,"text":"Lsn 3"},{"at":3540,"text":"Lsn 3"},{"at":3840,"text":"Lsn 4"},{"at":4470,"text":"Lsn 4"},{"at":4770,"text":"Lsn 5"},{"at":5400,"text":"Lsn 5"},{"at":5700,"text":"Lsn 6"},{"at":7020,"text":"Lsn 6"},{"at":7320,"text":"Lsn 7"},{"at":7950,"text":"Lsn 7"},{"at":8250,"text":"Lsn 8"},{"at":8880,"text":"Lsn 8"},{"at":9180,"text":"Lsn 9"},{"at":9810,"text":"Lsn 9"},{"at":10110,"text":"Lsn 10"},{"at":11940,"text":"Lsn 10"},{"at":12240,"text":"Lsn 0"},{"at":12840,"text":"Lsn 0"},{"at":13140,"text":"Lsn 10"},{"at":14160,"text":"Lsn 10"},{"at":14460,"text":"Lsn 11"}]},
+{"id":"s24dc3aec947f","kind":"label","props":{},"keys":[{"at":30,"x":520,"y":412,"opacity":1,"fill":"Ink","text":"Flushed 0"},{"at":6390,"text":"Flushed 0"},{"at":6690,"text":"Flushed 6"},{"at":11940,"text":"Flushed 6"},{"at":12240,"text":"Flushed 0"},{"at":12540,"text":"Flushed 0"},{"at":12840,"text":"Flushed 6"},{"at":13530,"text":"Flushed 6"},{"at":13830,"text":"Flushed 10"}]},
 {"id":"sfcc826bb95e1","kind":"label","props":{},"keys":[{"at":11970,"x":520,"y":604,"opacity":1,"fill":"Ink","text":"Writes after the checkpoint come back from the log."}]}
 ],"markers":[
 {"at":10740,"kind":"pause","text":"The last checkpoint was at 2s. Which writes survive the crash?","choices":["Only the six writes made before the checkpoint","All ten acknowledged writes: six from the checkpoint, four replayed from the log","None: memory is lost with the crash","Every write, including the one sent during the outage"]},
@@ -79,17 +79,17 @@
 {"seq":66,"at":12540},
 {"seq":67,"at":12840},
 {"seq":68,"at":13140},
-{"seq":69,"at":13440},
-{"seq":70,"at":13740},
-{"seq":71,"at":14040},
-{"seq":72,"at":14070},
-{"seq":73,"at":14100},
-{"seq":74,"at":14130},
-{"seq":75,"at":14340},
-{"seq":76,"at":14940},
-{"seq":77,"at":14970},
-{"seq":78,"at":15000},
-{"seq":79,"at":15030},
-{"seq":80,"at":15270},
-{"seq":81,"at":15870}
+{"seq":69,"at":13170},
+{"seq":70,"at":13200},
+{"seq":71,"at":13230},
+{"seq":72,"at":13260},
+{"seq":73,"at":13290},
+{"seq":74,"at":13320},
+{"seq":75,"at":13530},
+{"seq":76,"at":14130},
+{"seq":77,"at":14160},
+{"seq":78,"at":14190},
+{"seq":79,"at":14220},
+{"seq":80,"at":14460},
+{"seq":81,"at":15060}
 ]}

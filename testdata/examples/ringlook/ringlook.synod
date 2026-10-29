@@ -9,16 +9,28 @@ when sim.Started
     look.Fill wheel with theme.Paper
     look.Stroke wheel with theme.Line
 
-# A node sits at its first token; small marks show all its tokens
+# A node is a small disc at its first token, drawn over the marks of all its tokens; its keys are listed beside it
 when (sim.Added n)
-  draw (look.Card for n) as card for n
-  look.Orbit card around look.Center at (item 0 of (ring.TokensOf n))
   each t in (ring.TokensOf n)
     draw (look.Circle 4) as mark
       look.Fill mark with theme.Quiet
     look.Orbit mark around look.Center at t
+  draw (look.Circle 14) as disc
+    look.Fill disc with theme.Ink
+  draw (look.Label (sim.Name n)) as name
+    look.Fill name with theme.Paper
+  draw (look.Group {disc, name}) as card for n
+  look.Orbit card around look.Center at (item 0 of (ring.TokensOf n))
+  draw (look.Rect 64 by 18) as slot for n
+  look.Place slot beside card
 
-# A key label sits beside its owner and morphs when the owner changes
+# A key is written at the next free row of its owner's column; a key that changes owner moves to the new owner's column
 when (sim.Emitted ring.Placed by origin)
+  set row to (slot of ring.Placed.Owner)
   draw (look.Label ring.Placed.Key) as tag for ring.Placed.Key
-  look.Place tag beside (card of ring.Placed.Owner)
+  look.Tween "x" of tag to row over 0s
+  look.Tween "y" of tag to row over 0s
+  draw (look.Rect 64 by 18) as next
+  look.Place next below row
+  look.Tween "x" of row to next over 0s
+  look.Tween "y" of row to next over 0s

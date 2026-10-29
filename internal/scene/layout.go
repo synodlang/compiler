@@ -50,7 +50,7 @@ func slotPos(kind string, i, n int) (x, y float64) { return slotPosF(kind, i, n,
 func slotPosF(kind string, i, n int, f float64) (x, y float64) {
 	switch kind {
 	case "row":
-		return rnd(CenterX + float64(float64(2*i-(n-1))*float64(80*f))), CenterY
+		return rnd(CenterX + float64(float64(2*i-(n-1))*float64(80*f))), LayoutCY
 	case "grid":
 		c := 1
 		for c*c < n {
@@ -59,18 +59,20 @@ func slotPosF(kind string, i, n int, f float64) (x, y float64) {
 		r := (n + c - 1) / c
 		col, row := i%c, i/c
 		return rnd(CenterX + float64(float64(2*col-(c-1))*float64(100*f))),
-			rnd(CenterY + float64(float64(2*row-(r-1))*float64(80*f)))
+			rnd(LayoutCY + float64(float64(2*row-(r-1))*float64(80*f)))
 	}
-	// ring: an ellipse turned half a slot for an even n, grown with n
+	// ring: an ellipse turned half a slot counter-clockwise for an even n,
+	// wider than tall, taller with n; one card sits at the centre
 	u := float64(i) / float64(n)
 	if n%2 == 0 {
-		u = float64(2*i+1) / float64(2*n)
+		u = float64(2*i-1) / float64(2*n)
 	}
-	g := 0.0
+	e, g := 0.0, 0.0
 	if n > 1 {
+		e = 1
 		g = math.Min(RingGrowMax, math.Max(1, float64(n-3)/3))
 	}
-	return ellipsePoint(CenterX, CenterY, u, float64(float64(RingRX*f)*g), float64(float64(RingRY*f)*g))
+	return ellipsePoint(CenterX, LayoutCY, u, float64(float64(RingRX*f)*e), float64(float64(RingRY*f)*g))
 }
 
 // reflow arranges the node cards for the current layout. Call it after each

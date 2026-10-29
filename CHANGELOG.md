@@ -11,6 +11,9 @@ Implements Synod 0.3. `synod version` prints `language 0.3`, `synod new` writes 
 
 - The embedded `look/basic` follows `std`: message tags show only mid-flight. Scene ids and goldens change; traces are unchanged.
 - `look.Flight` moves the flown shape from the edge of `a` to the edge of `b`, 8 clear of each box (the `Place` size model, group extents, proportional clamp when the cards are close, halfway between the clipped ends when dropped; straight up above the shape when both are at one position). Scenes with flights change; traces are unchanged. The embedded std follows `std`.
+- The `ring` layout is wider and sits higher: radii 380 and 170 (growth up to 1.4 in height), and the ring, row and grid layouts centre on (520, 315), 10 above the scene centre, since state rows hang below the cards. An even number of cards turns half a slot counter-clockwise, so `n1` is at the left or top left. Scenes change; traces are unchanged.
+- `sim.StateRows` gives each row at most 24 characters (`StateRowMax`): a longer one keeps its first 23 and ends in `…`. Look-only, so traces keep full values. The embedded std and the vendored examples follow `std` and `examples`.
+- The fit test also checks a mid-scene key, that every state row has at most 24 characters, that rows clear other cards and icons by 8, and that no two labels overlap.
 - Scenes use a 1040 by 650 canvas with its centre at (520, 325), `look.Orbit` has radius 200, and the `ring` layout is an ellipse (radii 300 and 150, turned half a slot for an even number of cards, growing up to 1.4 with the number of cards). Default-theme scenes change once; traces are unchanged. The embedded std and the vendored examples follow `std` and `examples`.
 
 ### Fixed
