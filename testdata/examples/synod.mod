@@ -1,2 +1,2 @@
 module github.com/synodlang/examples
-synod 0.2
+synod 0.3
