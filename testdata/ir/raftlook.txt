@@ -304,8 +304,12 @@
         (native "look.fill" ball#3 (native "theme.Accent"))
         (draw (native "look.label" (native "net.type" m#0)) tag#4)
         (native "look.placeAbove" tag#4 ball#3)
+        (native "look.tween" "opacity" tag#4 0 (time 0))
+        (native "look.tween" "opacity" tag#4 1 (time 120000))
         (draw (native "look.group" (list ball#3 tag#4)) dot#5 (for "dot" (native "net.id" m#0)))
-        (native "look.flight" dot#5 (attached "card" a#1) (attached "card" b#2) m#0)))
+        (native "look.flight" dot#5 (attached "card" a#1) (attached "card" b#2) m#0)
+        (after (time 200000)
+          (call "look.Fade … to" tag#4 0))))
     (when-trace "net.arrived"
       (vars (0 m binding msg) (1 a binding node) (2 b binding node))
       (match 0 bind m#0)

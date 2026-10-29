@@ -11,13 +11,13 @@
 {"id":"se3dc40259b3a","kind":"label","props":{},"keys":[{"at":60,"x":220,"y":370,"opacity":1,"fill":"Ink","text":"Peers {nobody}"}]},
 {"id":"sdedc402592bb","kind":"label","props":{},"keys":[{"at":60,"x":220,"y":396,"opacity":1,"fill":"Ink","text":"Got 0"},{"at":850,"text":"Got 0"},{"at":1150,"text":"Got 1"},{"at":1342,"text":"Got 1"},{"at":1642,"text":"Got 2"},{"at":2402,"text":"Got 2"},{"at":2702,"text":"Got 3"}]},
 {"id":"sde581b0c4d66","kind":"circle","props":{"r":6},"keys":[{"at":420,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":1120},
-{"id":"sdf581b0c4f19","kind":"label","props":{},"keys":[{"at":420,"x":0,"y":-23,"opacity":1,"fill":"Ink","text":"Msg"}],"end":1120},
+{"id":"sdf581b0c4f19","kind":"label","props":{},"keys":[{"at":420,"x":0,"y":-23,"opacity":0,"fill":"Ink","text":"Msg"},{"at":540,"opacity":1},{"at":620,"opacity":1},{"at":920,"opacity":0}],"end":1120},
 {"id":"sdc581b0c4a00","kind":"group","msg":1,"props":{"items":["sde581b0c4d66","sdf581b0c4f19"]},"keys":[{"at":420,"x":752,"y":325,"opacity":1},{"at":820,"x":288,"opacity":1},{"at":1120,"opacity":0}],"end":1120},
 {"id":"sa15820a22ccd","kind":"circle","props":{"r":6},"keys":[{"at":912,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":1612},
-{"id":"sa05820a22b1a","kind":"label","props":{},"keys":[{"at":912,"x":0,"y":-23,"opacity":1,"fill":"Ink","text":"Msg"}],"end":1612},
+{"id":"sa05820a22b1a","kind":"label","props":{},"keys":[{"at":912,"x":0,"y":-23,"opacity":0,"fill":"Ink","text":"Msg"},{"at":1032,"opacity":1},{"at":1112,"opacity":1},{"at":1412,"opacity":0}],"end":1612},
 {"id":"s9f5820a22967","kind":"group","msg":2,"props":{"items":["sa15820a22ccd","sa05820a22b1a"]},"keys":[{"at":912,"x":752,"y":325,"opacity":1},{"at":1312,"x":288,"opacity":1},{"at":1612,"opacity":0}],"end":1612},
 {"id":"sac582572a570","kind":"circle","props":{"r":6},"keys":[{"at":1972,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":2672},
-{"id":"sad582572a723","kind":"label","props":{},"keys":[{"at":1972,"x":0,"y":-23,"opacity":1,"fill":"Ink","text":"Msg"}],"end":2672},
+{"id":"sad582572a723","kind":"label","props":{},"keys":[{"at":1972,"x":0,"y":-23,"opacity":0,"fill":"Ink","text":"Msg"},{"at":2092,"opacity":1},{"at":2172,"opacity":1},{"at":2472,"opacity":0}],"end":2672},
 {"id":"sae582572a8d6","kind":"group","msg":3,"props":{"items":["sac582572a570","sad582572a723"]},"keys":[{"at":1972,"x":752,"y":325,"opacity":1},{"at":2372,"x":288,"opacity":1},{"at":2672,"opacity":0}],"end":2672}
 ],"markers":[],"trace":[
 {"seq":1,"at":0},

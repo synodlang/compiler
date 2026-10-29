@@ -38,8 +38,12 @@ when (net.Sent m from a to b)
   look.Fill ball with theme.Accent
   draw (look.Label (net.Type m)) as tag
   look.Place tag above ball
+  look.Tween "opacity" of tag to 0 over 0s
+  look.Tween "opacity" of tag to 1 over 120ms
   draw (look.Group {ball, tag}) as dot for (net.Id m)
   look.Flight dot from (card of a) to (card of b) for m
+  after 200ms
+    look.Fade tag to 0
 
 when (net.Arrived m from a to b)
   look.Remove (dot of (net.Id m))
