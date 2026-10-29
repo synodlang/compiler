@@ -7,6 +7,10 @@ section is the text of its GitHub release page.
 
 Implements Synod 0.3. `synod version` prints `language 0.3`, `synod new` writes `synod 0.3`, and trace headers say `"synod":"0.3"`. A `synod.mod` that says an older version (`synod 0.2`) is still accepted, and the version line does not gate features; a newer one (`synod 0.4`) is an error.
 
+### Fixed
+
+- `synod new demo` is refused like `main`, `time` and `sim`, with or without `--lib`: the package `demo` collided with `demo/demo.synod`, the main program, which overwrote the library.
+
 ## v0.2.7 — 2026-10-28
 
 Implements Synod 0.2. The documentation is now checked against the compiler, and `synod get` downloads are byte-exact.

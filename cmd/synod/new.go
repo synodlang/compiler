@@ -67,7 +67,7 @@ func runNew(args []string, stdout, stderr io.Writer) int {
 		return exitUsage
 	}
 	pkg := path.Base(module)
-	if load.PackageNameProblem(pkg) != "" || pkg == "main" || pkg == "time" || pkg == "sim" {
+	if load.PackageNameProblem(pkg) != "" || pkg == "main" || pkg == "demo" || pkg == "time" || pkg == "sim" {
 		fmt.Fprintf(stderr, "synod new: %q is not a package name; use a lower-case word\n", pkg)
 		return exitUsage
 	}

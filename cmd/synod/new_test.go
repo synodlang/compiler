@@ -81,6 +81,30 @@ func TestNewLibAndModule(t *testing.T) {
 	}
 }
 
+// "demo" is the demo program's file name: the package would collide with it.
+func TestNewRefusesDemo(t *testing.T) {
+	for _, args := range [][]string{{"demo"}, {"demo", "--lib"}} {
+		dir := filepath.Join(t.TempDir(), "demo")
+		args = append([]string{dir}, args[1:]...)
+		code, _, errs := call(runNew, args...)
+		if code != 2 || !strings.Contains(errs, `synod new: "demo" is not a package name; use a lower-case word`) {
+			t.Errorf("%v: %d %q", args, code, errs)
+		}
+		if _, err := os.Stat(dir); err == nil {
+			t.Errorf("%v: refused dir was created", args)
+		}
+	}
+	// An existing empty folder is left untouched.
+	empty := filepath.Join(t.TempDir(), "demo")
+	os.MkdirAll(empty, 0o755)
+	if code, _, _ := call(runNew, empty); code != 2 {
+		t.Errorf("empty demo folder: %d", code)
+	}
+	if ents, _ := os.ReadDir(empty); len(ents) != 0 {
+		t.Errorf("refused folder was written: %v", ents)
+	}
+}
+
 func TestNewRefusals(t *testing.T) {
 	root := t.TempDir()
 	full := filepath.Join(root, "full")
