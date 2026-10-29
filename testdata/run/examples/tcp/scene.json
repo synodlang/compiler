@@ -11,13 +11,13 @@
 {"id":"sf6e214f3e0d4","kind":"label","props":{},"keys":[{"at":120,"x":520,"y":604,"opacity":1,"fill":"Ink","text":"A connection needs three messages before data can flow."},{"at":2096,"opacity":1},{"at":2396,"opacity":0}],"end":2396},
 {"id":"sde581b0c4d66","kind":"circle","props":{"r":6},"keys":[{"at":420,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":1120},
 {"id":"sdf581b0c4f19","kind":"label","props":{},"keys":[{"at":420,"x":0,"y":-23,"opacity":1,"fill":"Ink","text":"Syn"}],"end":1120},
-{"id":"sdc581b0c4a00","kind":"group","msg":1,"props":{"items":["sde581b0c4d66","sdf581b0c4f19"]},"keys":[{"at":420,"x":820,"y":325,"opacity":1},{"at":820,"x":220,"opacity":1},{"at":1120,"opacity":0}],"end":1120},
+{"id":"sdc581b0c4a00","kind":"group","msg":1,"props":{"items":["sde581b0c4d66","sdf581b0c4f19"]},"keys":[{"at":420,"x":752,"y":325,"opacity":1},{"at":820,"x":288,"opacity":1},{"at":1120,"opacity":0}],"end":1120},
 {"id":"sa15820a22ccd","kind":"circle","props":{"r":6},"keys":[{"at":880,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":1580},
 {"id":"sa05820a22b1a","kind":"label","props":{},"keys":[{"at":880,"x":0,"y":-23,"opacity":1,"fill":"Ink","text":"SynAck"}],"end":1580},
-{"id":"s9f5820a22967","kind":"group","msg":2,"props":{"items":["sa15820a22ccd","sa05820a22b1a"]},"keys":[{"at":880,"x":220,"y":325,"opacity":1},{"at":1280,"x":820,"opacity":1},{"at":1580,"opacity":0}],"end":1580},
+{"id":"s9f5820a22967","kind":"group","msg":2,"props":{"items":["sa15820a22ccd","sa05820a22b1a"]},"keys":[{"at":880,"x":300,"y":325,"opacity":1},{"at":1280,"x":740,"opacity":1},{"at":1580,"opacity":0}],"end":1580},
 {"id":"sac582572a570","kind":"circle","props":{"r":6},"keys":[{"at":1340,"x":0,"y":0,"opacity":1,"fill":"Accent"}],"end":2040},
 {"id":"sad582572a723","kind":"label","props":{},"keys":[{"at":1340,"x":0,"y":-23,"opacity":1,"fill":"Ink","text":"Ack"}],"end":2040},
-{"id":"sae582572a8d6","kind":"group","msg":3,"props":{"items":["sac582572a570","sad582572a723"]},"keys":[{"at":1340,"x":820,"y":325,"opacity":1},{"at":1740,"x":220,"opacity":1},{"at":2040,"opacity":0}],"end":2040},
+{"id":"sae582572a8d6","kind":"group","msg":3,"props":{"items":["sac582572a570","sad582572a723"]},"keys":[{"at":1340,"x":752,"y":325,"opacity":1},{"at":1740,"x":288,"opacity":1},{"at":2040,"opacity":0}],"end":2040},
 {"id":"s99e21917f55b","kind":"label","props":{},"keys":[{"at":2096,"x":520,"y":604,"opacity":0,"fill":"Ink","text":"A connection needs three messages before data can flow."},{"at":2396,"opacity":1,"text":"Both ends are ESTABLISHED: data can now flow either way."}]}
 ],"markers":[
 {"at":120,"kind":"caption","text":"A connection needs three messages before data can flow."},

@@ -5,9 +5,9 @@
 {"id":"scdef78f1a9c1","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Ink"},{"at":820,"dash":[6,3]}]},
 {"id":"sccef78f1a80e","kind":"label","props":{},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Paper","text":"n2"}]},
 {"id":"scbef78f1a65b","kind":"group","node":"n2","props":{"items":["scdef78f1a9c1","sccef78f1a80e"]},"keys":[{"at":60,"x":600,"y":325,"opacity":1}]},
-{"id":"sd33f7356bb44","kind":"circle","msg":1,"props":{"r":5},"keys":[{"at":420,"x":440,"y":325,"opacity":1,"curve":0.25,"trail":240,"dash":[4,2]},{"at":820,"x":600}]},
+{"id":"sd33f7356bb44","kind":"circle","msg":1,"props":{"r":5},"keys":[{"at":420,"x":501,"y":325,"opacity":1,"curve":0.25,"trail":240,"dash":[4,2]},{"at":820,"x":539}]},
 {"id":"sd43f7356bcf7","kind":"circle","props":{"r":3},"keys":[{"at":420,"x":440,"y":325,"opacity":1},{"at":820,"x":600}]},
-{"id":"s763f7832c08b","kind":"circle","msg":2,"props":{"r":5},"keys":[{"at":1480,"x":440,"y":325,"opacity":1,"curve":0.25,"trail":240,"dash":[4,2]},{"at":1880,"x":600}]},
+{"id":"s763f7832c08b","kind":"circle","msg":2,"props":{"r":5},"keys":[{"at":1480,"x":501,"y":325,"opacity":1,"curve":0.25,"trail":240,"dash":[4,2]},{"at":1880,"x":539}]},
 {"id":"s753f7832bed8","kind":"circle","props":{"r":3},"keys":[{"at":1480,"x":440,"y":325,"opacity":1},{"at":1880,"x":600}]}
 ],"markers":[],"trace":[
 {"seq":1,"at":0},

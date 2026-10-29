@@ -126,6 +126,11 @@ type flight struct {
 	shape, from, to int
 	start           int64
 	sx, sy          float64
+	// ax, ay is the world position of from when the flight started, ka the
+	// unclamped distance the shape leaves it at, and l, r, t, d the extents of the
+	// flown shape.
+	ax, ay, ka float64
+	l, r, t, d float64
 }
 
 type landInfo struct {
@@ -539,24 +544,84 @@ func (w *world) sizeOf(s *shape) (float64, float64) {
 		c, _ := finalVal(s.keys, trace.PCount)
 		return float64(LabelCharW * float64(counterColumns(c.N))), LabelH
 	case trace.KindGroup:
-		if len(s.items) == 0 {
-			return 0, 0
-		}
-		minX, minY := math.Inf(1), math.Inf(1)
-		maxX, maxY := math.Inf(-1), math.Inf(-1)
-		for _, m := range s.items {
-			ms := w.shapes[m]
-			mw, mh := w.sizeOf(ms)
-			x, _ := finalVal(ms.keys, trace.PX)
-			y, _ := finalVal(ms.keys, trace.PY)
-			minX = math.Min(minX, x.N-float64(mw/2))
-			maxX = math.Max(maxX, x.N+float64(mw/2))
-			minY = math.Min(minY, y.N-float64(mh/2))
-			maxY = math.Max(maxY, y.N+float64(mh/2))
-		}
-		return maxX - minX, maxY - minY
+		l, r, t, d := w.extentsOf(s)
+		return l + r, t + d
 	}
 	return 0, 0
+}
+
+// extentsOf is how far the box of shape s reaches from its position to the
+// left, right, top and down. A shape is centred on its position; a group
+// reaches as far as the bounding box of its members.
+func (w *world) extentsOf(s *shape) (l, r, t, d float64) {
+	if s.kind != trace.KindGroup {
+		sw, sh := w.sizeOf(s)
+		return float64(sw / 2), float64(sw / 2), float64(sh / 2), float64(sh / 2)
+	}
+	if len(s.items) == 0 {
+		return 0, 0, 0, 0
+	}
+	minX, minY := math.Inf(1), math.Inf(1)
+	maxX, maxY := math.Inf(-1), math.Inf(-1)
+	for _, m := range s.items {
+		ms := w.shapes[m]
+		mw, mh := w.sizeOf(ms)
+		x, _ := finalVal(ms.keys, trace.PX)
+		y, _ := finalVal(ms.keys, trace.PY)
+		minX = math.Min(minX, x.N-float64(mw/2))
+		maxX = math.Max(maxX, x.N+float64(mw/2))
+		minY = math.Min(minY, y.N-float64(mh/2))
+		maxY = math.Max(maxY, y.N+float64(mh/2))
+	}
+	return -minX, maxX, -minY, maxY
+}
+
+// edgeClip is the least distance along the unit vector (ux, uy) from the
+// centre of a box of half size (hw, hh) at which a shape with extents l, r,
+// t, d (to the left, right, top and down of its position) is PlaceGap clear
+// of the box on the side u points to. An axis with u = 0 gives no bound; u
+// = 0 on both gives 0.
+func edgeClip(hw, hh, l, r, t, d, ux, uy float64) float64 {
+	k := math.Inf(1)
+	if ux != 0 {
+		e := r
+		if ux < 0 {
+			e = l
+		}
+		k = math.Min(k, float64(hw+e+PlaceGap)/math.Abs(ux))
+	}
+	if uy != 0 {
+		e := d
+		if uy < 0 {
+			e = t
+		}
+		k = math.Min(k, float64(hh+e+PlaceGap)/math.Abs(uy))
+	}
+	if math.IsInf(k, 1) {
+		return 0
+	}
+	return k
+}
+
+// flightDir is the distance from A to B and the unit vector from A to B
+// (zero for A = B).
+func flightDir(ax, ay, bx, by float64) (dist, ux, uy float64) {
+	dx, dy := bx-ax, by-ay
+	dist = math.Sqrt(float64(dx*dx) + float64(dy*dy))
+	if dist == 0 {
+		return 0, 0, 0
+	}
+	return dist, dx / dist, dy / dist
+}
+
+// flightKs are the distances from the two centres at which the flown shape
+// leaves a and lands on b. When they exceed dist both shrink in proportion.
+func flightKs(ka, kb, dist float64) (float64, float64) {
+	if sum := ka + kb; sum > dist {
+		f := dist / sum
+		return float64(ka * f), float64(kb * f)
+	}
+	return ka, kb
 }
 
 // place is look.Place s above|below|beside t (rel is "above", "below" or
@@ -957,10 +1022,11 @@ func (w *world) replace(old, nw int, now int64) {
 	w.deleteAt(old, now+d)
 }
 
-// flightStart is look.Flight s from a to b for message msgID: s jumps to a
-// now and is registered to travel to b, landing when land(msgID, …) is called.
-// If the message already landed, s jumps to the end point. It breaks s's
-// constraint and pins it.
+// flightStart is look.Flight s from a to b for message msgID: s jumps to the
+// edge of a now (the box of s PlaceGap clear of the box of a, on the line to
+// b) and is registered to travel to the edge of b, landing when
+// land(msgID, …) is called. If the message already landed, s jumps to the
+// end point. It breaks s's constraint and pins it.
 func (w *world) flightStart(s, a, b, msgID int, now int64) error {
 	sh := w.shapes[s]
 	if sh.deleted || w.shapes[a].deleted || w.shapes[b].deleted {
@@ -971,10 +1037,19 @@ func (w *world) flightStart(s, a, b, msgID int, now int64) error {
 	}
 	w.moveSelf(sh)
 	ax, ay := w.worldPos(a, now)
-	sx, sy := w.toLocalPt(s, ax, ay, now)
+	bx, by := w.worldPos(b, now)
+	l, r, t, d := w.extentsOf(sh)
+	aw, ah := w.sizeOf(w.shapes[a])
+	bw, bh := w.sizeOf(w.shapes[b])
+	dist, ux, uy := flightDir(ax, ay, bx, by)
+	ka := edgeClip(float64(aw/2), float64(ah/2), r, l, d, t, ux, uy)
+	kb := edgeClip(float64(bw/2), float64(bh/2), l, r, t, d, ux, uy)
+	kc, _ := flightKs(ka, kb, dist)
+	sx, sy := w.toLocalPt(s, ax+float64(ux*kc), ay+float64(uy*kc), now)
 	w.apply(sh, trace.PX, pv{N: sx}, now, 0)
 	w.apply(sh, trace.PY, pv{N: sy}, now, 0)
-	f := &flight{shape: s, from: a, to: b, start: now, sx: sx, sy: sy}
+	f := &flight{shape: s, from: a, to: b, start: now, sx: sx, sy: sy,
+		ax: ax, ay: ay, ka: ka, l: l, r: r, t: t, d: d}
 	if li, ok := w.landed[msgID]; ok {
 		w.endFlight(f, now, li.dropped)
 		return w.takeErr()
@@ -987,12 +1062,18 @@ func (w *world) flightStart(s, a, b, msgID int, now int64) error {
 	return nil
 }
 
-// endFlight writes the end keys of f at slot: the world position of the
-// target, or the midpoint between start and target when dropped.
+// endFlight writes the end keys of f at slot: the edge of the target (the
+// box of the shape PlaceGap clear of the box of the target, on the line from
+// the start position of a), or the midpoint between the start and end points
+// when dropped.
 func (w *world) endFlight(f *flight, slot int64, dropped bool) {
 	sh := w.shapes[f.shape]
 	bx, by := w.worldPos(f.to, slot)
-	ex, ey := w.toLocalPt(f.shape, bx, by, slot)
+	bw, bh := w.sizeOf(w.shapes[f.to])
+	dist, ux, uy := flightDir(f.ax, f.ay, bx, by)
+	kb := edgeClip(float64(bw/2), float64(bh/2), f.l, f.r, f.t, f.d, ux, uy)
+	_, kb = flightKs(f.ka, kb, dist)
+	ex, ey := w.toLocalPt(f.shape, bx-float64(ux*kb), by-float64(uy*kb), slot)
 	if dropped {
 		ex = rnd(float64(f.sx+ex) / 2)
 		ey = rnd(float64(f.sy+ey) / 2)

@@ -44,7 +44,7 @@ define Center native "look.center"
 # Place on a circle of radius 200 around `c`, at fraction `f` of a turn (0 is 12 o'clock, clockwise)
 define Orbit [s: shape] around [c: shape] at [f: number] native "look.orbit"
 
-# Move `s` from `a` to `b`, landing when `m` arrives (halfway when dropped)
+# Move `s` from the edge of `a` to the edge of `b`, landing when `m` arrives (halfway when dropped)
 define Flight [s: shape] from [a: shape] to [b: shape] for [m: msg] native "look.flight"
 
 # Unexported: delete the shape now (used by `Remove`)

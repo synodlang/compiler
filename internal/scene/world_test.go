@@ -409,7 +409,7 @@ func TestFlightLandAndDrop(t *testing.T) {
 			w.land(7, 900, false)
 		}
 		must(t, w.flightStart(dot, a, b, 7, 1000))
-		if got := w.keys(dot); mode != "already" && got != "1000{x=100 y=100 o=1}" {
+		if got := w.keys(dot); mode != "already" && got != "1000{x=162 y=131 o=1}" {
 			t.Fatalf("%s start: %s", mode, got)
 		}
 		switch mode {
@@ -422,16 +422,80 @@ func TestFlightLandAndDrop(t *testing.T) {
 		}
 		got := w.keys(dot)
 		want := map[string]string{
-			"land":     "1000{x=100 y=100 o=1} 1600{x=500 y=300}",
-			"drop":     "1000{x=100 y=100 o=1} 1600{x=300 y=200}",
-			"unlanded": "1000{x=100 y=100 o=1} 1800{x=300 y=200}",
-			"already":  "1000{x=500 y=300 o=1}",
+			"land":     "1000{x=162 y=131 o=1} 1600{x=438 y=269}",
+			"drop":     "1000{x=162 y=131 o=1} 1600{x=300 y=200}",
+			"unlanded": "1000{x=162 y=131 o=1} 1800{x=300 y=200}",
+			"already":  "1000{x=438 y=269 o=1}",
 		}[mode]
 		if got != want {
 			t.Errorf("%s: %s want %s", mode, got, want)
 		}
 		if len(w.pending) != 0 {
 			t.Errorf("%s: pending flights left", mode)
+		}
+	}
+}
+
+// flightEnds flies shape s (a circle r6 or a group) between two 96x56 rects
+// at (ax, ay) and (bx, by) and returns its start and end positions.
+func flightEnds(t *testing.T, mode string, ax, ay, bx, by float64) (sx, sy, ex, ey float64) {
+	t.Helper()
+	w := newTW(1000)
+	a, b := w.mk(t, trace.KindRect, 0), w.mk(t, trace.KindRect, 0)
+	for _, c := range []struct {
+		s int
+		p uint32
+		v float64
+	}{{a, trace.PX, ax}, {a, trace.PY, ay}, {b, trace.PX, bx}, {b, trace.PY, by}} {
+		must(t, w.tween(c.s, c.p, pv{N: c.v}, 0, 0))
+	}
+	s := w.mk(t, trace.KindCircle, 0)
+	if mode == "group" {
+		tag := w.mk(t, trace.KindLabel, 0)
+		must(t, w.place(tag, "above", s, 0))
+		g, err := w.group([]int{s, tag}, "g", 0)
+		must(t, err)
+		s = g
+	}
+	must(t, w.flightStart(s, a, b, 1, 0))
+	if mode == "drop" {
+		w.land(1, 1000, true)
+	} else {
+		w.land(1, 1000, false)
+	}
+	k := w.shapes[s].keys
+	x, _ := finalVal(k[:1], trace.PX)
+	y, _ := finalVal(k[:1], trace.PY)
+	ex2, _ := finalVal(k, trace.PX)
+	ey2, _ := finalVal(k, trace.PY)
+	return x.N, y.N, ex2.N, ey2.N
+}
+
+func TestFlightEdges(t *testing.T) {
+	for _, c := range []struct {
+		name           string
+		mode           string
+		ax, ay, bx, by float64
+		sx, sy, ex, ey float64
+	}{
+		// the dot r6 is 48 + 6 + 8 = 62 clear of the centre of a 96x56 rect, and 28 + 6 + 8 = 42 vertically
+		{"horizontal", "dot", 100, 100, 500, 100, 162, 100, 438, 100},
+		{"horizontal left", "dot", 500, 100, 100, 100, 438, 100, 162, 100},
+		{"vertical", "dot", 100, 100, 100, 400, 100, 142, 100, 358},
+		// a leaves 28 + 6 + 8 = 42 clear; the tag above the dot reaches 32 up: 28 + 32 + 8 = 68 below b
+		{"group from below", "group", 100, 400, 100, 100, 100, 358, 100, 168},
+		// u = (0.6, 0.8): x bound 62/0.6 = 103.33, y bound 42/0.8 = 52.5
+		{"diagonal", "dot", 0, 0, 300, 400, 31.5, 42, 268.5, 358},
+		// the same position: the unit vector is zero
+		{"same position", "dot", 100, 100, 100, 100, 100, 100, 100, 100},
+		// 100 apart: k_a + k_b = 124 shrinks to 100, 50 each
+		{"too close", "dot", 100, 100, 200, 100, 150, 100, 150, 100},
+		{"dropped", "drop", 100, 100, 500, 100, 162, 100, 300, 100},
+	} {
+		sx, sy, ex, ey := flightEnds(t, c.mode, c.ax, c.ay, c.bx, c.by)
+		if sx != c.sx || sy != c.sy || ex != c.ex || ey != c.ey {
+			t.Errorf("%s: start (%v, %v) end (%v, %v) want start (%v, %v) end (%v, %v)",
+				c.name, sx, sy, ex, ey, c.sx, c.sy, c.ex, c.ey)
 		}
 	}
 }
