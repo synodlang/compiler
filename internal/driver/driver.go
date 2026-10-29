@@ -73,6 +73,11 @@ func Check(opts Options, targets []string) Result {
 		cfg.ExtraStd = append(cfg.ExtraStd, DefaultLookPath)
 	}
 	g, diags := load.Load(cfg, targets)
+	if g.Clash {
+		// Two modules with one path would share their Info and Program
+		// keys; stop with the load diagnostics.
+		return Result{Graph: g, ByPath: map[string]*resolve.Package{}, Fixes: map[string][]format.Fix{}, Sources: map[string]*source.File{}, Diags: tidy(diags)}
+	}
 	res := Result{Graph: g, ByPath: map[string]*resolve.Package{}, Fixes: map[string][]format.Fix{}, Sources: map[string]*source.File{}}
 	for _, lp := range g.Packages {
 		for _, f := range lp.Files {

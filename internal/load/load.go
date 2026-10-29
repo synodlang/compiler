@@ -58,6 +58,11 @@ type Graph struct {
 	// the main files after the first one of a folder. Diagnostics point
 	// into them.
 	Extra []*File
+	// Clash reports that two packages of the graph have the same import path
+	// because two module folders declare the same module path. The paths
+	// stand for different code, so the packages cannot be checked together;
+	// the driver stops after the load.
+	Clash bool
 }
 
 // Package is one library package or one main file.
@@ -830,6 +835,7 @@ func (l *loader) order(g *Graph) {
 		}
 	}
 	l.cycles(g.Packages)
+	l.sameModule(g)
 
 	mods := map[*Module]bool{}
 	for _, m := range l.mods {
@@ -946,4 +952,33 @@ func nextIndex(n int) int {
 		return 1
 	}
 	return 0
+}
+
+// sameModule reports two packages that have one import path but live in
+// different folders: two targets in different module folders that declare
+// the same module path (or the same module found twice). The diagnostic
+// points at the second synod.mod and names both folders.
+func (l *loader) sameModule(g *Graph) {
+	first := map[string]*Package{}
+	for _, p := range g.Packages {
+		if p.IsStd || p.Module == nil || p.Module.Path == "" {
+			continue
+		}
+		q := first[p.Path]
+		if q == nil {
+			first[p.Path] = p
+			continue
+		}
+		if q.Dir == p.Dir {
+			continue
+		}
+		if q.Module.Dir == p.Module.Dir {
+			continue
+		}
+		g.Clash = true
+		a, b := l.display(q.Module.Dir), l.display(p.Module.Dir)
+		l.plain(l.display(join(p.Module.Dir, "synod.mod")), source.DuplicateName,
+			`module "`+p.Module.Path+`" is declared by two folders, `+a+` and `+b,
+			"check one module folder at a time, for example: synod check "+b)
+	}
 }

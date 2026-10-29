@@ -14,6 +14,7 @@ Implements Synod 0.3. `synod version` prints `language 0.3`, `synod new` writes 
 ### Fixed
 
 - `synod new demo` is refused like `main`, `time` and `sim`, with or without `--lib`: the package `demo` collided with `demo/demo.synod`, the main program, which overwrote the library.
+- `synod check` (and `fmt`, `doc`) over a folder that holds two module folders with the same `module` path, such as `counter/synod.mod` and `proj/counter/synod.mod`, panicked while lowering because both modules' packages shared one import path. It now reports `error[duplicate-name]: module "counter" is declared by two folders, counter and proj/counter` at the second `synod.mod`, with the hint to check one module folder at a time, and exits 1.
 
 ## v0.2.7 — 2026-10-28
 
