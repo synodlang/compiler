@@ -603,20 +603,25 @@ func edgeClip(hw, hh, l, r, t, d, ux, uy float64) float64 {
 	return k
 }
 
-// flightDir is the distance from A to B and the unit vector from A to B
-// (zero for A = B).
+// flightDir is the distance from A to B and the unit vector from A to B; for
+// A = B the vector points straight up, (0, -1).
 func flightDir(ax, ay, bx, by float64) (dist, ux, uy float64) {
 	dx, dy := bx-ax, by-ay
 	dist = math.Sqrt(float64(dx*dx) + float64(dy*dy))
 	if dist == 0 {
-		return 0, 0, 0
+		return 0, 0, -1
 	}
 	return dist, dx / dist, dy / dist
 }
 
 // flightKs are the distances from the two centres at which the flown shape
-// leaves a and lands on b. When they exceed dist both shrink in proportion.
+// leaves a and lands on b. For distinct positions closer than ka + kb both
+// shrink in proportion. For A = B both ends are the point ka above the
+// position, so the landing distance along u is -ka.
 func flightKs(ka, kb, dist float64) (float64, float64) {
+	if dist == 0 {
+		return ka, -ka
+	}
 	if sum := ka + kb; sum > dist {
 		f := dist / sum
 		return float64(ka * f), float64(kb * f)

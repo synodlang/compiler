@@ -486,10 +486,11 @@ func TestFlightEdges(t *testing.T) {
 		{"group from below", "group", 100, 400, 100, 100, 100, 358, 100, 168},
 		// u = (0.6, 0.8): x bound 62/0.6 = 103.33, y bound 42/0.8 = 52.5
 		{"diagonal", "dot", 0, 0, 300, 400, 31.5, 42, 268.5, 358},
-		// the same position: the unit vector is zero
-		{"same position", "dot", 100, 100, 100, 100, 100, 100, 100, 100},
+		// the same position: u points straight up and both ends are 28 + 6 + 8 = 42 above it
+		{"same position", "dot", 100, 100, 100, 100, 100, 58, 100, 58},
 		// 100 apart: k_a + k_b = 124 shrinks to 100, 50 each
 		{"too close", "dot", 100, 100, 200, 100, 150, 100, 150, 100},
+		{"same position dropped", "drop", 100, 100, 100, 100, 100, 58, 100, 58},
 		{"dropped", "drop", 100, 100, 500, 100, 162, 100, 300, 100},
 	} {
 		sx, sy, ex, ey := flightEnds(t, c.mode, c.ax, c.ay, c.bx, c.by)
