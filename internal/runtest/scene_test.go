@@ -258,7 +258,7 @@ func TestSceneBrokenBorder(t *testing.T) {
 		checkSceneInvariants(t, sc, r.Facts)
 		slot := sc.Slots[at].At
 		for _, sh := range sc.Shapes {
-			if sh.Kind != trace.KindRect || sh.W != 1592 || sh.H != 992 {
+			if sh.Kind != trace.KindRect || sh.W != 1032 || sh.H != 642 {
 				continue
 			}
 			lit, glow := false, false

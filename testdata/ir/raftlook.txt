@@ -202,7 +202,7 @@
     (phrase "Frame" (result shape)
       (vars (0 frame draw shape))
       (body
-        (draw (native "look.rect" (minus 1600 (times 2 (native "theme.Margin"))) (minus 1000 (times 2 (native "theme.Margin")))) frame#0)
+        (draw (native "look.rect" (minus 1040 (times 2 (native "theme.Margin"))) (minus 650 (times 2 (native "theme.Margin")))) frame#0)
         (result frame#0)))
     (phrase "Reveal"
       (vars (0 s param shape))
@@ -262,7 +262,7 @@
       (vars (0 border draw shape))
       (body
         (native "look.layout" "ring")
-        (draw (native "look.rect" 1592 992) border#0 (for "border" "border"))
+        (draw (native "look.rect" 1032 642) border#0 (for "border" "border"))
         (native "look.stroke" border#0 (native "theme.Critical"))
         (native "look.tween" "opacity" border#0 0 (time 0))))
     (when-trace "sim.added"
@@ -335,7 +335,7 @@
       (match 1 bind origin#1)
       (body
         (draw (native "look.label" (recfield lesson.Noted#0 Text)) caption#2 (for "caption" "caption"))
-        (native "look.tween" "y" caption#2 930 (time 0)))))
+        (native "look.tween" "y" caption#2 604 (time 0)))))
   (package "github.com/synodlang/examples/raftlook"
     (uses "github.com/synodlang/examples/raft" "std/look" "std/look/basic" "std/sim" "std/theme")
     (runs "std/lists" "std/math" "std/net" "std/random" "std/sim" "std/time" "github.com/synodlang/examples/raft" "std/theme" "std/look" "std/lesson" "std/text" "std/look/basic" "github.com/synodlang/examples/raftlook")

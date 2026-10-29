@@ -39,7 +39,7 @@ func TestEncodeSceneLayout(t *testing.T) {
 		Markers: []Marker{{At: 0, Seq: 1, Kind: "caption", Text: "hi"}, {At: 5, Seq: 2, Kind: "broken", Text: "x"}},
 		Slots:   []SlotEntry{{1, 0}, {2, 30}},
 	}
-	want := `{"format":"synod-scene/1","duration":1850,"canvas":{"w":1600,"h":1000},"theme":{"Paper":"#fafaf7","Ink":"#1b1b1f"},"shapes":[
+	want := `{"format":"synod-scene/1","duration":1850,"canvas":{"w":1040,"h":650},"theme":{"Paper":"#fafaf7","Ink":"#1b1b1f"},"shapes":[
 {"id":"s0123456789ab","kind":"circle","props":{"r":6},"keys":[{"at":0,"x":800,"y":500,"opacity":1,"fill":"Accent"},{"at":300,"x":812.5,"y":400.25,"scale":2,"opacity":0.5,"rotation":-90,"effect":"glow"}],"end":900},
 {"id":"s000000000002","kind":"rect","props":{"w":96,"h":56,"radius":12},"keys":[{"at":0,"x":1,"y":2,"opacity":1,"stroke":"raftlook.Hot"}]},
 {"id":"s000000000003","kind":"label","props":{},"keys":[{"at":0,"x":1,"y":2,"opacity":1,"fill":"Ink","text":"a \"q\"\\\n\t\u0001 é"}]},
@@ -60,7 +60,7 @@ func TestEncodeSceneLayout(t *testing.T) {
 
 func TestEncodeSceneEmptyArrays(t *testing.T) {
 	got := encScene(t, &Scene{Theme: []ThemeColor{}})
-	want := `{"format":"synod-scene/1","duration":0,"canvas":{"w":1600,"h":1000},"theme":{},"shapes":[],"markers":[],"trace":[]}` + "\n"
+	want := `{"format":"synod-scene/1","duration":0,"canvas":{"w":1040,"h":650},"theme":{},"shapes":[],"markers":[],"trace":[]}` + "\n"
 	if got != want {
 		t.Fatalf("got %q want %q", got, want)
 	}
@@ -127,7 +127,7 @@ func TestEncodeSceneV3(t *testing.T) {
 		},
 		Camera: []CameraKey{{At: 0, X: 800, Y: 500, Zoom: 1.5}, {At: 500, X: 100, Y: 200.5, Zoom: 2}},
 	}
-	want := `{"format":"synod-scene/1","duration":900,"canvas":{"w":1600,"h":1000},"theme":{"Paper":"#fff","Message2":"#7FB2F0"},"style":{"sketch":1,"easing":"spring"},"shapes":[
+	want := `{"format":"synod-scene/1","duration":900,"canvas":{"w":1040,"h":650},"theme":{"Paper":"#fff","Message2":"#7FB2F0"},"style":{"sketch":1,"easing":"spring"},"shapes":[
 {"id":"s000000000001","kind":"icon","props":{"size":32},"keys":[{"at":0,"x":1,"y":2,"opacity":1,"stroke":"Ink","draw":0.5,"halo":1,"icon":"mail"},{"at":100,"curve":-0.25,"trail":240,"dash":[4,2],"icon":"cross","count":7,"role":"caption","face":"mono"},{"at":200,"dash":[]}]},
 {"id":"s000000000002","kind":"counter","props":{},"keys":[{"at":0,"count":3}]}
 ],"markers":[],"camera":[

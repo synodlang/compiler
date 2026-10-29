@@ -23,11 +23,14 @@ const (
 	Morph           = 300   // ms: morph and fade duration
 	TimerTail       = 2000  // ms: timers run this long after the last fact
 	ProportionalLen = 30000 // ms: length of a proportional scene
-	CanvasW         = 1600
-	CanvasH         = 1000
-	CenterX         = 800.0
-	CenterY         = 500.0
-	OrbitRadius     = 300.0
+	CanvasW         = 1040
+	CanvasH         = 650
+	CenterX         = 520.0
+	CenterY         = 325.0
+	OrbitRadius     = 200.0
+	RingRX          = 300.0 // ring ellipse radii at layout scale 1 and growth 1
+	RingRY          = 150.0
+	RingGrowMax     = 1.4 // largest ring growth factor g
 	PlaceGap        = 8.0
 	LabelCharW      = 8.0
 	LabelH          = 18.0
@@ -126,4 +129,11 @@ func orbitPoint(cx, cy, f float64) (x, y float64) { return orbitPointR(cx, cy, f
 func orbitPointR(cx, cy, f, radius float64) (x, y float64) {
 	s, c := sinCosTurn(f)
 	return rnd(cx + float64(radius*s)), rnd(cy - float64(radius*c))
+}
+
+// ellipsePoint is the point at fraction f of a turn on the ellipse of radii
+// rx and ry around (cx, cy); 0 is 12 o'clock, clockwise. Rounded to 0.01.
+func ellipsePoint(cx, cy, f, rx, ry float64) (x, y float64) {
+	s, c := sinCosTurn(f)
+	return rnd(cx + float64(rx*s)), rnd(cy - float64(ry*c))
 }

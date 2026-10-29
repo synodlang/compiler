@@ -65,10 +65,10 @@ func TestNewShapeDefaults(t *testing.T) {
 	l := w.mk(t, trace.KindLabel, 100)
 	g, err := w.newShape(shapeSpec{Kind: trace.KindLine, From: c, To: l}, "ln", 100)
 	must(t, err)
-	if got := w.keys(c); got != "100{x=800 y=500 o=1}" {
+	if got := w.keys(c); got != "100{"+home+" o=1}" {
 		t.Errorf("circle %s", got)
 	}
-	if got := w.keys(l); got != "100{x=800 y=500 o=1 fill=Ink text=ab}" {
+	if got := w.keys(l); got != "100{"+home+" o=1 fill=Ink text=ab}" {
 		t.Errorf("label %s", got)
 	}
 	if got := w.keys(g); got != "100{o=1 stroke=Line}" {
@@ -94,7 +94,7 @@ func TestTweenHoldAndCoalesce(t *testing.T) {
 	w := newTW(1000)
 	s := w.mk(t, trace.KindCircle, 0)
 	must(t, w.tween(s, trace.POpacity, pv{N: 0}, 1000, 300))
-	if got := w.keys(s); got != "0{x=800 y=500 o=1} 1000{o=1} 1300{o=0}" {
+	if got := w.keys(s); got != "0{"+home+" o=1} 1000{o=1} 1300{o=0}" {
 		t.Fatalf("fade: %s", got)
 	}
 	if w.busyUntil(s) != 1300 {
@@ -103,7 +103,7 @@ func TestTweenHoldAndCoalesce(t *testing.T) {
 	// x and y with the same times coalesce into one key
 	must(t, w.tween(s, trace.PX, pv{N: 100}, 2000, 400))
 	must(t, w.tween(s, trace.PY, pv{N: 200}, 2000, 400))
-	if got := w.keys(s); got != "0{x=800 y=500 o=1} 1000{o=1} 1300{o=0} 2000{x=800 y=500} 2400{x=100 y=200}" {
+	if got := w.keys(s); got != "0{"+home+" o=1} 1000{o=1} 1300{o=0} 2000{"+home+"} 2400{x=100 y=200}" {
 		t.Fatalf("move: %s", got)
 	}
 }
@@ -113,7 +113,7 @@ func TestTweenNoOp(t *testing.T) {
 	s := w.mk(t, trace.KindCircle, 0)
 	before := w.keys(s)
 	must(t, w.tween(s, trace.POpacity, pv{N: 1}, 500, 300))
-	must(t, w.tween(s, trace.PX, pv{N: 800}, 500, 0))
+	must(t, w.tween(s, trace.PX, pv{N: CenterX}, 500, 0))
 	must(t, w.tween(s, trace.PScale, pv{N: 1}, 500, 300))
 	must(t, w.tween(s, trace.PRotation, pv{N: 0}, 500, 300))
 	if w.keys(s) != before {
@@ -121,7 +121,7 @@ func TestTweenNoOp(t *testing.T) {
 	}
 	// scale has an implicit default: a real tween writes a default hold
 	must(t, w.tween(s, trace.PScale, pv{N: 2}, 500, 300))
-	if got := w.keys(s); got != "0{x=800 y=500 o=1} 500{s=1} 800{s=2}" {
+	if got := w.keys(s); got != "0{"+home+" o=1} 500{s=1} 800{s=2}" {
 		t.Fatalf("scale: %s", got)
 	}
 }
@@ -129,10 +129,10 @@ func TestTweenNoOp(t *testing.T) {
 func TestTweenSupersedeNumber(t *testing.T) {
 	w := newTW(1000)
 	s := w.mk(t, trace.KindCircle, 0)
-	must(t, w.tween(s, trace.PX, pv{N: 900}, 1000, 400))
-	// cut halfway: smootherstep(0.5) = 0.5, so 850
-	must(t, w.tween(s, trace.PX, pv{N: 800}, 1200, 100))
-	if got := w.keys(s); got != "0{x=800 y=500 o=1} 1000{x=800} 1200{x=850} 1300{x=800}" {
+	must(t, w.tween(s, trace.PX, pv{N: CenterX + 100}, 1000, 400))
+	// cut halfway: smootherstep(0.5) = 0.5, so CenterX + 50
+	must(t, w.tween(s, trace.PX, pv{N: CenterX}, 1200, 100))
+	if got := w.keys(s); got != fmt.Sprintf("0{"+home+" o=1} 1000{x=%v} 1200{x=%v} 1300{x=%v}", CenterX, CenterX+50, CenterX) {
 		t.Fatalf("supersede: %s", got)
 	}
 	// a cut value is rounded to 0.01
@@ -146,7 +146,7 @@ func TestTweenSupersedeNumber(t *testing.T) {
 			t.Errorf("unrounded %v", k.X)
 		}
 	}
-	if got := w2.keys(s2); !strings.HasPrefix(got, "0{x=800 y=500 o=1} 99{x=") {
+	if got := w2.keys(s2); !strings.HasPrefix(got, "0{"+home+" o=1} 99{x=") {
 		t.Fatalf("instant change after a cut: %s", got)
 	}
 }
@@ -157,13 +157,13 @@ func TestTweenSupersedeColorAndText(t *testing.T) {
 	// no earlier fill key on a circle: snaps
 	c := w.mk(t, trace.KindCircle, 0)
 	must(t, w.tween(c, trace.PFill, pv{S: "Accent"}, 100, 300))
-	if got := w.keys(c); got != "0{x=800 y=500 o=1} 100{fill=Accent}" {
+	if got := w.keys(c); got != "0{"+home+" o=1} 100{fill=Accent}" {
 		t.Fatalf("first fill snaps: %s", got)
 	}
 	must(t, w.tween(s, trace.PFill, pv{S: "Accent"}, 1000, 400))
 	must(t, w.tween(s, trace.PFill, pv{S: "Good"}, 1100, 400))
 	// the cut tween snaps to its target (Accent) at 1100
-	if got := w.keys(s); got != "0{x=800 y=500 o=1 fill=Ink text=ab} 1000{fill=Ink} 1100{fill=Accent} 1500{fill=Good}" {
+	if got := w.keys(s); got != "0{"+home+" o=1 fill=Ink text=ab} 1000{fill=Ink} 1100{fill=Accent} 1500{fill=Good}" {
 		t.Fatalf("color cut: %s", got)
 	}
 	must(t, w.tween(s, trace.PText, pv{S: "cd"}, 2000, 0))
@@ -190,7 +190,7 @@ func TestTweenValidation(t *testing.T) {
 			t.Errorf("%v: %v", tc, err)
 		}
 	}
-	if w.keys(s) != "0{x=800 y=500 o=1}" {
+	if w.keys(s) != "0{"+home+" o=1}" {
 		t.Fatal("rejected tweens changed the shape")
 	}
 }
@@ -204,11 +204,11 @@ func TestMorphRule(t *testing.T) {
 		must(t, w.set(fresh, trace.PFill, pv{S: "Accent"}, 5000))
 		must(t, w.set(old, trace.PFill, pv{S: "Accent"}, 5000))
 		must(t, w.set(old, trace.PFill, pv{S: "Good"}, 6000))
-		if got := w.keys(fresh); got != "5000{x=800 y=500 o=1 fill=Accent}" {
+		if got := w.keys(fresh); got != "5000{"+home+" o=1 fill=Accent}" {
 			t.Errorf("fresh: %s", got)
 		}
 		// old has no fill yet: snaps at 5000; then morphs over 300/pace
-		want := fmt.Sprintf("1000{x=800 y=500 o=1} 5000{fill=Accent} 6000{fill=Accent} %d{fill=Good}", 6000+d)
+		want := fmt.Sprintf("1000{"+home+" o=1} 5000{fill=Accent} 6000{fill=Accent} %d{fill=Good}", 6000+d)
 		if got := w.keys(old); got != want {
 			t.Errorf("pace %d old: %s want %s", pace, got, want)
 		}
@@ -223,7 +223,7 @@ func TestEffect(t *testing.T) {
 	s := w.mk(t, trace.KindCircle, 0)
 	must(t, w.effect(s, "glow", 1000))
 	must(t, w.effect(s, "glow", 1100))
-	if got := w.keys(s); got != "0{x=800 y=500 o=1} 1000{fx=glow} 1100{fx=glow} 1400{fx=none}" {
+	if got := w.keys(s); got != "0{"+home+" o=1} 1000{fx=glow} 1100{fx=glow} 1400{fx=none}" {
 		t.Fatalf("effect: %s", got)
 	}
 	if w.busyUntil(s) != 0 {
@@ -237,7 +237,7 @@ func TestTombstone(t *testing.T) {
 	b := w.mk(t, trace.KindCircle, 0)
 	must(t, w.tween(a, trace.PX, pv{N: 0}, 100, 500))
 	w.delete(a, 300)
-	if got := w.keys(a); got != "0{x=800 y=500 o=1} 100{x=800}" {
+	if got := w.keys(a); got != fmt.Sprintf("0{"+home+" o=1} 100{x=%v}", CenterX) {
 		t.Fatalf("keys after the end are dropped: %s", got)
 	}
 	if !w.shapes[a].deleted || w.shapes[a].end != 300 || w.busyUntil(a) != 0 {
@@ -272,12 +272,12 @@ func TestGroup(t *testing.T) {
 	tag := w.mk(t, trace.KindLabel, 0)
 	must(t, w.place(tag, "above", ball, 0))
 	// label ab: 16x18; circle r=6: 12x12; dy = -(6+8+9) = -23
-	if got := w.keys(tag); !strings.HasPrefix(got, "0{x=800 y=477 o=1") {
+	if got := w.keys(tag); !strings.HasPrefix(got, fmt.Sprintf("0{x=%v y=%v o=1", CenterX, CenterY-23)) {
 		t.Fatalf("place: %s", got)
 	}
 	g, err := w.group([]int{ball, tag}, "grp", 0)
 	must(t, err)
-	if got := w.keys(g); got != "0{x=800 y=500 o=1}" {
+	if got := w.keys(g); got != "0{"+home+" o=1}" {
 		t.Fatalf("group: %s", got)
 	}
 	if got := w.keys(tag); !strings.HasPrefix(got, "0{x=0 y=-23 o=1") {
@@ -291,7 +291,7 @@ func TestGroup(t *testing.T) {
 	}
 	// moving the group moves the world position of the members
 	must(t, w.tween(g, trace.PX, pv{N: 1000}, 100, 0))
-	if x, y := w.worldPos(tag, 100); x != 1000 || y != 477 {
+	if x, y := w.worldPos(tag, 100); x != 1000 || y != CenterY-23 {
 		t.Fatalf("world pos %v %v", x, y)
 	}
 	// fill on the group skips labels
@@ -312,7 +312,7 @@ func TestGroup(t *testing.T) {
 	if x, _ := w2.worldPos(a, 5); x != 300 {
 		t.Fatalf("history shifted: %v", x)
 	}
-	if got := w2.keys(g2); got != "10{x=300 y=500 o=1}" {
+	if got := w2.keys(g2); got != fmt.Sprintf("10{x=300 y=%v o=1}", CenterY) {
 		t.Fatalf("group at first item: %s", got)
 	}
 }
@@ -323,7 +323,7 @@ func TestPlaceFollowsAndBreaks(t *testing.T) {
 	row := w.mk(t, trace.KindLabel, 0)
 	must(t, w.place(row, "below", card, 0))
 	// rect 56 high, label 18: dy = 28 + 8 + 9 = 45
-	if got := w.keys(row); !strings.HasPrefix(got, "0{x=800 y=545 o=1") {
+	if got := w.keys(row); !strings.HasPrefix(got, fmt.Sprintf("0{x=%v y=%v o=1", CenterX, CenterY+45)) {
 		t.Fatalf("below: %s", got)
 	}
 	must(t, w.tween(card, trace.PX, pv{N: 400}, 1000, 300))
@@ -334,7 +334,7 @@ func TestPlaceFollowsAndBreaks(t *testing.T) {
 		t.Fatalf("follower: card %s row %s", desc(cx), desc(rx))
 	}
 	// the row holds at 1000 like the card does
-	if !strings.Contains(desc(rx), "1000{x=800 y=545}") {
+	if !strings.Contains(desc(rx), fmt.Sprintf("1000{x=%v y=%v}", CenterX, CenterY+45)) {
 		t.Fatalf("row hold: %s", desc(rx))
 	}
 	// beside: dx = 48 + 8 + 8
@@ -382,7 +382,7 @@ func TestOrbit(t *testing.T) {
 	}
 	s := w.mk(t, trace.KindCircle, 0)
 	must(t, w.orbit(s, c, 0.25, 0))
-	if got := w.keys(s); got != "0{x=1100 y=500 o=1}" {
+	if got := w.keys(s); got != fmt.Sprintf("0{x=%v y=%v o=1}", CenterX+OrbitRadius, CenterY) {
 		t.Fatalf("orbit: %s", got)
 	}
 	if !w.shapes[s].pinned {
@@ -390,7 +390,7 @@ func TestOrbit(t *testing.T) {
 	}
 	// morph rule on an older shape
 	must(t, w.orbit(s, c, 0.5, 2000))
-	if got := w.keys(s); got != "0{x=1100 y=500 o=1} 2000{x=1100 y=500} 2300{x=800 y=800}" {
+	if got := w.keys(s); got != fmt.Sprintf("0{x=%v y=%v o=1} 2000{x=%v y=%v} 2300{x=%v y=%v}", CenterX+OrbitRadius, CenterY, CenterX+OrbitRadius, CenterY, CenterX, CenterY+OrbitRadius) {
 		t.Fatalf("orbit morph: %s", got)
 	}
 }
@@ -495,7 +495,7 @@ func TestReplacement(t *testing.T) {
 	must(t, w.attach("x", n, o2, 2000))
 	n2 := w.mk(t, trace.KindCircle, 2000)
 	must(t, w.attach("x", n, n2, 2000))
-	if got := w.keys(n2); got != "2000{x=800 y=500 o=1}" {
+	if got := w.keys(n2); got != "2000{"+home+" o=1}" {
 		t.Fatalf("same instant: %s", got)
 	}
 	if w.shapes[o2].end != 2000 || w.shapes[o2].emitted() {
@@ -515,7 +515,7 @@ func TestReplacementKeepsOwnFillWhenNew(t *testing.T) {
 	nw := w.mk(t, trace.KindLabel, 100)
 	must(t, w.attach("l", k, nw, 100))
 	// text inherited from old ("ab") equals own ("ab"): nothing extra
-	if got := w.keys(nw); got != "100{x=800 y=500 o=0 fill=Ink text=ab} 400{o=1}" {
+	if got := w.keys(nw); got != "100{"+home+" o=0 fill=Ink text=ab} 400{o=1}" {
 		t.Fatalf("label replace: %s", got)
 	}
 }

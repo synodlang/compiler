@@ -1,19 +1,19 @@
-{"format":"synod-scene/1","duration":1940,"canvas":{"w":1600,"h":1000},"theme":{"Paper":"#FFFFFF","Ink":"#1A1A1A","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A","Message1":"#F4A340"},"style":{"sans":"Shantell Sans","mono":"Shantell Sans","titleSize":30,"tracking":0.02,"stroke":3,"glow":0,"shadow":0.15,"vignette":0.35,"sketch":1,"drift":6,"easing":"spring"},"shapes":[
-{"id":"s31b5fdfcde94","kind":"rect","props":{"w":1580,"h":980,"radius":4},"keys":[{"at":0,"x":800,"y":500,"opacity":1,"stroke":"Line"}]},
+{"format":"synod-scene/1","duration":1940,"canvas":{"w":1040,"h":650},"theme":{"Paper":"#FFFFFF","Ink":"#1A1A1A","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A","Message1":"#F4A340"},"style":{"sans":"Shantell Sans","mono":"Shantell Sans","titleSize":30,"tracking":0.02,"stroke":3,"glow":0,"shadow":0.15,"vignette":0.35,"sketch":1,"drift":6,"easing":"spring"},"shapes":[
+{"id":"s31b5fdfcde94","kind":"rect","props":{"w":1020,"h":630,"radius":4},"keys":[{"at":0,"x":520,"y":325,"opacity":1,"stroke":"Line"}]},
 {"id":"sd33f7356bb44","kind":"circle","props":{"r":32},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"stroke":"Ink"}]},
 {"id":"sd43f7356bcf7","kind":"label","props":{},"keys":[{"at":30,"x":0,"y":0,"opacity":1,"fill":"Ink","text":"n1"}]},
-{"id":"sd53f7356beaa","kind":"group","node":"n1","props":{"items":["sd33f7356bb44","sd43f7356bcf7"]},"keys":[{"at":30,"x":800,"y":500,"opacity":1},{"at":60,"x":800},{"at":360,"x":675}]},
+{"id":"sd53f7356beaa","kind":"group","node":"n1","props":{"items":["sd33f7356bb44","sd43f7356bcf7"]},"keys":[{"at":30,"x":520,"y":325,"opacity":1},{"at":60,"x":520},{"at":360,"x":395}]},
 {"id":"s763f7832c08b","kind":"circle","props":{"r":32},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"stroke":"Ink"}]},
 {"id":"s753f7832bed8","kind":"label","props":{},"keys":[{"at":60,"x":0,"y":0,"opacity":1,"fill":"Ink","text":"n2"}]},
-{"id":"s783f7832c3f1","kind":"group","node":"n2","props":{"items":["s763f7832c08b","s753f7832bed8"]},"keys":[{"at":60,"x":925,"y":500,"opacity":1}]},
-{"id":"sc1d91b155555","kind":"circle","props":{"r":5},"keys":[{"at":420,"x":675,"y":500,"opacity":1,"fill":"Message1"},{"at":820,"x":925}]},
+{"id":"s783f7832c3f1","kind":"group","node":"n2","props":{"items":["s763f7832c08b","s753f7832bed8"]},"keys":[{"at":60,"x":645,"y":325,"opacity":1}]},
+{"id":"sc1d91b155555","kind":"circle","props":{"r":5},"keys":[{"at":420,"x":395,"y":325,"opacity":1,"fill":"Message1"},{"at":820,"x":645}]},
 {"id":"sc0d91b1553a2","kind":"line","props":{"from":"sd53f7356beaa","to":"s783f7832c3f1"},"keys":[{"at":420,"opacity":0.6,"stroke":"Line"}]},
-{"id":"sbfd91b1551ef","kind":"rect","props":{"w":20,"h":10,"radius":4},"keys":[{"at":420,"x":800,"y":500,"scale":1,"opacity":1},{"at":620,"scale":2}]},
-{"id":"sbed91b15503c","kind":"label","props":{},"keys":[{"at":420,"x":800,"y":500,"opacity":1,"fill":"Ink","text":"hi"},{"at":520,"x":100}]},
-{"id":"s9ed9158085ce","kind":"circle","props":{"r":5},"keys":[{"at":1480,"x":675,"y":500,"opacity":1,"fill":"Message1"},{"at":1880,"x":925}]},
+{"id":"sbfd91b1551ef","kind":"rect","props":{"w":20,"h":10,"radius":4},"keys":[{"at":420,"x":520,"y":325,"scale":1,"opacity":1},{"at":620,"scale":2}]},
+{"id":"sbed91b15503c","kind":"label","props":{},"keys":[{"at":420,"x":520,"y":325,"opacity":1,"fill":"Ink","text":"hi"},{"at":520,"x":100}]},
+{"id":"s9ed9158085ce","kind":"circle","props":{"r":5},"keys":[{"at":1480,"x":395,"y":325,"opacity":1,"fill":"Message1"},{"at":1880,"x":645}]},
 {"id":"s9fd915808781","kind":"line","props":{"from":"sd53f7356beaa","to":"s783f7832c3f1"},"keys":[{"at":1480,"opacity":0.6,"stroke":"Line"}]},
-{"id":"s9cd915808268","kind":"rect","props":{"w":20,"h":10,"radius":4},"keys":[{"at":1480,"x":800,"y":500,"scale":1,"opacity":1},{"at":1680,"scale":2}]},
-{"id":"s9dd91580841b","kind":"label","props":{},"keys":[{"at":1480,"x":800,"y":500,"opacity":1,"fill":"Ink","text":"hi"},{"at":1580,"x":100}]}
+{"id":"s9cd915808268","kind":"rect","props":{"w":20,"h":10,"radius":4},"keys":[{"at":1480,"x":520,"y":325,"scale":1,"opacity":1},{"at":1680,"scale":2}]},
+{"id":"s9dd91580841b","kind":"label","props":{},"keys":[{"at":1480,"x":520,"y":325,"opacity":1,"fill":"Ink","text":"hi"},{"at":1580,"x":100}]}
 ],"markers":[],"trace":[
 {"seq":1,"at":0},
 {"seq":2,"at":30},

@@ -7,6 +7,10 @@ section is the text of its GitHub release page.
 
 Implements Synod 0.3. `synod version` prints `language 0.3`, `synod new` writes `synod 0.3`, and trace headers say `"synod":"0.3"`. A `synod.mod` that says an older version (`synod 0.2`) is still accepted, and the version line does not gate features; a newer one (`synod 0.4`) is an error.
 
+### Changed
+
+- Scenes use a 1040 by 650 canvas with its centre at (520, 325), `look.Orbit` has radius 200, and the `ring` layout is an ellipse (radii 300 and 150, turned half a slot for an even number of cards, growing up to 1.4 with the number of cards). Default-theme scenes change once; traces are unchanged. The embedded std and the vendored examples follow `std` and `examples`.
+
 ### Fixed
 
 - `synod new demo` is refused like `main`, `time` and `sim`, with or without `--lib`: the package `demo` collided with `demo/demo.synod`, the main program, which overwrote the library.

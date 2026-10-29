@@ -1,8 +1,13 @@
 package scene
 
 import (
+	"bytes"
+	"fmt"
 	"math"
+	"strings"
 	"testing"
+
+	"github.com/synodlang/compiler/internal/trace"
 )
 
 // The golden table pins the exact output of sinTurn and cosTurn so that the
@@ -62,12 +67,12 @@ func TestRoundNoNegativeZero(t *testing.T) {
 	if r := rnd(-0.001); math.Signbit(r) || r != 0 {
 		t.Fatalf("rnd(-0.001) = %v", r)
 	}
-	x, y := orbitPoint(800, 500, 0.25)
-	if x != 1100 || y != 500 || math.Signbit(y) {
+	x, y := orbitPoint(CenterX, CenterY, 0.25)
+	if x != CenterX+OrbitRadius || y != CenterY || math.Signbit(y) {
 		t.Fatalf("orbit 0.25 = %v, %v", x, y)
 	}
-	x, y = orbitPoint(800, 500, 0)
-	if x != 800 || y != 200 {
+	x, y = orbitPoint(CenterX, CenterY, 0)
+	if x != CenterX || y != CenterY-OrbitRadius {
 		t.Fatalf("orbit 0 = %v, %v", x, y)
 	}
 }
@@ -75,5 +80,24 @@ func TestRoundNoNegativeZero(t *testing.T) {
 func TestSmootherstep(t *testing.T) {
 	if smootherstep(0) != 0 || smootherstep(1) != 1 || smootherstep(0.5) != 0.5 {
 		t.Fatal("smootherstep endpoints")
+	}
+}
+
+// home is the key text of a shape at the scene centre.
+var home = fmt.Sprintf("x=%v y=%v", CenterX, CenterY)
+
+// TestCanvasInScene: the canvas written by the trace encoder (which cannot
+// import this package) is the canvas of the layout constants.
+func TestCanvasInScene(t *testing.T) {
+	var b bytes.Buffer
+	if err := trace.EncodeScene(&b, &trace.Scene{}); err != nil {
+		t.Fatal(err)
+	}
+	want := fmt.Sprintf(`"canvas":{"w":%d,"h":%d}`, CanvasW, CanvasH)
+	if !strings.Contains(b.String(), want) {
+		t.Errorf("scene %s lacks %s", b.String(), want)
+	}
+	if CenterX != CanvasW/2 || CenterY != CanvasH/2 {
+		t.Errorf("centre (%v, %v) is not the canvas centre", CenterX, CenterY)
 	}
 }

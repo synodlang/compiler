@@ -39,7 +39,7 @@ func (e *encoder) scene(s *Scene) error {
 	w := &e.w
 	w.raw(`{"format":"synod-scene/1","duration":`)
 	w.int(s.Duration)
-	w.raw(`,"canvas":{"w":1600,"h":1000},"theme":{`)
+	w.raw(`,"canvas":{"w":1040,"h":650},"theme":{`)
 	for i, c := range s.Theme {
 		w.key(c.Name, i == 0)
 		w.str(c.Hex)

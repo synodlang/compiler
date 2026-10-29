@@ -1,5 +1,5 @@
-{"format":"synod-scene/1","duration":1800,"canvas":{"w":1600,"h":1000},"theme":{"Paper":"#151A2E","Ink":"#EDE9E1","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A"},"shapes":[
-{"id":"sf51ce27cc857","kind":"circle","props":{"r":10},"keys":[{"at":0,"x":800,"y":500,"opacity":1},{"at":500,"fill":"Accent"},{"at":1500,"fill":"Accent"},{"at":1800,"fill":"Good"}]}
+{"format":"synod-scene/1","duration":1800,"canvas":{"w":1040,"h":650},"theme":{"Paper":"#151A2E","Ink":"#EDE9E1","Line":"#3A4366","Quiet":"#8A90A8","Accent":"#F4A340","Good":"#5CC8B8","Warning":"#E8C35A","Critical":"#E86F5A"},"shapes":[
+{"id":"sf51ce27cc857","kind":"circle","props":{"r":10},"keys":[{"at":0,"x":520,"y":325,"opacity":1},{"at":500,"fill":"Accent"},{"at":1500,"fill":"Accent"},{"at":1800,"fill":"Good"}]}
 ],"markers":[],"trace":[
 {"seq":1,"at":0},
 {"seq":2,"at":30},

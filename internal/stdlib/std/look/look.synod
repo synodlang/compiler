@@ -41,7 +41,7 @@ define Place [s: shape] beside [t: shape] native "look.placeBeside"
 # An invisible point at the scene centre
 define Center native "look.center"
 
-# Place on a circle of radius 300 around `c`, at fraction `f` of a turn (0 is 12 o'clock, clockwise)
+# Place on a circle of radius 200 around `c`, at fraction `f` of a turn (0 is 12 o'clock, clockwise)
 define Orbit [s: shape] around [c: shape] at [f: number] native "look.orbit"
 
 # Move `s` from `a` to `b`, landing when `m` arrives (halfway when dropped)

@@ -61,7 +61,16 @@ func slotPosF(kind string, i, n int, f float64) (x, y float64) {
 		return rnd(CenterX + float64(float64(2*col-(c-1))*float64(100*f))),
 			rnd(CenterY + float64(float64(2*row-(r-1))*float64(80*f)))
 	}
-	return orbitPointR(CenterX, CenterY, float64(i)/float64(n), float64(OrbitRadius*f))
+	// ring: an ellipse turned half a slot for an even n, grown with n
+	u := float64(i) / float64(n)
+	if n%2 == 0 {
+		u = float64(2*i+1) / float64(2*n)
+	}
+	g := 0.0
+	if n > 1 {
+		g = math.Min(RingGrowMax, math.Max(1, float64(n-3)/3))
+	}
+	return ellipsePoint(CenterX, CenterY, u, float64(float64(RingRX*f)*g), float64(float64(RingRY*f)*g))
 }
 
 // reflow arranges the node cards for the current layout. Call it after each

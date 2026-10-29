@@ -43,5 +43,5 @@ define Remove [s: shape]
 
 # A rect of the canvas inset by `theme.Margin`
 define Frame
-  draw (Rect (1600 minus (2 times theme.Margin)) by (1000 minus (2 times theme.Margin))) as frame
+  draw (Rect (1040 minus (2 times theme.Margin)) by (650 minus (2 times theme.Margin))) as frame
   result frame

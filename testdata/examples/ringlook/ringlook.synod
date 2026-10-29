@@ -5,7 +5,7 @@ use std/sim
 use std/theme
 
 when sim.Started
-  draw (look.Circle 300) as wheel
+  draw (look.Circle 200) as wheel
     look.Fill wheel with theme.Paper
     look.Stroke wheel with theme.Line
 

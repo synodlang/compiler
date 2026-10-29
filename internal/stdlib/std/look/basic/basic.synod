@@ -9,7 +9,7 @@ use std/theme
 
 when sim.Started
   look.Layout "ring"
-  draw (look.Rect 1592 by 992) as border for "border"
+  draw (look.Rect 1032 by 642) as border for "border"
   look.Stroke border with theme.Critical
   look.Tween "opacity" of border to 0 over 0s
 
@@ -55,4 +55,4 @@ when (sim.Broken rule)
 
 when (sim.Emitted lesson.Noted by origin)
   draw (look.Label lesson.Noted.Text) as caption for "caption"
-  look.Tween "y" of caption to 930 over 0s
+  look.Tween "y" of caption to 604 over 0s

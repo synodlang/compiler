@@ -2,6 +2,7 @@ package scene
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -148,7 +149,7 @@ func TestEffectSet(t *testing.T) {
 		w := newTW(2000)
 		c := w.mk(t, trace.KindCircle, 0)
 		must(t, w.effect(c, name, 100))
-		want := "0{x=800 y=500 o=1} 100{fx=" + name + "} " + fmtI(100+ms/2) + "{fx=none}"
+		want := "0{" + home + " o=1} 100{fx=" + name + "} " + fmtI(100+ms/2) + "{fx=none}"
 		if got := w.keys(c); got != want {
 			t.Errorf("%s: %q want %q", name, got, want)
 		}
@@ -164,11 +165,11 @@ func TestEffectSet(t *testing.T) {
 
 func TestFocusCamera(t *testing.T) {
 	w := newTW(1000)
-	must(t, w.focus(800, 500, 1, 0, 100)) // already there: nothing
+	must(t, w.focus(CenterX, CenterY, 1, 0, 100)) // already there: nothing
 	if len(w.cam) != 0 {
 		t.Fatalf("camera %v", w.cam)
 	}
-	must(t, w.focus(900, 500, 2, 100, 1000))
+	must(t, w.focus(CenterX+100, CenterY, 2, 100, 1000))
 	cam := func() string {
 		var b strings.Builder
 		for _, k := range w.cam {
@@ -176,17 +177,17 @@ func TestFocusCamera(t *testing.T) {
 		}
 		return strings.TrimSpace(b.String())
 	}
-	if got := cam(); got != "100:800,500,1 1100:900,500,2" {
+	if got := cam(); got != fmt.Sprintf("100:%v,%v,1 1100:%v,%v,2", CenterX, CenterY, CenterX+100, CenterY) {
 		t.Errorf("camera %q", got)
 	}
 	// cut in the middle: hold the interpolated camera
-	must(t, w.focus(800, 500, 1, 600, 100))
-	if got := cam(); got != "100:800,500,1 600:850,500,1.5 700:800,500,1" {
+	must(t, w.focus(CenterX, CenterY, 1, 600, 100))
+	if got := cam(); got != fmt.Sprintf("100:%[1]v,%[2]v,1 600:%[3]v,%[2]v,1.5 700:%[1]v,%[2]v,1", CenterX, CenterY, CenterX+50) {
 		t.Errorf("cut %q", got)
 	}
 	// an instant change pins the previous camera one ms before
 	must(t, w.focus(700, 400, 3, 900, 0))
-	if got := cam(); got != "100:800,500,1 600:850,500,1.5 700:800,500,1 899:800,500,1 900:700,400,3" {
+	if got := cam(); got != fmt.Sprintf("100:%[1]v,%[2]v,1 600:%[3]v,%[2]v,1.5 700:%[1]v,%[2]v,1 899:%[1]v,%[2]v,1 900:700,400,3", CenterX, CenterY, CenterX+50) {
 		t.Errorf("instant %q", got)
 	}
 	if err := w.focus(0, 0, 1, 0, -1); err == nil {
@@ -194,8 +195,8 @@ func TestFocusCamera(t *testing.T) {
 	}
 	// spring easing overshoots
 	sw := newWorld(newClock(1000, Ordered, 0), worldConfig{Theme: &worldTheme{Radius: 12, LinkOpacity: 1, Fill: 1, Spring: true}})
-	must(t, sw.focus(1000, 500, 1, 0, 1000))
-	if c := sw.camAt(500); c.X <= 900 {
+	must(t, sw.focus(CenterX+200, CenterY, 1, 0, 1000))
+	if c := sw.camAt(500); c.X <= CenterX+100 {
 		t.Errorf("spring camera at the middle: %v", c)
 	}
 }
@@ -224,13 +225,13 @@ func TestBakedTheme(t *testing.T) {
 	if got := w.keys(l); got != "0{o=0.6 stroke=Line}" {
 		t.Errorf("line %s", got)
 	}
-	if x, y := slotPosF("row", 0, 2, 1.5); x != 680 || y != 500 {
+	if x, y := slotPosF("row", 0, 2, 1.5); x != CenterX-120 || y != CenterY {
 		t.Errorf("row %v %v", x, y)
 	}
-	if x, y := slotPosF("ring", 0, 4, 1.5); x != 800 || y != 50 {
+	if x, y := slotPosF("ring", 0, 3, 1.5); x != CenterX || y != CenterY-RingRY*1.5 {
 		t.Errorf("ring %v %v", x, y)
 	}
-	if x, y := slotPosF("grid", 0, 4, 0.5); x != 750 || y != 460 {
+	if x, y := slotPosF("grid", 0, 4, 0.5); x != CenterX-50 || y != CenterY-40 {
 		t.Errorf("grid %v %v", x, y)
 	}
 }
